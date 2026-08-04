@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório Diário de Atividades (RDO)</title>
+    <title>Reporte Diário de Atividades (RDO)</title>
     <style>
         :root {
             --primary: #0056b3;
@@ -100,7 +100,7 @@
 <body>
 
 <div class="container">
-    <h2>📋 RELATÓRIO DIÁRIO DE ATIVIDADES</h2>
+    <h2>📋 REPORTE DIÁRIO DE ATIVIDADES</h2>
     <div class="subtitle">Gerador de RDO e Exportador .TXT</div>
 
     <form id="rdoForm" onsubmit="gerarETbaixarTXT(event)">
@@ -161,7 +161,7 @@
             <button type="button" class="btn btn-primary" onclick="adicionarEmpreiteira()">➕ Incluir Outra Empreiteira</button>
         </div>
 
-        <button type="submit" class="btn btn-success">📄 Baixar Relatório em Texto (.TXT)</button>
+        <button type="submit" class="btn btn-success">📄 Baixar Reporte em Texto (.TXT)</button>
     </form>
 </div>
 
@@ -240,7 +240,7 @@
         const partesData = dataInput.split('-');
         const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
 
-        let txt = `RELATÓRIO DIÁRIO DE ATIVIDADES\n`;
+        let txt = `REPORTE DIÁRIO DE ATIVIDADES\n`;
         txt += `Obra: ${obra}\n`;
         txt += `OS/N° do projeto: ${os}\n`;
         txt += `Data: ${dataFormatada}\n`;
@@ -269,7 +269,7 @@
         const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `RDO_${obra.replace(/\s+/g, '_')}_${dataInput}.txt`;
+        link.download = `Reporte_${obra.replace(/\s+/g, '_')}_${dataInput}.txt`;
         link.click();
     }
 </script>
