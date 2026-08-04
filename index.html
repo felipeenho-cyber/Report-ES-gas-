@@ -112,12 +112,44 @@
                 <input type="text" id="obra" placeholder="Ex: Marca Ambiental" required>
             </div>
             <div class="form-group">
-                <label>Ordem de Serviço (OS) *</label>
+                <label>OS/N° do projeto *</label>
                 <input type="text" id="os" placeholder="Ex: 4024958" required>
             </div>
             <div class="form-group">
                 <label>Data *</label>
                 <input type="date" id="data" required>
+            </div>
+
+            <!-- PREVISÃO DO TEMPO / CONDIÇÃO CLIMÁTICA -->
+            <h4 style="margin-top: 15px; margin-bottom: 10px;">☀️ Previsão do Tempo / Condições Climáticas</h4>
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Manhã</label>
+                    <select id="clima-manha">
+                        <option value="Bom / Claro">Bom / Claro</option>
+                        <option value="Nublado">Nublado</option>
+                        <option value="Chuva Leve">Chuva Leve</option>
+                        <option value="Chuva Forte">Chuva Forte / Impraticável</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Tarde</label>
+                    <select id="clima-tarde">
+                        <option value="Bom / Claro">Bom / Claro</option>
+                        <option value="Nublado">Nublado</option>
+                        <option value="Chuva Leve">Chuva Leve</option>
+                        <option value="Chuva Forte">Chuva Forte / Impraticável</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Noite</label>
+                    <select id="clima-noite">
+                        <option value="Bom / Claro">Bom / Claro</option>
+                        <option value="Nublado">Nublado</option>
+                        <option value="Chuva Leve">Chuva Leve</option>
+                        <option value="Chuva Forte">Chuva Forte / Impraticável</option>
+                    </select>
+                </div>
             </div>
         </div>
 
@@ -136,10 +168,8 @@
 <script>
     let contadorEmpreiteiras = 0;
 
-    // Lista fixa de empresas para o menu suspenso
     const listaEmpresas = ["TEXCAL", "CONCREJATO", "MN Engenharia", "Engenhar"];
 
-    // Adiciona o primeiro bloco automaticamente ao carregar
     window.onload = function() {
         document.getElementById('data').valueAsDate = new Date();
         adicionarEmpreiteira();
@@ -196,7 +226,6 @@
         if (box) box.remove();
     }
 
-    // Função que formata as informações e faz o download do arquivo .TXT
     function gerarETbaixarTXT(e) {
         e.preventDefault();
 
@@ -204,14 +233,18 @@
         const os = document.getElementById('os').value;
         const dataInput = document.getElementById('data').value;
         
-        // Formatando a data para DD/MM/AAAA
+        const climaManha = document.getElementById('clima-manha').value;
+        const climaTarde = document.getElementById('clima-tarde').value;
+        const climaNoite = document.getElementById('clima-noite').value;
+
         const partesData = dataInput.split('-');
         const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
 
         let txt = `RELATÓRIO DIÁRIO DE ATIVIDADES\n`;
         txt += `Obra: ${obra}\n`;
-        txt += `Ordem de Serviço: ${os}\n`;
+        txt += `OS/N° do projeto: ${os}\n`;
         txt += `Data: ${dataFormatada}\n`;
+        txt += `Condições Climáticas: Manhã: ${climaManha} | Tarde: ${climaTarde} | Noite: ${climaNoite}\n`;
         txt += `==================================================\n\n`;
 
         const caixasEmpreiteiras = document.querySelectorAll('.empreiteira-box');
@@ -233,7 +266,6 @@
             txt += `--------------------------------------------------\n\n`;
         });
 
-        // Criar o arquivo TXT e forçar o download no navegador
         const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
