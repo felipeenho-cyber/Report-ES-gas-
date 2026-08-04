@@ -3,9 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gerador de Reporte Diário</title>
-    <!-- Bibliotecas externas para envio de e-mail sem servidor (EmailJS) -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <title>Relatório Diário de Atividades (RDO)</title>
     <style>
         :root {
             --primary: #0056b3;
@@ -24,7 +22,7 @@
         }
 
         .container {
-            max-width: 650px;
+            max-width: 700px;
             margin: 0 auto;
         }
 
@@ -41,30 +39,6 @@
             margin-bottom: 20px;
         }
 
-        /* Sistema de Abas */
-        .tabs {
-            display: flex;
-            gap: 5px;
-            margin-bottom: 15px;
-        }
-
-        .tab-btn {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            background: #e0e0e0;
-            cursor: pointer;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 0.85em;
-        }
-
-        .tab-btn.active {
-            background: var(--primary);
-            color: white;
-        }
-
-        /* Cards e Formulário */
         .card {
             background: var(--card-bg);
             padding: 20px;
@@ -95,40 +69,18 @@
 
         textarea {
             resize: vertical;
-            height: 80px;
+            height: 70px;
         }
 
-        /* Botões Início e Término */
-        .jornada-toggle {
-            display: flex;
-            gap: 10px;
+        .empreiteira-box {
+            border: 2px dashed #0056b3;
+            padding: 15px;
+            border-radius: 8px;
             margin-bottom: 15px;
-        }
-
-        .jornada-btn {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #ccc;
             background: #f8f9fa;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            text-align: center;
+            position: relative;
         }
 
-        .jornada-btn.active-inicio {
-            background: #e3f2fd;
-            border-color: #2196f3;
-            color: #0d47a1;
-        }
-
-        .jornada-btn.active-termino {
-            background: #fbe9e7;
-            border-color: #ff5722;
-            color: #bf360c;
-        }
-
-        /* Botões do Sistema */
         .btn {
             width: 100%;
             padding: 12px;
@@ -142,364 +94,152 @@
 
         .btn-success { background: var(--success); color: white; }
         .btn-primary { background: var(--primary); color: white; }
-        .btn-secondary { background: #6c757d; color: white; }
-        .btn-danger { background: var(--danger); color: white; font-size: 0.8em; width: auto; padding: 4px 8px; margin: 0; }
-
-        .hidden { display: none; }
-
-        /* Estilo da Tabela do Histórico */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-            font-size: 0.85em;
-        }
-
-        th, td {
-            border: 1px solid #ddd;
-            padding: 8px;
-            text-align: left;
-        }
-
-        th { background-color: #f2f2f2; }
-
-        /* Configuração de Impressão (Exportar PDF) */
-        @media print {
-            body * { visibility: hidden; }
-            #historico-section, #historico-section * { visibility: visible; }
-            #historico-section { position: absolute; left: 0; top: 0; width: 100%; }
-            .no-print { display: none !important; }
-        }
+        .btn-danger { background: var(--danger); color: white; font-size: 0.8em; width: auto; padding: 5px 10px; float: right; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>📋 REPORTE DIÁRIO DE OBRAS</h2>
-    <div class="subtitle">Gerenciamento e Controle de Jornada</div>
+    <h2>📋 RELATÓRIO DIÁRIO DE ATIVIDADES</h2>
+    <div class="subtitle">Gerador de RDO e Exportador .TXT</div>
 
-    <!-- NAVEGAÇÃO DE ABAS -->
-    <div class="tabs">
-        <button class="tab-btn active" onclick="switchTab('gerador', event)">📝 Gerador</button>
-        <button class="tab-btn" onclick="switchTab('projetos', event)">🏗️ Projetos e Setores</button>
-        <button class="tab-btn" onclick="switchTab('historico', event)">🗂️ Histórico</button>
-    </div>
-
-    <!-- ABA 1: GERADOR DE REPORTE -->
-    <div id="gerador-section" class="card">
-        <div class="jornada-toggle">
-            <div id="btn-inicio" class="jornada-btn active-inicio" onclick="setJornada('INÍCIO DE JORNADA')">🌅 INÍCIO DE JORNADA</div>
-            <div id="btn-termino" class="jornada-btn" onclick="setJornada('TÉRMINO DE JORNADA')">🌌 TÉRMINO DE JORNADA</div>
+    <form id="rdoForm" onsubmit="gerarETbaixarTXT(event)">
+        <!-- INFORMACÕES DA OBRA -->
+        <div class="card">
+            <h3>📍 Dados Gerais da Obra</h3>
+            <div class="form-group">
+                <label>Obra *</label>
+                <input type="text" id="obra" placeholder="Ex: Marca Ambiental" required>
+            </div>
+            <div class="form-group">
+                <label>Ordem de Serviço (OS) *</label>
+                <input type="text" id="os" placeholder="Ex: 4024958" required>
+            </div>
+            <div class="form-group">
+                <label>Data *</label>
+                <input type="date" id="data" required>
+            </div>
         </div>
 
-        <form id="reporteForm" onsubmit="salvarEReportar(event)">
-            <div class="form-group">
-                <label>Projeto / Obra *</label>
-                <select id="select-projeto" required onchange="carregarSetores()">
-                    <option value="">Selecione um projeto...</option>
-                </select>
-            </div>
+        <!-- SEÇÃO DINÂMICA DE EMPREITEIRAS -->
+        <div class="card">
+            <h3>🏗️ Empreiteiras Envolvidas</h3>
+            <div id="container-empreiteiras"></div>
 
-            <div class="form-group">
-                <label>Setorização *</label>
-                <select id="select-setor" required>
-                    <option value="">Selecione primeiro o projeto...</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Responsável / Encarregado *</label>
-                <input type="text" id="responsavel" placeholder="Digite seu nome completo" required>
-            </div>
-
-            <div class="form-group">
-                <label>E-mail para Notificação *</label>
-                <input type="email" id="email-destino" placeholder="exemplo@suaempresa.com" required>
-            </div>
-
-            <div class="form-group">
-                <label>Observações / Atividades Realizadas</label>
-                <textarea id="observacoes" placeholder="Descreva o andamento da obra, equipes, intercorrências ou observações gerais..."></textarea>
-            </div>
-
-            <button type="submit" class="btn btn-success">💾 Salvar e Enviar E-mail</button>
-        </form>
-    </div>
-
-    <!-- ABA 2: CADASTRO DINÂMICO DE PROJETOS E SETORES -->
-    <div id="projetos-section" class="card hidden">
-        <h3>Cadastrar Projeto e Setores</h3>
-        <form onsubmit="cadastrarProjetoSetor(event)">
-            <div class="form-group">
-                <label>Nome do Projeto / Obra *</label>
-                <input type="text" id="novo-projeto" placeholder="Ex: Obra Renovação PE - Fase 2" required>
-            </div>
-            <div class="form-group">
-                <label>Setores (Separados por vírgula) *</label>
-                <input type="text" id="novos-setores" placeholder="Ex: Frente A, Módulo Tubulação, Subestação" required>
-            </div>
-            <button type="submit" class="btn btn-primary">➕ Salvar Projeto</button>
-        </form>
-
-        <hr style="margin: 20px 0;">
-
-        <h4>Projetos Cadastrados</h4>
-        <div id="lista-projetos"></div>
-    </div>
-
-    <!-- ABA 3: HISTÓRICO E RELATÓRIOS (EXCEL E PDF) -->
-    <div id="historico-section" class="card hidden">
-        <h3>Histórico de Reportes</h3>
-        
-        <div class="no-print" style="display: flex; gap: 10px; margin-bottom: 15px;">
-            <button class="btn btn-primary" onclick="exportarExcel()">📊 Exportar Excel (.CSV)</button>
-            <button class="btn btn-secondary" onclick="exportarPDF()">📄 Exportar PDF</button>
+            <button type="button" class="btn btn-primary" onclick="adicionarEmpreiteira()">➕ Incluir Outra Empreiteira</button>
         </div>
 
-        <div style="overflow-x:auto;">
-            <table id="tabela-historico">
-                <thead>
-                    <tr>
-                        <th>Data/Hora</th>
-                        <th>Jornada</th>
-                        <th>Projeto</th>
-                        <th>Setor</th>
-                        <th>Responsável</th>
-                        <th>Obs.</th>
-                    </tr>
-                </thead>
-                <tbody id="corpo-tabela">
-                    <!-- Preenchido dinamicamente -->
-                </tbody>
-            </table>
-        </div>
-    </div>
+        <button type="submit" class="btn btn-success">📄 Baixar Relatório em Texto (.TXT)</button>
+    </form>
 </div>
 
 <script>
-    // --- LÓGICA DO SISTEMA --- //
+    let contadorEmpreiteiras = 0;
 
-    let tipoJornadaAtual = 'INÍCIO DE JORNADA';
+    // Lista fixa de empresas para o menu suspenso
+    const listaEmpresas = ["TEXCAL", "CONCREJATO", "MN Engenharia", "Engenhar"];
 
-    // Banco de Dados Local (Armazenado no próprio navegador)
-    let projetosBD = JSON.parse(localStorage.getItem('projetos_db')) || [
-        { projeto: "Projeto Exemplo A", setores: ["Frente 1 - Tubulação", "Frente 2 - Aço"] }
-    ];
-    let reportesBD = JSON.parse(localStorage.getItem('reportes_db')) || [];
+    // Adiciona o primeiro bloco automaticamente ao carregar
+    window.onload = function() {
+        document.getElementById('data').valueAsDate = new Date();
+        adicionarEmpreiteira();
+    };
 
-    // Inicialização do EmailJS
-    (function(){
-        // INSIRA AQUI SUA CHAVE PÚBLICA DO EMAILJS SE FOR USAR ENVIO REAL
-        emailjs.init("SUA_PUBLIC_KEY_AQUI"); 
-    })();
+    function adicionarEmpreiteira() {
+        contadorEmpreiteiras++;
+        const container = document.getElementById('container-empreiteiras');
 
-    // Função de Alternar entre Abas
-    function switchTab(tab, event) {
-        document.getElementById('gerador-section').classList.add('hidden');
-        document.getElementById('projetos-section').classList.add('hidden');
-        document.getElementById('historico-section').classList.add('hidden');
+        let optionsEmpresas = listaEmpresas.map(emp => `<option value="${emp}">${emp}</option>`).join('');
 
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        const div = document.createElement('div');
+        div.className = 'empreiteira-box';
+        div.id = `emp-box-${contadorEmpreiteiras}`;
+        div.innerHTML = `
+            ${contadorEmpreiteiras > 1 ? `<button type="button" class="btn btn-danger" onclick="removerEmpreiteira(${contadorEmpreiteiras})">❌ Remover</button>` : ''}
+            <h4>Empreiteira #${contadorEmpreiteiras}</h4>
+            
+            <div class="form-group">
+                <label>Nome da Empreiteira *</label>
+                <select class="emp-nome" required>
+                    <option value="">Selecione a empreiteira...</option>
+                    ${optionsEmpresas}
+                </select>
+            </div>
 
-        if (tab === 'gerador') {
-            document.getElementById('gerador-section').classList.remove('hidden');
-            renderizarSelectProjetos();
-        } else if (tab === 'projetos') {
-            document.getElementById('projetos-section').classList.remove('hidden');
-            renderizarListaProjetos();
-        } else if (tab === 'historico') {
-            document.getElementById('historico-section').classList.remove('hidden');
-            renderizarHistorico();
-        }
-        
-        if (event) event.target.classList.add('active');
+            <div style="display: flex; gap: 10px;">
+                <div class="form-group" style="flex: 1;">
+                    <label>Chegada</label>
+                    <input type="time" class="emp-chegada">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Início Atividades</label>
+                    <input type="time" class="emp-inicio">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Equipe Mobilizada (Supervisores, Oficiais, Ajudantes)</label>
+                <textarea class="emp-equipe" placeholder="Ex:&#10;• Supervisor: Erivelton Cão&#10;• Oficiais Líderes: Jair, Júlio&#10;• Ajudantes: Davi, Alexsander"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label>Programação das Atividades</label>
+                <textarea class="emp-atividades" placeholder="Ex: Iniciar instalação dos pavês e rejunte da base."></textarea>
+            </div>
+        `;
+
+        container.appendChild(div);
     }
 
-    // Alternar Tipo de Jornada
-    function setJornada(tipo) {
-        tipoJornadaAtual = tipo;
-        const btnInicio = document.getElementById('btn-inicio');
-        const btnTermino = document.getElementById('btn-termino');
-
-        if (tipo === 'INÍCIO DE JORNADA') {
-            btnInicio.className = 'jornada-btn active-inicio';
-            btnTermino.className = 'jornada-btn';
-        } else {
-            btnInicio.className = 'jornada-btn';
-            btnTermino.className = 'jornada-btn active-termino';
-        }
+    function removerEmpreiteira(id) {
+        const box = document.getElementById(`emp-box-${id}`);
+        if (box) box.remove();
     }
 
-    // Carregar Projetos no Select do Gerador
-    function renderizarSelectProjetos() {
-        const select = document.getElementById('select-projeto');
-        select.innerHTML = '<option value="">Selecione um projeto...</option>';
-        projetosBD.forEach((item, index) => {
-            select.innerHTML += `<option value="${index}">${item.projeto}</option>`;
-        });
-    }
-
-    // Carregar Setores com base no Projeto Selecionado
-    function carregarSetores() {
-        const projIdx = document.getElementById('select-projeto').value;
-        const selectSetores = document.getElementById('select-setor');
-        selectSetores.innerHTML = '<option value="">Selecione o setor...</option>';
-
-        if (projIdx !== "") {
-            projetosBD[projIdx].setores.forEach(setor => {
-                selectSetores.innerHTML += `<option value="${setor}">${setor}</option>`;
-            });
-        }
-    }
-
-    // Cadastrar Novo Projeto e seus Setores
-    function cadastrarProjetoSetor(e) {
+    // Função que formata as informações e faz o download do arquivo .TXT
+    function gerarETbaixarTXT(e) {
         e.preventDefault();
-        const nomeProj = document.getElementById('novo-projeto').value.trim();
-        const setoresStr = document.getElementById('novos-setores').value;
-        const listaSetores = setoresStr.split(',').map(s => s.trim()).filter(s => s !== "");
 
-        projetosBD.push({ projeto: nomeProj, setores: listaSetores });
-        localStorage.setItem('projetos_db', JSON.stringify(projetosBD));
-
-        alert("Projeto cadastrado com sucesso!");
-        document.getElementById('novo-projeto').value = '';
-        document.getElementById('novos-setores').value = '';
-        renderizarListaProjetos();
-    }
-
-    // Excluir Projeto Cadastrado
-    function excluirProjeto(index) {
-        if(confirm("Deseja realmente remover este projeto?")) {
-            projetosBD.splice(index, 1);
-            localStorage.setItem('projetos_db', JSON.stringify(projetosBD));
-            renderizarListaProjetos();
-        }
-    }
-
-    // Renderizar Projetos Cadastrados
-    function renderizarListaProjetos() {
-        const container = document.getElementById('lista-projetos');
-        container.innerHTML = '';
-        projetosBD.forEach((item, index) => {
-            container.innerHTML += `
-                <div style="background:#f8f9fa; padding:10px; border-radius:5px; margin-bottom:8px; border-left:4px solid var(--primary); display:flex; justify-between; align-items:center;">
-                    <div>
-                        <strong>${item.projeto}</strong><br>
-                        <small><b>Setores:</b> ${item.setores.join(', ')}</small>
-                    </div>
-                    <div>
-                        <button class="btn btn-danger" onclick="excluirProjeto(${index})">🗑️ Excluir</button>
-                    </div>
-                </div>`;
-        });
-    }
-
-    // Salvar o Reporte e Disparar E-mail
-    function salvarEReportar(e) {
-        e.preventDefault();
-        const projIdx = document.getElementById('select-projeto').value;
-        const projetoNome = projetosBD[projIdx].projeto;
-        const setor = document.getElementById('select-setor').value;
-        const responsavel = document.getElementById('responsavel').value;
-        const emailDestino = document.getElementById('email-destino').value;
-        const observacoes = document.getElementById('observacoes').value;
-        const dataHora = new Date().toLocaleString('pt-BR');
-
-        const novoReporte = {
-            dataHora,
-            jornada: tipoJornadaAtual,
-            projeto: projetoNome,
-            setor,
-            responsavel,
-            observacoes
-        };
-
-        // Salva Localmente
-        reportesBD.unshift(novoReporte);
-        localStorage.setItem('reportes_db', JSON.stringify(reportesBD));
-
-        // Tenta enviar via EmailJS (se estiver configurado)
-        const templateParams = {
-            to_email: emailDestino,
-            jornada: tipoJornadaAtual,
-            projeto: projetoNome,
-            setor: setor,
-            responsavel: responsavel,
-            dataHora: dataHora,
-            observacoes: observacoes || 'Nenhuma'
-        };
-
-        /* 
-           Descomente as linhas abaixo se tiver configurado suas chaves do EmailJS:
+        const obra = document.getElementById('obra').value;
+        const os = document.getElementById('os').value;
+        const dataInput = document.getElementById('data').value;
         
-        emailjs.send('SEU_SERVICE_ID', 'SEU_TEMPLATE_ID', templateParams)
-            .then(() => console.log("E-mail disparado!"))
-            .catch((err) => console.log("Erro e-mail:", err));
-        */
+        // Formatando a data para DD/MM/AAAA
+        const partesData = dataInput.split('-');
+        const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
 
-        alert(`✅ Reporte de ${tipoJornadaAtual} salvo com sucesso!`);
-        document.getElementById('reporteForm').reset();
-    }
+        let txt = `RELATÓRIO DIÁRIO DE ATIVIDADES\n`;
+        txt += `Obra: ${obra}\n`;
+        txt += `Ordem de Serviço: ${os}\n`;
+        txt += `Data: ${dataFormatada}\n`;
+        txt += `==================================================\n\n`;
 
-    // Renderizar Histórico de Reportes
-    function renderizarHistorico() {
-        const tbody = document.getElementById('corpo-tabela');
-        tbody.innerHTML = '';
+        const caixasEmpreiteiras = document.querySelectorAll('.empreiteira-box');
 
-        if (reportesBD.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Nenhum reporte salvo no histórico.</td></tr>';
-            return;
-        }
+        caixasEmpreiteiras.forEach((box) => {
+            const nome = box.querySelector('.emp-nome').value;
+            const chegada = box.querySelector('.emp-chegada').value || 'Não informado';
+            const inicio = box.querySelector('.emp-inicio').value || 'Não informado';
+            const equipe = box.querySelector('.emp-equipe').value;
+            const atividades = box.querySelector('.emp-atividades').value;
 
-        reportesBD.forEach(r => {
-            tbody.innerHTML += `
-                <tr>
-                    <td>${r.dataHora}</td>
-                    <td><b>${r.jornada}</b></td>
-                    <td>${r.projeto}</td>
-                    <td>${r.setor}</td>
-                    <td>${r.responsavel}</td>
-                    <td>${r.observacoes || '-'}</td>
-                </tr>`;
-        });
-    }
+            txt += `${nome}\n`;
+            txt += `Horários:\n`;
+            txt += `• Chegada: ${chegada}\n`;
+            txt += `• Início das atividades: ${inicio}\n\n`;
 
-    // EXPORTAR RELATÓRIO PARA EXCEL (.CSV)
-    function exportarExcel() {
-        if (reportesBD.length === 0) {
-            alert("Nenhum dado para exportar.");
-            return;
-        }
-
-        let csvContent = "data:text/csv;charset=utf-8,\uFEFF"; 
-        csvContent += "Data/Hora;Tipo de Jornada;Projeto;Setor;Responsavel;Observacoes\n";
-
-        reportesBD.forEach(r => {
-            let obsLimpa = (r.observacoes || '').replace(/\n/g, ' ');
-            csvContent += `"${r.dataHora}";"${r.jornada}";"${r.projeto}";"${r.setor}";"${r.responsavel}";"${obsLimpa}"\n`;
+            txt += `Equipe Mobilizada:\n${equipe ? equipe : 'Não informada'}\n\n`;
+            txt += `Programação das Atividades:\n${atividades ? atividades : 'Não informada'}\n`;
+            txt += `--------------------------------------------------\n\n`;
         });
 
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `Relatorio_Reportes_${new Date().toISOString().slice(0,10)}.csv`);
-        document.body.appendChild(link);
+        // Criar o arquivo TXT e forçar o download no navegador
+        const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `RDO_${obra.replace(/\s+/g, '_')}_${dataInput}.txt`;
         link.click();
-        document.body.removeChild(link);
     }
-
-    // EXPORTAR RELATÓRIO PARA PDF
-    function exportarPDF() {
-        if (reportesBD.length === 0) {
-            alert("Nenhum dado para exportar em PDF.");
-            return;
-        }
-        window.print();
-    }
-
-    // Inicialização ao carregar a página
-    renderizarSelectProjetos();
 </script>
 
 </body>
