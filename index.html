@@ -4,389 +4,223 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Diário de Atividades (RDO)</title>
-    <!-- Fonte Google Inter -->
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Biblioteca HTML2PDF -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- html2pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
     <style>
-        :root {
-            --primary: #0f172a;
-            --primary-accent: #2563eb;
-            --primary-hover: #1d4ed8;
-            --success: #059669;
-            --success-hover: #047857;
-            --pdf-color: #dc2626;
-            --pdf-hover: #b91c1c;
-            --danger: #ef4444;
-            --bg: #f8fafc;
-            --card-bg: #ffffff;
-            --border: #e2e8f0;
-            --text-main: #1e293b;
-            --text-muted: #64748b;
-            --radius: 12px;
-        }
-
-        * {
-            box-sizing: border-box;
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        }
-
         body {
-            background-color: var(--bg);
-            margin: 0;
-            padding: 24px 16px;
-            color: var(--text-main);
-            -webkit-font-smoothing: antialiased;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #0f172a;
+            color: #f8fafc;
         }
-
-        .container {
-            max-width: 760px;
-            margin: 0 auto;
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
         }
-
-        /* Header Principal */
-        .app-header {
-            text-align: center;
-            margin-bottom: 28px;
+        .glass-input {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #f8fafc;
+            transition: all 0.2s ease;
         }
-
-        .app-header h2 {
-            font-size: 1.65rem;
-            font-weight: 700;
-            color: var(--primary);
-            margin: 0 0 6px 0;
-            letter-spacing: -0.02em;
-        }
-
-        .app-header .subtitle {
-            font-size: 0.9rem;
-            color: var(--text-muted);
-            margin: 0;
-        }
-
-        /* Cards do Formulário */
-        .card {
-            background: var(--card-bg);
-            padding: 24px;
-            border-radius: var(--radius);
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
-            border: 1px solid var(--border);
-            margin-bottom: 20px;
-        }
-
-        .card-header {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 20px;
-            padding-bottom: 12px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .card-header h3 {
-            font-size: 1.1rem;
-            font-weight: 600;
-            color: var(--primary);
-            margin: 0;
-        }
-
-        /* Grid de Formulários */
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 16px;
-        }
-
-        .grid-3 {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-        }
-
-        @media (max-width: 600px) {
-            .grid-2, .grid-3 {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .form-group {
-            margin-bottom: 16px;
-        }
-
-        .form-group.no-margin {
-            margin-bottom: 0;
-        }
-
-        label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-main);
-            margin-bottom: 6px;
-        }
-
-        input[type="text"], 
-        input[type="date"], 
-        input[type="time"], 
-        select, 
-        textarea {
-            width: 100%;
-            padding: 10px 14px;
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            font-size: 0.92rem;
-            color: var(--text-main);
-            background-color: #fff;
-            transition: border-color 0.15s ease, box-shadow 0.15s ease;
-        }
-
-        input:focus, select:focus, textarea:focus {
+        .glass-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
             outline: none;
-            border-color: var(--primary-accent);
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
-
-        textarea {
-            resize: vertical;
-            min-height: 75px;
-            line-height: 1.4;
-        }
-
-        /* Seção de Empreiteira */
-        .empreiteira-box {
-            background-color: #f8fafc;
-            border: 1px solid #cbd5e1;
-            border-radius: 10px;
-            padding: 18px;
-            margin-bottom: 16px;
-            position: relative;
-        }
-
-        .empreiteira-box-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 14px;
-        }
-
-        .empreiteira-box-header h4 {
-            margin: 0;
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--primary-accent);
-        }
-
-        /* Botões */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            width: 100%;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.15s ease, transform 0.1s ease;
-        }
-
-        .btn:active {
-            transform: scale(0.99);
-        }
-
-        .btn-add {
-            background-color: #eff6ff;
-            color: var(--primary-accent);
-            border: 1px dashed var(--primary-accent);
-            margin-top: 8px;
-        }
-
-        .btn-add:hover {
-            background-color: #dbeafe;
-        }
-
-        .btn-group {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin-top: 10px;
-        }
-
-        @media (max-width: 500px) {
-            .btn-group {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        .btn-success { background: var(--success); color: white; }
-        .btn-success:hover { background: var(--success-hover); }
-
-        .btn-pdf { background: var(--pdf-color); color: white; }
-        .btn-pdf:hover { background: var(--pdf-hover); }
-
-        .btn-remove {
-            background: #fee2e2;
-            color: var(--danger);
-            font-size: 0.8rem;
-            padding: 6px 12px;
-            border-radius: 6px;
-            width: auto;
-        }
-        .btn-remove:hover { background: #fca5a5; }
-
-        /* Template do PDF */
         #pdf-template {
             display: none;
-            padding: 24px;
-            font-family: 'Inter', sans-serif;
+            background: #ffffff;
             color: #0f172a;
-        }
-
-        #pdf-template .pdf-header {
-            border-bottom: 3px solid #2563eb;
-            padding-bottom: 12px;
-            margin-bottom: 16px;
-        }
-
-        #pdf-template h1 {
-            font-size: 18pt;
-            margin: 0 0 6px 0;
-            color: #0f172a;
-        }
-
-        #pdf-template .meta-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            background: #f1f5f9;
-            padding: 12px;
-            border-radius: 6px;
-            font-size: 10pt;
-            margin-bottom: 20px;
-        }
-
-        #pdf-template .emp-card-pdf {
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            padding: 12px;
-            margin-bottom: 12px;
-            background-color: #ffffff;
-        }
-
-        #pdf-template .emp-card-pdf h4 {
-            margin: 0 0 6px 0;
-            color: #2563eb;
-            font-size: 11pt;
-            border-bottom: 1px solid #f1f5f9;
-            padding-bottom: 4px;
-        }
-
-        #pdf-template .content-box {
-            white-space: pre-wrap;
-            font-size: 9.5pt;
-            background: #f8fafc;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #cbd5e1;
-            margin-top: 4px;
+            font-family: 'Plus Jakarta Sans', sans-serif;
         }
     </style>
 </head>
-<body>
+<body class="min-h-screen pb-16 pt-8 px-4 sm:px-6 lg:px-8">
 
-<div class="container">
-    <div class="app-header">
-        <h2>📋 REPORT DIÁRIO DE ATIVIDADES</h2>
-        <p class="subtitle">Gerador de RDO e Exportador de Relatórios</p>
+    <div class="max-w-4xl mx-auto space-y-8">
+        
+        <!-- HEADER -->
+        <header class="text-center space-y-3">
+            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold tracking-wide uppercase">
+                <i class="fa-solid fa-hard-hat text-blue-400"></i> Sistema de Gestão de Obra
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+                Report Diário de Atividades
+            </h1>
+            <p class="text-slate-400 text-sm sm:text-base max-w-lg mx-auto">
+                Registre os avanços diários, condições climáticas e equipes mobilizadas com geração rápida em PDF e TXT.
+            </p>
+        </header>
+
+        <!-- FORM -->
+        <form id="rdoForm" class="space-y-6">
+            
+            <!-- DADOS GERAIS -->
+            <div class="glass-card rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
+                <div class="flex items-center gap-3 border-b border-slate-700/60 pb-4">
+                    <div class="w-10 h-10 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-lg">
+                        <i class="fa-solid fa-building"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-lg font-bold text-white">Informações da Obra</h2>
+                        <p class="text-xs text-slate-400">Identificação do projeto e data de execução</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                    <div class="space-y-2">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                            Obra <span class="text-rose-400">*</span>
+                        </label>
+                        <input type="text" id="obra" placeholder="Ex: Marca Ambiental - Galpão 03" required
+                            class="glass-input w-full px-4 py-3 rounded-xl text-sm placeholder-slate-500">
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                            OS / N° do Projeto <span class="text-rose-400">*</span>
+                        </label>
+                        <input type="text" id="os" placeholder="Ex: OS-4024958" required
+                            class="glass-input w-full px-4 py-3 rounded-xl text-sm placeholder-slate-500">
+                    </div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
+                        Data do Report <span class="text-rose-400">*</span>
+                    </label>
+                    <input type="date" id="data" required
+                        class="glass-input w-full px-4 py-3 rounded-xl text-sm text-slate-200">
+                </div>
+
+                <!-- CLIMA -->
+                <div class="pt-2">
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-3">
+                        <i class="fa-solid fa-cloud-sun text-amber-400 mr-1"></i> Condições Climáticas
+                    </label>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                        <div class="space-y-1.5">
+                            <span class="text-xs font-medium text-slate-400">Manhã</span>
+                            <select id="clima-manha" class="glass-input w-full px-3 py-2.5 rounded-xl text-sm">
+                                <option value="Bom / Claro">☀️ Bom / Claro</option>
+                                <option value="Nublado">☁️ Nublado</option>
+                                <option value="Chuva Leve">🌦️ Chuva Leve</option>
+                                <option value="Chuva Forte">🌧️ Chuva Forte / Impraticável</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1.5">
+                            <span class="text-xs font-medium text-slate-400">Tarde</span>
+                            <select id="clima-tarde" class="glass-input w-full px-3 py-2.5 rounded-xl text-sm">
+                                <option value="Bom / Claro">☀️ Bom / Claro</option>
+                                <option value="Nublado">☁️ Nublado</option>
+                                <option value="Chuva Leve">🌦️ Chuva Leve</option>
+                                <option value="Chuva Forte">🌧️ Chuva Forte / Impraticável</option>
+                            </select>
+                        </div>
+                        <div class="space-y-1.5">
+                            <span class="text-xs font-medium text-slate-400">Noite</span>
+                            <select id="clima-noite" class="glass-input w-full px-3 py-2.5 rounded-xl text-sm">
+                                <option value="Bom / Claro">🌙 Bom / Claro</option>
+                                <option value="Nublado">☁️ Nublado</option>
+                                <option value="Chuva Leve">🌦️ Chuva Leve</option>
+                                <option value="Chuva Forte">🌧️ Chuva Forte / Impraticável</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- EMPREITEIRAS -->
+            <div class="glass-card rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
+                <div class="flex items-center justify-between border-b border-slate-700/60 pb-4">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center font-bold text-lg">
+                            <i class="fa-solid fa-users-gear"></i>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-white">Empreiteiras e Equipes</h2>
+                            <p class="text-xs text-slate-400">Efetivo mobilizado e atividades do dia</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="container-empreiteiras" class="space-y-6"></div>
+
+                <button type="button" onclick="adicionarEmpreiteira()"
+                    class="w-full py-3.5 px-4 rounded-xl border-2 border-dashed border-slate-600 hover:border-blue-500 hover:bg-blue-500/10 text-slate-300 hover:text-blue-400 text-sm font-semibold transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-circle-plus text-base"></i> Adicionar Outra Empreiteira
+                </button>
+            </div>
+
+            <!-- BOTÕES DE AÇÃO -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <button type="button" onclick="gerarETbaixarTXT()"
+                    class="w-full py-4 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-900/30 transition duration-200 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-file-lines text-lg"></i> Baixar Report em TXT
+                </button>
+                <button type="button" onclick="gerarETbaixarPDF()"
+                    class="w-full py-4 px-6 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm shadow-lg shadow-rose-900/30 transition duration-200 flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-file-pdf text-lg"></i> Baixar Report em PDF
+                </button>
+            </div>
+
+        </form>
     </div>
 
-    <form id="rdoForm">
-        <!-- DADOS DA OBRA -->
-        <div class="card">
-            <div class="card-header">
-                <h3>📍 Dados Gerais da Obra</h3>
+    <!-- TEMPLATE OCULTO PARA IMPRESSÃO DO PDF -->
+    <div id="pdf-template" class="p-8 space-y-6">
+        <div class="border-b-4 border-blue-600 pb-4 flex justify-between items-end">
+            <div>
+                <h1 class="text-2xl font-black text-slate-900 uppercase tracking-tight">Report Diário de Atividades</h1>
+                <p class="text-xs text-slate-500 font-semibold mt-1">RELATÓRIO DIÁRIO DE OBRA (RDO)</p>
             </div>
-            
-            <div class="grid-2">
-                <div class="form-group">
-                    <label>Obra *</label>
-                    <input type="text" id="obra" placeholder="Ex: Marca Ambiental" required>
-                </div>
-                <div class="form-group">
-                    <label>OS / N° do Projeto *</label>
-                    <input type="text" id="os" placeholder="Ex: 4024958" required>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>Data *</label>
-                <input type="date" id="data" required>
-            </div>
-
-            <!-- CLIMA -->
-            <label style="margin-top: 18px;">☀️ Condições Climáticas</label>
-            <div class="grid-3">
-                <div class="form-group no-margin">
-                    <label style="font-weight: 400; font-size: 0.8rem;">Manhã</label>
-                    <select id="clima-manha">
-                        <option value="Bom / Claro">Bom / Claro</option>
-                        <option value="Nublado">Nublado</option>
-                        <option value="Chuva Leve">Chuva Leve</option>
-                        <option value="Chuva Forte">Chuva Forte / Impraticável</option>
-                    </select>
-                </div>
-                <div class="form-group no-margin">
-                    <label style="font-weight: 400; font-size: 0.8rem;">Tarde</label>
-                    <select id="clima-tarde">
-                        <option value="Bom / Claro">Bom / Claro</option>
-                        <option value="Nublado">Nublado</option>
-                        <option value="Chuva Leve">Chuva Leve</option>
-                        <option value="Chuva Forte">Chuva Forte / Impraticável</option>
-                    </select>
-                </div>
-                <div class="form-group no-margin">
-                    <label style="font-weight: 400; font-size: 0.8rem;">Noite</label>
-                    <select id="clima-noite">
-                        <option value="Bom / Claro">Bom / Claro</option>
-                        <option value="Nublado">Nublado</option>
-                        <option value="Chuva Leve">Chuva Leve</option>
-                        <option value="Chuva Forte">Chuva Forte / Impraticável</option>
-                    </select>
-                </div>
+            <div class="text-right">
+                <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded font-bold text-xs uppercase" id="pdf-data-tag"></span>
             </div>
         </div>
 
-        <!-- EMPREITEIRAS -->
-        <div class="card">
-            <div class="card-header">
-                <h3>🏗️ Empreiteiras Envolvidas</h3>
+        <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs">
+            <div>
+                <p class="text-slate-500 uppercase font-semibold text-[10px]">Obra / Local</p>
+                <p class="font-bold text-slate-800 text-sm" id="pdf-obra"></p>
             </div>
-            
-            <div id="container-empreiteiras"></div>
-
-            <button type="button" class="btn btn-add" onclick="adicionarEmpreiteira()">
-                <span>＋</span> Incluir Outra Empreiteira
-            </button>
+            <div>
+                <p class="text-slate-500 uppercase font-semibold text-[10px]">OS / N° do Projeto</p>
+                <p class="font-bold text-slate-800 text-sm" id="pdf-os"></p>
+            </div>
+            <div class="col-span-2 border-t border-slate-200 pt-2 mt-1">
+                <p class="text-slate-500 uppercase font-semibold text-[10px]">Condições Climáticas</p>
+                <p class="font-semibold text-slate-700" id="pdf-clima"></p>
+            </div>
         </div>
 
-        <!-- BOTÕES DE EXPORTAÇÃO -->
-        <div class="btn-group">
-            <button type="button" class="btn btn-success" onclick="gerarETbaixarTXT()">
-                📄 Baixar Report em Texto (.TXT)
-            </button>
-            <button type="button" class="btn btn-pdf" onclick="gerarETbaixarPDF()">
-                📕 Baixar Report em PDF (.PDF)
-            </button>
+        <div>
+            <h3 class="text-sm font-bold text-slate-900 uppercase border-b border-slate-200 pb-2 mb-3">Empreiteiras e Atividades</h3>
+            <div id="pdf-empreiteiras-list" class="space-y-4"></div>
         </div>
-    </form>
-</div>
-
-<!-- TEMPLATE OCULTO PARA GERAR O PDF -->
-<div id="pdf-template"></div>
+    </div>
 
 <script>
     let contadorEmpreiteiras = 0;
@@ -404,41 +238,47 @@
         let optionsEmpresas = listaEmpresas.map(emp => `<option value="${emp}">${emp}</option>`).join('');
 
         const div = document.createElement('div');
-        div.className = 'empreiteira-box';
+        div.className = 'p-5 rounded-xl bg-slate-800/80 border border-slate-700/80 space-y-4 relative transition duration-200 hover:border-slate-600';
         div.id = `emp-box-${contadorEmpreiteiras}`;
         div.innerHTML = `
-            <div class="empreiteira-box-header">
-                <h4>Empreiteira #${contadorEmpreiteiras}</h4>
-                ${contadorEmpreiteiras > 1 ? `<button type="button" class="btn btn-remove" onclick="removerEmpreiteira(${contadorEmpreiteiras})">✕ Remover</button>` : ''}
+            <div class="flex justify-between items-center pb-2 border-b border-slate-700/60">
+                <span class="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">
+                    <i class="fa-solid fa-helmet-safety"></i> Empreiteira #${contadorEmpreiteiras}
+                </span>
+                ${contadorEmpreiteiras > 1 ? `
+                    <button type="button" onclick="removerEmpreiteira(${contadorEmpreiteiras})" class="text-xs px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-semibold transition flex items-center gap-1">
+                        <i class="fa-solid fa-trash-can"></i> Remover
+                    </button>
+                ` : ''}
             </div>
-            
-            <div class="form-group">
-                <label>Empresa *</label>
-                <select class="emp-nome" required>
-                    <option value="">Selecione a empresa...</option>
+
+            <div class="space-y-2">
+                <label class="block text-xs font-semibold text-slate-300">Empresas Cadastradas <span class="text-rose-400">*</span></label>
+                <select class="emp-nome glass-input w-full px-4 py-2.5 rounded-xl text-sm" required>
+                    <option value="">Selecione uma empreiteira...</option>
                     ${optionsEmpresas}
                 </select>
             </div>
 
-            <div class="grid-2">
-                <div class="form-group">
-                    <label>Horário Chegada</label>
-                    <input type="time" class="emp-chegada">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-semibold text-slate-300">Horário Chegada</label>
+                    <input type="time" class="emp-chegada glass-input w-full px-3 py-2 rounded-xl text-sm">
                 </div>
-                <div class="form-group">
-                    <label>Início das Atividades</label>
-                    <input type="time" class="emp-inicio">
+                <div class="space-y-1.5">
+                    <label class="block text-xs font-semibold text-slate-300">Início das Atividades</label>
+                    <input type="time" class="emp-inicio glass-input w-full px-3 py-2 rounded-xl text-sm">
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>Equipe Mobilizada (Supervisores, Oficiais, Ajudantes)</label>
-                <textarea class="emp-equipe" placeholder="Ex:&#10;• Supervisor: Erivelton Cão&#10;• Oficiais Líderes: Jair, Júlio&#10;• Ajudantes: Davi, Alexsander"></textarea>
+            <div class="space-y-1.5">
+                <label class="block text-xs font-semibold text-slate-300">Equipe Mobilizada (Supervisores, Oficiais, Ajudantes)</label>
+                <textarea class="emp-equipe glass-input w-full px-4 py-2.5 rounded-xl text-sm leading-relaxed" rows="2" placeholder="Ex:&#10;• Supervisor: Erivelton Cão&#10;• Oficiais Líderes: Jair, Júlio&#10;• Ajudantes: Davi, Alexsander"></textarea>
             </div>
 
-            <div class="form-group no-margin">
-                <label>Programação das Atividades</label>
-                <textarea class="emp-atividades" placeholder="Ex: Iniciar instalação dos pavês e rejunte da base."></textarea>
+            <div class="space-y-1.5">
+                <label class="block text-xs font-semibold text-slate-300">Programação das Atividades</label>
+                <textarea class="emp-atividades glass-input w-full px-4 py-2.5 rounded-xl text-sm leading-relaxed" rows="2" placeholder="Ex: Iniciar instalação dos pavês e rejunte da base."></textarea>
             </div>
         `;
 
@@ -459,7 +299,6 @@
         return true;
     }
 
-    // EXPORTAÇÃO TXT
     function gerarETbaixarTXT() {
         if (!validarFormulario()) return;
 
@@ -474,27 +313,26 @@
         const partesData = dataInput.split('-');
         const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
 
-        let txt = `REPORT DIÁRIO DE ATIVIDADES\n`;
+        let txt = `==================================================\n`;
+        txt += `           REPORT DIÁRIO DE ATIVIDADES (RDO)\n`;
+        txt += `==================================================\n\n`;
         txt += `Obra: ${obra}\n`;
         txt += `OS/N° do projeto: ${os}\n`;
         txt += `Data: ${dataFormatada}\n`;
         txt += `Condições Climáticas: Manhã: ${climaManha} | Tarde: ${climaTarde} | Noite: ${climaNoite}\n`;
-        txt += `==================================================\n\n`;
+        txt += `--------------------------------------------------\n\n`;
 
-        const caixasEmpreiteiras = document.querySelectorAll('.empreiteira-box');
+        const caixasEmpreiteiras = document.querySelectorAll('#container-empreiteiras > div');
 
-        caixasEmpreiteiras.forEach((box) => {
+        caixasEmpreiteiras.forEach((box, idx) => {
             const nome = box.querySelector('.emp-nome').value;
             const chegada = box.querySelector('.emp-chegada').value || 'Não informado';
             const inicio = box.querySelector('.emp-inicio').value || 'Não informado';
             const equipe = box.querySelector('.emp-equipe').value;
             const atividades = box.querySelector('.emp-atividades').value;
 
-            txt += `${nome}\n`;
-            txt += `Horários:\n`;
-            txt += `• Chegada: ${chegada}\n`;
-            txt += `• Início das atividades: ${inicio}\n\n`;
-
+            txt += `[EMPREITEIRA #${idx + 1}: ${nome}]\n`;
+            txt += `• Chegada: ${chegada} | Início Atividades: ${inicio}\n\n`;
             txt += `Equipe Mobilizada:\n${equipe ? equipe : 'Não informada'}\n\n`;
             txt += `Programação das Atividades:\n${atividades ? atividades : 'Não informada'}\n`;
             txt += `--------------------------------------------------\n\n`;
@@ -507,7 +345,6 @@
         link.click();
     }
 
-    // EXPORTAÇÃO PDF
     function gerarETbaixarPDF() {
         if (!validarFormulario()) return;
 
@@ -522,22 +359,15 @@
         const partesData = dataInput.split('-');
         const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
 
-        const pdfArea = document.getElementById('pdf-template');
-        
-        let htmlContent = `
-            <div class="pdf-header">
-                <h1>REPORT DIÁRIO DE ATIVIDADES (RDO)</h1>
-            </div>
-            <div class="meta-grid">
-                <div><strong>Obra:</strong> ${obra}</div>
-                <div><strong>OS/N° do projeto:</strong> ${os}</div>
-                <div><strong>Data:</strong> ${dataFormatada}</div>
-                <div><strong>Clima:</strong> M: ${climaManha} | T: ${climaTarde} | N: ${climaNoite}</div>
-            </div>
-            <h3 style="font-size: 12pt; margin-bottom: 10px; color: #0f172a;">Empreiteiras Envolvidas</h3>
-        `;
+        document.getElementById('pdf-obra').innerText = obra;
+        document.getElementById('pdf-os').innerText = os;
+        document.getElementById('pdf-data-tag').innerText = dataFormatada;
+        document.getElementById('pdf-clima').innerText = `Manhã: ${climaManha} | Tarde: ${climaTarde} | Noite: ${climaNoite}`;
 
-        const caixasEmpreiteiras = document.querySelectorAll('.empreiteira-box');
+        const listContainer = document.getElementById('pdf-empreiteiras-list');
+        listContainer.innerHTML = '';
+
+        const caixasEmpreiteiras = document.querySelectorAll('#container-empreiteiras > div');
 
         caixasEmpreiteiras.forEach((box) => {
             const nome = box.querySelector('.emp-nome').value;
@@ -546,31 +376,39 @@
             const equipe = box.querySelector('.emp-equipe').value;
             const atividades = box.querySelector('.emp-atividades').value;
 
-            htmlContent += `
-                <div class="emp-card-pdf">
-                    <h4>${nome}</h4>
-                    <div style="font-size: 9.5pt; margin-bottom: 6px;"><strong>Horários:</strong> Chegada: ${chegada} | Início: ${inicio}</div>
-                    
-                    <div style="font-size: 9pt; font-weight: 600; margin-top: 6px;">Equipe Mobilizada:</div>
-                    <div class="content-box">${equipe ? equipe : 'Não informada'}</div>
-                    
-                    <div style="font-size: 9pt; font-weight: 600; margin-top: 6px;">Programação das Atividades:</div>
-                    <div class="content-box">${atividades ? atividades : 'Não informada'}</div>
+            const card = document.createElement('div');
+            card.className = "border border-slate-300 rounded-lg p-4 bg-white space-y-2 text-xs";
+            card.innerHTML = `
+                <div class="flex justify-between items-center border-b border-slate-200 pb-2">
+                    <span class="font-bold text-sm text-blue-700 uppercase">${nome}</span>
+                    <span class="text-slate-500 font-medium">Chegada: <strong>${chegada}</strong> | Início: <strong>${inicio}</strong></span>
+                </div>
+                <div>
+                    <span class="font-bold text-slate-700 block mb-1">Equipe Mobilizada:</span>
+                    <div class="bg-slate-50 p-2.5 rounded border border-slate-200 whitespace-pre-wrap font-mono text-[11px]">${equipe || 'Não informada'}</div>
+                </div>
+                <div>
+                    <span class="font-bold text-slate-700 block mb-1">Programação das Atividades:</span>
+                    <div class="bg-slate-50 p-2.5 rounded border border-slate-200 whitespace-pre-wrap font-mono text-[11px]">${atividades || 'Não informada'}</div>
                 </div>
             `;
+            listContainer.appendChild(card);
         });
 
-        pdfArea.innerHTML = htmlContent;
+        const pdfElement = document.getElementById('pdf-template');
+        pdfElement.style.display = 'block';
 
         const opt = {
-            margin:       12,
+            margin:       10,
             filename:     `Report_${obra.replace(/\s+/g, '_')}_${dataInput}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { scale: 2 },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
 
-        html2pdf().set(opt).from(pdfArea).save();
+        html2pdf().set(opt).from(pdfElement).save().then(() => {
+            pdfElement.style.display = 'none';
+        });
     }
 </script>
 
