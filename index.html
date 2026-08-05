@@ -3,149 +3,335 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reporte Diário de Atividades (RDO)</title>
-    <!-- Biblioteca externa para conversão HTML -> PDF -->
+    <title>Report Diário de Atividades (RDO)</title>
+    <!-- Fonte Google Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Biblioteca HTML2PDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
-            --primary: #0056b3;
-            --success: #28a745;
-            --pdf-color: #dc3545;
-            --danger: #dc3545;
-            --bg: #f4f6f9;
+            --primary: #0f172a;
+            --primary-accent: #2563eb;
+            --primary-hover: #1d4ed8;
+            --success: #059669;
+            --success-hover: #047857;
+            --pdf-color: #dc2626;
+            --pdf-hover: #b91c1c;
+            --danger: #ef4444;
+            --bg: #f8fafc;
             --card-bg: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --radius: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
         }
 
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: var(--bg);
             margin: 0;
-            padding: 15px;
-            color: #333;
+            padding: 24px 16px;
+            color: var(--text-main);
+            -webkit-font-smoothing: antialiased;
         }
 
         .container {
-            max-width: 700px;
+            max-width: 760px;
             margin: 0 auto;
         }
 
-        h2 {
+        /* Header Principal */
+        .app-header {
             text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .app-header h2 {
+            font-size: 1.65rem;
+            font-weight: 700;
             color: var(--primary);
-            margin-bottom: 5px;
+            margin: 0 0 6px 0;
+            letter-spacing: -0.02em;
         }
 
-        .subtitle {
-            text-align: center;
-            font-size: 0.9em;
-            color: #666;
-            margin-bottom: 20px;
+        .app-header .subtitle {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            margin: 0;
         }
 
+        /* Cards do Formulário */
         .card {
             background: var(--card-bg);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            padding: 24px;
+            border-radius: var(--radius);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid var(--border);
             margin-bottom: 20px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .card-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--primary);
+            margin: 0;
+        }
+
+        /* Grid de Formulários */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        @media (max-width: 600px) {
+            .grid-2, .grid-3 {
+                grid-template-columns: 1fr;
+            }
         }
 
         .form-group {
-            margin-bottom: 15px;
+            margin-bottom: 16px;
+        }
+
+        .form-group.no-margin {
+            margin-bottom: 0;
         }
 
         label {
             display: block;
-            font-weight: bold;
-            margin-bottom: 5px;
-            font-size: 0.9em;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin-bottom: 6px;
         }
 
-        input, select, textarea {
+        input[type="text"], 
+        input[type="date"], 
+        input[type="time"], 
+        select, 
+        textarea {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            box-sizing: border-box;
-            font-size: 0.95em;
+            padding: 10px 14px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 0.92rem;
+            color: var(--text-main);
+            background-color: #fff;
+            transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
         }
 
         textarea {
             resize: vertical;
-            height: 70px;
+            min-height: 75px;
+            line-height: 1.4;
         }
 
+        /* Seção de Empreiteira */
         .empreiteira-box {
-            border: 2px dashed #0056b3;
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 15px;
-            background: #f8f9fa;
+            background-color: #f8fafc;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            padding: 18px;
+            margin-bottom: 16px;
             position: relative;
         }
 
+        .empreiteira-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .empreiteira-box-header h4 {
+            margin: 0;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--primary-accent);
+        }
+
+        /* Botões */
         .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
             width: 100%;
-            padding: 12px;
+            padding: 12px 20px;
             border: none;
-            border-radius: 6px;
-            font-size: 1em;
-            font-weight: bold;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
             cursor: pointer;
-            margin-bottom: 10px;
+            transition: background-color 0.15s ease, transform 0.1s ease;
+        }
+
+        .btn:active {
+            transform: scale(0.99);
+        }
+
+        .btn-add {
+            background-color: #eff6ff;
+            color: var(--primary-accent);
+            border: 1px dashed var(--primary-accent);
+            margin-top: 8px;
+        }
+
+        .btn-add:hover {
+            background-color: #dbeafe;
         }
 
         .btn-group {
-            display: flex;
-            gap: 10px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 500px) {
+            .btn-group {
+                grid-template-columns: 1fr;
+            }
         }
 
         .btn-success { background: var(--success); color: white; }
-        .btn-pdf { background: var(--pdf-color); color: white; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-danger { background: var(--danger); color: white; font-size: 0.8em; width: auto; padding: 5px 10px; float: right; }
+        .btn-success:hover { background: var(--success-hover); }
 
-        /* Estilo para modelo de impressão PDF */
+        .btn-pdf { background: var(--pdf-color); color: white; }
+        .btn-pdf:hover { background: var(--pdf-hover); }
+
+        .btn-remove {
+            background: #fee2e2;
+            color: var(--danger);
+            font-size: 0.8rem;
+            padding: 6px 12px;
+            border-radius: 6px;
+            width: auto;
+        }
+        .btn-remove:hover { background: #fca5a5; }
+
+        /* Template do PDF */
         #pdf-template {
             display: none;
-            padding: 20px;
-            font-family: Arial, sans-serif;
-            color: #333;
+            padding: 24px;
+            font-family: 'Inter', sans-serif;
+            color: #0f172a;
         }
-        #pdf-template h1 { color: #0056b3; font-size: 20pt; border-bottom: 2px solid #0056b3; padding-bottom: 5px; }
-        #pdf-template h3 { color: #333; font-size: 14pt; margin-top: 15px; margin-bottom: 5px; border-bottom: 1px solid #ddd; }
-        #pdf-template .meta-info { margin-bottom: 15px; font-size: 11pt; line-height: 1.6; }
-        #pdf-template .emp-card-pdf { background: #f9f9f9; border: 1px solid #ccc; border-radius: 5px; padding: 12px; margin-bottom: 12px; }
+
+        #pdf-template .pdf-header {
+            border-bottom: 3px solid #2563eb;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        #pdf-template h1 {
+            font-size: 18pt;
+            margin: 0 0 6px 0;
+            color: #0f172a;
+        }
+
+        #pdf-template .meta-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            background: #f1f5f9;
+            padding: 12px;
+            border-radius: 6px;
+            font-size: 10pt;
+            margin-bottom: 20px;
+        }
+
+        #pdf-template .emp-card-pdf {
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 12px;
+            background-color: #ffffff;
+        }
+
+        #pdf-template .emp-card-pdf h4 {
+            margin: 0 0 6px 0;
+            color: #2563eb;
+            font-size: 11pt;
+            border-bottom: 1px solid #f1f5f9;
+            padding-bottom: 4px;
+        }
+
+        #pdf-template .content-box {
+            white-space: pre-wrap;
+            font-size: 9.5pt;
+            background: #f8fafc;
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #cbd5e1;
+            margin-top: 4px;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>📋 REPORTE DIÁRIO DE ATIVIDADES</h2>
-    <div class="subtitle">Gerador de RDO e Exportador .TXT / .PDF</div>
+    <div class="app-header">
+        <h2>📋 REPORT DIÁRIO DE ATIVIDADES</h2>
+        <p class="subtitle">Gerador de RDO e Exportador de Relatórios</p>
+    </div>
 
     <form id="rdoForm">
-        <!-- INFORMACÕES DA OBRA -->
+        <!-- DADOS DA OBRA -->
         <div class="card">
-            <h3>📍 Dados Gerais da Obra</h3>
-            <div class="form-group">
-                <label>Obra *</label>
-                <input type="text" id="obra" placeholder="Ex: Marca Ambiental" required>
+            <div class="card-header">
+                <h3>📍 Dados Gerais da Obra</h3>
             </div>
-            <div class="form-group">
-                <label>OS/N° do projeto *</label>
-                <input type="text" id="os" placeholder="Ex: 4024958" required>
+            
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Obra *</label>
+                    <input type="text" id="obra" placeholder="Ex: Marca Ambiental" required>
+                </div>
+                <div class="form-group">
+                    <label>OS / N° do Projeto *</label>
+                    <input type="text" id="os" placeholder="Ex: 4024958" required>
+                </div>
             </div>
+
             <div class="form-group">
                 <label>Data *</label>
                 <input type="date" id="data" required>
             </div>
 
-            <!-- PREVISÃO DO TEMPO / CONDIÇÃO CLIMÁTICA -->
-            <h4 style="margin-top: 15px; margin-bottom: 10px;">☀️ Previsão do Tempo / Condições Climáticas</h4>
-            <div style="display: flex; gap: 10px;">
-                <div class="form-group" style="flex: 1;">
-                    <label>Manhã</label>
+            <!-- CLIMA -->
+            <label style="margin-top: 18px;">☀️ Condições Climáticas</label>
+            <div class="grid-3">
+                <div class="form-group no-margin">
+                    <label style="font-weight: 400; font-size: 0.8rem;">Manhã</label>
                     <select id="clima-manha">
                         <option value="Bom / Claro">Bom / Claro</option>
                         <option value="Nublado">Nublado</option>
@@ -153,8 +339,8 @@
                         <option value="Chuva Forte">Chuva Forte / Impraticável</option>
                     </select>
                 </div>
-                <div class="form-group" style="flex: 1;">
-                    <label>Tarde</label>
+                <div class="form-group no-margin">
+                    <label style="font-weight: 400; font-size: 0.8rem;">Tarde</label>
                     <select id="clima-tarde">
                         <option value="Bom / Claro">Bom / Claro</option>
                         <option value="Nublado">Nublado</option>
@@ -162,8 +348,8 @@
                         <option value="Chuva Forte">Chuva Forte / Impraticável</option>
                     </select>
                 </div>
-                <div class="form-group" style="flex: 1;">
-                    <label>Noite</label>
+                <div class="form-group no-margin">
+                    <label style="font-weight: 400; font-size: 0.8rem;">Noite</label>
                     <select id="clima-noite">
                         <option value="Bom / Claro">Bom / Claro</option>
                         <option value="Nublado">Nublado</option>
@@ -174,18 +360,27 @@
             </div>
         </div>
 
-        <!-- SEÇÃO DINÂMICA DE EMPREITEIRAS -->
+        <!-- EMPREITEIRAS -->
         <div class="card">
-            <h3>🏗️ Empreiteiras Envolvidas</h3>
+            <div class="card-header">
+                <h3>🏗️ Empreiteiras Envolvidas</h3>
+            </div>
+            
             <div id="container-empreiteiras"></div>
 
-            <button type="button" class="btn btn-primary" onclick="adicionarEmpreiteira()">➕ Incluir Outra Empreiteira</button>
+            <button type="button" class="btn btn-add" onclick="adicionarEmpreiteira()">
+                <span>＋</span> Incluir Outra Empreiteira
+            </button>
         </div>
 
-        <!-- BOTOES DE EXPORTAÇÃO -->
+        <!-- BOTÕES DE EXPORTAÇÃO -->
         <div class="btn-group">
-            <button type="button" class="btn btn-success" onclick="gerarETbaixarTXT()">📄 Baixar Reporte em Texto (.TXT)</button>
-            <button type="button" class="btn btn-pdf" onclick="gerarETbaixarPDF()">📕 Baixar Reporte em PDF (.PDF)</button>
+            <button type="button" class="btn btn-success" onclick="gerarETbaixarTXT()">
+                📄 Baixar Report em Texto (.TXT)
+            </button>
+            <button type="button" class="btn btn-pdf" onclick="gerarETbaixarPDF()">
+                📕 Baixar Report em PDF (.PDF)
+            </button>
         </div>
     </form>
 </div>
@@ -212,24 +407,26 @@
         div.className = 'empreiteira-box';
         div.id = `emp-box-${contadorEmpreiteiras}`;
         div.innerHTML = `
-            ${contadorEmpreiteiras > 1 ? `<button type="button" class="btn btn-danger" onclick="removerEmpreiteira(${contadorEmpreiteiras})">❌ Remover</button>` : ''}
-            <h4>Empreiteira #${contadorEmpreiteiras}</h4>
+            <div class="empreiteira-box-header">
+                <h4>Empreiteira #${contadorEmpreiteiras}</h4>
+                ${contadorEmpreiteiras > 1 ? `<button type="button" class="btn btn-remove" onclick="removerEmpreiteira(${contadorEmpreiteiras})">✕ Remover</button>` : ''}
+            </div>
             
             <div class="form-group">
-                <label>Nome da Empreiteira *</label>
+                <label>Empresa *</label>
                 <select class="emp-nome" required>
-                    <option value="">Selecione a empreiteira...</option>
+                    <option value="">Selecione a empresa...</option>
                     ${optionsEmpresas}
                 </select>
             </div>
 
-            <div style="display: flex; gap: 10px;">
-                <div class="form-group" style="flex: 1;">
-                    <label>Chegada</label>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>Horário Chegada</label>
                     <input type="time" class="emp-chegada">
                 </div>
-                <div class="form-group" style="flex: 1;">
-                    <label>Início Atividades</label>
+                <div class="form-group">
+                    <label>Início das Atividades</label>
                     <input type="time" class="emp-inicio">
                 </div>
             </div>
@@ -239,7 +436,7 @@
                 <textarea class="emp-equipe" placeholder="Ex:&#10;• Supervisor: Erivelton Cão&#10;• Oficiais Líderes: Jair, Júlio&#10;• Ajudantes: Davi, Alexsander"></textarea>
             </div>
 
-            <div class="form-group">
+            <div class="form-group no-margin">
                 <label>Programação das Atividades</label>
                 <textarea class="emp-atividades" placeholder="Ex: Iniciar instalação dos pavês e rejunte da base."></textarea>
             </div>
@@ -277,7 +474,7 @@
         const partesData = dataInput.split('-');
         const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
 
-        let txt = `REPORTE DIÁRIO DE ATIVIDADES\n`;
+        let txt = `REPORT DIÁRIO DE ATIVIDADES\n`;
         txt += `Obra: ${obra}\n`;
         txt += `OS/N° do projeto: ${os}\n`;
         txt += `Data: ${dataFormatada}\n`;
@@ -306,7 +503,7 @@
         const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
         const link = document.createElement('a');
         link.href = URL.createObjectURL(blob);
-        link.download = `Reporte_${obra.replace(/\s+/g, '_')}_${dataInput}.txt`;
+        link.download = `Report_${obra.replace(/\s+/g, '_')}_${dataInput}.txt`;
         link.click();
     }
 
@@ -328,14 +525,16 @@
         const pdfArea = document.getElementById('pdf-template');
         
         let htmlContent = `
-            <h1>REPORTE DIÁRIO DE ATIVIDADES (RDO)</h1>
-            <div class="meta-info">
-                <strong>Obra:</strong> ${obra}<br>
-                <strong>OS/N° do projeto:</strong> ${os}<br>
-                <strong>Data:</strong> ${dataFormatada}<br>
-                <strong>Condições Climáticas:</strong> Manhã: ${climaManha} | Tarde: ${climaTarde} | Noite: ${climaNoite}
+            <div class="pdf-header">
+                <h1>REPORT DIÁRIO DE ATIVIDADES (RDO)</h1>
             </div>
-            <h3>Empreiteiras Envolvidas</h3>
+            <div class="meta-grid">
+                <div><strong>Obra:</strong> ${obra}</div>
+                <div><strong>OS/N° do projeto:</strong> ${os}</div>
+                <div><strong>Data:</strong> ${dataFormatada}</div>
+                <div><strong>Clima:</strong> M: ${climaManha} | T: ${climaTarde} | N: ${climaNoite}</div>
+            </div>
+            <h3 style="font-size: 12pt; margin-bottom: 10px; color: #0f172a;">Empreiteiras Envolvidas</h3>
         `;
 
         const caixasEmpreiteiras = document.querySelectorAll('.empreiteira-box');
@@ -349,12 +548,14 @@
 
             htmlContent += `
                 <div class="emp-card-pdf">
-                    <h4 style="margin: 0 0 8px 0; color: #0056b3;">${nome}</h4>
-                    <p style="margin: 2px 0;"><strong>Horários:</strong> Chegada: ${chegada} | Início Atividades: ${inicio}</p>
-                    <p style="margin: 6px 0 2px 0;"><strong>Equipe Mobilizada:</strong></p>
-                    <div style="white-space: pre-wrap; font-size: 10pt; background: #fff; padding: 6px; border: 1px solid #eee;">${equipe ? equipe : 'Não informada'}</div>
-                    <p style="margin: 6px 0 2px 0;"><strong>Programação das Atividades:</strong></p>
-                    <div style="white-space: pre-wrap; font-size: 10pt; background: #fff; padding: 6px; border: 1px solid #eee;">${atividades ? atividades : 'Não informada'}</div>
+                    <h4>${nome}</h4>
+                    <div style="font-size: 9.5pt; margin-bottom: 6px;"><strong>Horários:</strong> Chegada: ${chegada} | Início: ${inicio}</div>
+                    
+                    <div style="font-size: 9pt; font-weight: 600; margin-top: 6px;">Equipe Mobilizada:</div>
+                    <div class="content-box">${equipe ? equipe : 'Não informada'}</div>
+                    
+                    <div style="font-size: 9pt; font-weight: 600; margin-top: 6px;">Programação das Atividades:</div>
+                    <div class="content-box">${atividades ? atividades : 'Não informada'}</div>
                 </div>
             `;
         });
@@ -362,8 +563,8 @@
         pdfArea.innerHTML = htmlContent;
 
         const opt = {
-            margin:       10,
-            filename:     `Reporte_${obra.replace(/\s+/g, '_')}_${dataInput}.pdf`,
+            margin:       12,
+            filename:     `Report_${obra.replace(/\s+/g, '_')}_${dataInput}.pdf`,
             image:        { type: 'jpeg', quality: 0.98 },
             html2canvas:  { scale: 2 },
             jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
