@@ -4,10 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reporte Diário de Atividades (RDO)</title>
+    <!-- Biblioteca externa para conversão HTML -> PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <style>
         :root {
             --primary: #0056b3;
             --success: #28a745;
+            --pdf-color: #dc3545;
             --danger: #dc3545;
             --bg: #f4f6f9;
             --card-bg: #ffffff;
@@ -92,18 +95,36 @@
             margin-bottom: 10px;
         }
 
+        .btn-group {
+            display: flex;
+            gap: 10px;
+        }
+
         .btn-success { background: var(--success); color: white; }
+        .btn-pdf { background: var(--pdf-color); color: white; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-danger { background: var(--danger); color: white; font-size: 0.8em; width: auto; padding: 5px 10px; float: right; }
+
+        /* Estilo para modelo de impressão PDF */
+        #pdf-template {
+            display: none;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            color: #333;
+        }
+        #pdf-template h1 { color: #0056b3; font-size: 20pt; border-bottom: 2px solid #0056b3; padding-bottom: 5px; }
+        #pdf-template h3 { color: #333; font-size: 14pt; margin-top: 15px; margin-bottom: 5px; border-bottom: 1px solid #ddd; }
+        #pdf-template .meta-info { margin-bottom: 15px; font-size: 11pt; line-height: 1.6; }
+        #pdf-template .emp-card-pdf { background: #f9f9f9; border: 1px solid #ccc; border-radius: 5px; padding: 12px; margin-bottom: 12px; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>📋 REPORTE DIÁRIO DE ATIVIDADES</h2>
-    <div class="subtitle">Gerador de RDO e Exportador .TXT</div>
+    <div class="subtitle">Gerador de RDO e Exportador .TXT / .PDF</div>
 
-    <form id="rdoForm" onsubmit="gerarETbaixarTXT(event)">
+    <form id="rdoForm">
         <!-- INFORMACÕES DA OBRA -->
         <div class="card">
             <h3>📍 Dados Gerais da Obra</h3>
@@ -161,13 +182,19 @@
             <button type="button" class="btn btn-primary" onclick="adicionarEmpreiteira()">➕ Incluir Outra Empreiteira</button>
         </div>
 
-        <button type="submit" class="btn btn-success">📄 Baixar Reporte em Texto (.TXT)</button>
+        <!-- BOTOES DE EXPORTAÇÃO -->
+        <div class="btn-group">
+            <button type="button" class="btn btn-success" onclick="gerarETbaixarTXT()">📄 Baixar Reporte em Texto (.TXT)</button>
+            <button type="button" class="btn btn-pdf" onclick="gerarETbaixarPDF()">📕 Baixar Reporte em PDF (.PDF)</button>
+        </div>
     </form>
 </div>
 
+<!-- TEMPLATE OCULTO PARA GERAR O PDF -->
+<div id="pdf-template"></div>
+
 <script>
     let contadorEmpreiteiras = 0;
-
     const listaEmpresas = ["TEXCAL", "CONCREJATO", "MN Engenharia", "Engenhar"];
 
     window.onload = function() {
@@ -226,8 +253,18 @@
         if (box) box.remove();
     }
 
-    function gerarETbaixarTXT(e) {
-        e.preventDefault();
+    function validarFormulario() {
+        const form = document.getElementById('rdoForm');
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return false;
+        }
+        return true;
+    }
+
+    // EXPORTAÇÃO TXT
+    function gerarETbaixarTXT() {
+        if (!validarFormulario()) return;
 
         const obra = document.getElementById('obra').value;
         const os = document.getElementById('os').value;
@@ -271,6 +308,68 @@
         link.href = URL.createObjectURL(blob);
         link.download = `Reporte_${obra.replace(/\s+/g, '_')}_${dataInput}.txt`;
         link.click();
+    }
+
+    // EXPORTAÇÃO PDF
+    function gerarETbaixarPDF() {
+        if (!validarFormulario()) return;
+
+        const obra = document.getElementById('obra').value;
+        const os = document.getElementById('os').value;
+        const dataInput = document.getElementById('data').value;
+        
+        const climaManha = document.getElementById('clima-manha').value;
+        const climaTarde = document.getElementById('clima-tarde').value;
+        const climaNoite = document.getElementById('clima-noite').value;
+
+        const partesData = dataInput.split('-');
+        const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+
+        const pdfArea = document.getElementById('pdf-template');
+        
+        let htmlContent = `
+            <h1>REPORTE DIÁRIO DE ATIVIDADES (RDO)</h1>
+            <div class="meta-info">
+                <strong>Obra:</strong> ${obra}<br>
+                <strong>OS/N° do projeto:</strong> ${os}<br>
+                <strong>Data:</strong> ${dataFormatada}<br>
+                <strong>Condições Climáticas:</strong> Manhã: ${climaManha} | Tarde: ${climaTarde} | Noite: ${climaNoite}
+            </div>
+            <h3>Empreiteiras Envolvidas</h3>
+        `;
+
+        const caixasEmpreiteiras = document.querySelectorAll('.empreiteira-box');
+
+        caixasEmpreiteiras.forEach((box) => {
+            const nome = box.querySelector('.emp-nome').value;
+            const chegada = box.querySelector('.emp-chegada').value || 'Não informado';
+            const inicio = box.querySelector('.emp-inicio').value || 'Não informado';
+            const equipe = box.querySelector('.emp-equipe').value;
+            const atividades = box.querySelector('.emp-atividades').value;
+
+            htmlContent += `
+                <div class="emp-card-pdf">
+                    <h4 style="margin: 0 0 8px 0; color: #0056b3;">${nome}</h4>
+                    <p style="margin: 2px 0;"><strong>Horários:</strong> Chegada: ${chegada} | Início Atividades: ${inicio}</p>
+                    <p style="margin: 6px 0 2px 0;"><strong>Equipe Mobilizada:</strong></p>
+                    <div style="white-space: pre-wrap; font-size: 10pt; background: #fff; padding: 6px; border: 1px solid #eee;">${equipe ? equipe : 'Não informada'}</div>
+                    <p style="margin: 6px 0 2px 0;"><strong>Programação das Atividades:</strong></p>
+                    <div style="white-space: pre-wrap; font-size: 10pt; background: #fff; padding: 6px; border: 1px solid #eee;">${atividades ? atividades : 'Não informada'}</div>
+                </div>
+            `;
+        });
+
+        pdfArea.innerHTML = htmlContent;
+
+        const opt = {
+            margin:       10,
+            filename:     `Reporte_${obra.replace(/\s+/g, '_')}_${dataInput}.pdf`,
+            image:        { type: 'jpeg', quality: 0.98 },
+            html2canvas:  { scale: 2 },
+            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
+
+        html2pdf().set(opt).from(pdfArea).save();
     }
 </script>
 
