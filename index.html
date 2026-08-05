@@ -29,23 +29,23 @@
     <style>
         body {
             font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #0f172a;
-            color: #f8fafc;
+            background-color: #f8fafc;
+            color: #0f172a;
         }
         .glass-card {
-            background: rgba(30, 41, 59, 0.7);
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(12px);
-            border: 1px solid rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(226, 232, 240, 0.8);
         }
         .glass-input {
-            background: rgba(15, 23, 42, 0.6);
-            border: 1px solid rgba(255, 255, 255, 0.12);
-            color: #f8fafc;
+            background: #ffffff;
+            border: 1px solid #cbd5e1;
+            color: #0f172a;
             transition: all 0.2s ease;
         }
         .glass-input:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
             outline: none;
         }
         #pdf-template {
@@ -62,13 +62,13 @@
         
         <!-- HEADER -->
         <header class="text-center space-y-3">
-            <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-semibold tracking-wide uppercase">
-                <i class="fa-solid fa-hard-hat text-blue-400"></i> Sistema de Gestão de Obra
+            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-100 border border-blue-200 text-blue-700 text-xs font-semibold tracking-wide uppercase">
+                <i class="fa-solid fa-hard-hat text-blue-600"></i> Sistema de Gestão de Obra
             </div>
-            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">
                 Report Diário de Atividades
             </h1>
-            <p class="text-slate-400 text-sm sm:text-base max-w-lg mx-auto">
+            <p class="text-slate-600 text-sm sm:text-base max-w-lg mx-auto">
                 Registre os avanços diários, condições climáticas e equipes mobilizadas com geração rápida em PDF e TXT.
             </p>
         </header>
@@ -77,51 +77,51 @@
         <form id="rdoForm" class="space-y-6">
             
             <!-- DADOS GERAIS -->
-            <div class="glass-card rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
-                <div class="flex items-center gap-3 border-b border-slate-700/60 pb-4">
-                    <div class="w-10 h-10 rounded-xl bg-blue-600/20 text-blue-400 flex items-center justify-center font-bold text-lg">
+            <div class="glass-card rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl shadow-slate-200/50">
+                <div class="flex items-center gap-3 border-b border-slate-200 pb-4">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg">
                         <i class="fa-solid fa-building"></i>
                     </div>
                     <div>
-                        <h2 class="text-lg font-bold text-white">Informações da Obra</h2>
-                        <p class="text-xs text-slate-400">Identificação do projeto e data de execução</p>
+                        <h2 class="text-lg font-bold text-slate-900">Informações da Obra</h2>
+                        <p class="text-xs text-slate-500">Identificação do projeto e data de execução</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
                     <div class="space-y-2">
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                            Obra <span class="text-rose-400">*</span>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+                            Obra <span class="text-rose-500">*</span>
                         </label>
                         <input type="text" id="obra" placeholder="Ex: Marca Ambiental - Galpão 03" required
-                            class="glass-input w-full px-4 py-3 rounded-xl text-sm placeholder-slate-500">
+                            class="glass-input w-full px-4 py-3 rounded-xl text-sm placeholder-slate-400">
                     </div>
 
                     <div class="space-y-2">
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                            OS / N° do Projeto <span class="text-rose-400">*</span>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+                            OS / N° do Projeto <span class="text-rose-500">*</span>
                         </label>
                         <input type="text" id="os" placeholder="Ex: OS-4024958" required
-                            class="glass-input w-full px-4 py-3 rounded-xl text-sm placeholder-slate-500">
+                            class="glass-input w-full px-4 py-3 rounded-xl text-sm placeholder-slate-400">
                     </div>
                 </div>
 
                 <div class="space-y-2">
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300">
-                        Data do Report <span class="text-rose-400">*</span>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700">
+                        Data do Report <span class="text-rose-500">*</span>
                     </label>
                     <input type="date" id="data" required
-                        class="glass-input w-full px-4 py-3 rounded-xl text-sm text-slate-200">
+                        class="glass-input w-full px-4 py-3 rounded-xl text-sm text-slate-800">
                 </div>
 
                 <!-- CLIMA -->
                 <div class="pt-2">
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-300 mb-3">
-                        <i class="fa-solid fa-cloud-sun text-amber-400 mr-1"></i> Condições Climáticas
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-3">
+                        <i class="fa-solid fa-cloud-sun text-amber-500 mr-1"></i> Condições Climáticas
                     </label>
                     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         <div class="space-y-1.5">
-                            <span class="text-xs font-medium text-slate-400">Manhã</span>
+                            <span class="text-xs font-medium text-slate-600">Manhã</span>
                             <select id="clima-manha" class="glass-input w-full px-3 py-2.5 rounded-xl text-sm">
                                 <option value="Bom / Claro">☀️ Bom / Claro</option>
                                 <option value="Nublado">☁️ Nublado</option>
@@ -130,7 +130,7 @@
                             </select>
                         </div>
                         <div class="space-y-1.5">
-                            <span class="text-xs font-medium text-slate-400">Tarde</span>
+                            <span class="text-xs font-medium text-slate-600">Tarde</span>
                             <select id="clima-tarde" class="glass-input w-full px-3 py-2.5 rounded-xl text-sm">
                                 <option value="Bom / Claro">☀️ Bom / Claro</option>
                                 <option value="Nublado">☁️ Nublado</option>
@@ -139,7 +139,7 @@
                             </select>
                         </div>
                         <div class="space-y-1.5">
-                            <span class="text-xs font-medium text-slate-400">Noite</span>
+                            <span class="text-xs font-medium text-slate-600">Noite</span>
                             <select id="clima-noite" class="glass-input w-full px-3 py-2.5 rounded-xl text-sm">
                                 <option value="Bom / Claro">🌙 Bom / Claro</option>
                                 <option value="Nublado">☁️ Nublado</option>
@@ -153,15 +153,15 @@
             </div>
 
             <!-- EMPREITEIRAS -->
-            <div class="glass-card rounded-2xl p-6 sm:p-8 space-y-6 shadow-2xl">
-                <div class="flex items-center justify-between border-b border-slate-700/60 pb-4">
+            <div class="glass-card rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl shadow-slate-200/50">
+                <div class="flex items-center justify-between border-b border-slate-200 pb-4">
                     <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-600/20 text-emerald-400 flex items-center justify-center font-bold text-lg">
+                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-lg">
                             <i class="fa-solid fa-users-gear"></i>
                         </div>
                         <div>
-                            <h2 class="text-lg font-bold text-white">Empreiteiras e Equipes</h2>
-                            <p class="text-xs text-slate-400">Efetivo mobilizado e atividades do dia</p>
+                            <h2 class="text-lg font-bold text-slate-900">Empreiteiras e Equipes</h2>
+                            <p class="text-xs text-slate-500">Efetivo mobilizado e atividades do dia</p>
                         </div>
                     </div>
                 </div>
@@ -169,7 +169,7 @@
                 <div id="container-empreiteiras" class="space-y-6"></div>
 
                 <button type="button" onclick="adicionarEmpreiteira()"
-                    class="w-full py-3.5 px-4 rounded-xl border-2 border-dashed border-slate-600 hover:border-blue-500 hover:bg-blue-500/10 text-slate-300 hover:text-blue-400 text-sm font-semibold transition flex items-center justify-center gap-2">
+                    class="w-full py-3.5 px-4 rounded-xl border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-blue-50/50 text-slate-700 hover:text-blue-600 text-sm font-semibold transition flex items-center justify-center gap-2">
                     <i class="fa-solid fa-circle-plus text-base"></i> Adicionar Outra Empreiteira
                 </button>
             </div>
@@ -177,11 +177,11 @@
             <!-- BOTÕES DE AÇÃO -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
                 <button type="button" onclick="gerarETbaixarTXT()"
-                    class="w-full py-4 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-lg shadow-emerald-900/30 transition duration-200 flex items-center justify-center gap-2">
+                    class="w-full py-4 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-lg shadow-emerald-600/20 transition duration-200 flex items-center justify-center gap-2">
                     <i class="fa-solid fa-file-lines text-lg"></i> Baixar Report em TXT
                 </button>
                 <button type="button" onclick="gerarETbaixarPDF()"
-                    class="w-full py-4 px-6 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm shadow-lg shadow-rose-900/30 transition duration-200 flex items-center justify-center gap-2">
+                    class="w-full py-4 px-6 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-lg shadow-rose-600/20 transition duration-200 flex items-center justify-center gap-2">
                     <i class="fa-solid fa-file-pdf text-lg"></i> Baixar Report em PDF
                 </button>
             </div>
@@ -238,22 +238,22 @@
         let optionsEmpresas = listaEmpresas.map(emp => `<option value="${emp}">${emp}</option>`).join('');
 
         const div = document.createElement('div');
-        div.className = 'p-5 rounded-xl bg-slate-800/80 border border-slate-700/80 space-y-4 relative transition duration-200 hover:border-slate-600';
+        div.className = 'p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-4 relative transition duration-200 hover:border-slate-300 shadow-sm';
         div.id = `emp-box-${contadorEmpreiteiras}`;
         div.innerHTML = `
-            <div class="flex justify-between items-center pb-2 border-b border-slate-700/60">
-                <span class="text-xs font-bold uppercase tracking-wider text-blue-400 flex items-center gap-2">
+            <div class="flex justify-between items-center pb-2 border-b border-slate-200">
+                <span class="text-xs font-bold uppercase tracking-wider text-blue-600 flex items-center gap-2">
                     <i class="fa-solid fa-helmet-safety"></i> Empreiteira #${contadorEmpreiteiras}
                 </span>
                 ${contadorEmpreiteiras > 1 ? `
-                    <button type="button" onclick="removerEmpreiteira(${contadorEmpreiteiras})" class="text-xs px-2.5 py-1 rounded-lg bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-semibold transition flex items-center gap-1">
+                    <button type="button" onclick="removerEmpreiteira(${contadorEmpreiteiras})" class="text-xs px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold transition flex items-center gap-1 border border-rose-200">
                         <i class="fa-solid fa-trash-can"></i> Remover
                     </button>
                 ` : ''}
             </div>
 
             <div class="space-y-2">
-                <label class="block text-xs font-semibold text-slate-300">Empresas Cadastradas <span class="text-rose-400">*</span></label>
+                <label class="block text-xs font-semibold text-slate-700">Empresas Cadastradas <span class="text-rose-500">*</span></label>
                 <select class="emp-nome glass-input w-full px-4 py-2.5 rounded-xl text-sm" required>
                     <option value="">Selecione uma empreiteira...</option>
                     ${optionsEmpresas}
@@ -262,23 +262,23 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div class="space-y-1.5">
-                    <label class="block text-xs font-semibold text-slate-300">Horário Chegada</label>
+                    <label class="block text-xs font-semibold text-slate-700">Horário Chegada</label>
                     <input type="time" class="emp-chegada glass-input w-full px-3 py-2 rounded-xl text-sm">
                 </div>
                 <div class="space-y-1.5">
-                    <label class="block text-xs font-semibold text-slate-300">Início das Atividades</label>
+                    <label class="block text-xs font-semibold text-slate-700">Início das Atividades</label>
                     <input type="time" class="emp-inicio glass-input w-full px-3 py-2 rounded-xl text-sm">
                 </div>
             </div>
 
             <div class="space-y-1.5">
-                <label class="block text-xs font-semibold text-slate-300">Equipe Mobilizada (Supervisores, Oficiais, Ajudantes)</label>
-                <textarea class="emp-equipe glass-input w-full px-4 py-2.5 rounded-xl text-sm leading-relaxed" rows="2" placeholder="Ex:&#10;• Supervisor: Erivelton Cão&#10;• Oficiais Líderes: Jair, Júlio&#10;• Ajudantes: Davi, Alexsander"></textarea>
+                <label class="block text-xs font-semibold text-slate-700">Equipe Mobilizada (Supervisores, Oficiais, Ajudantes)</label>
+                <textarea class="emp-equipe glass-input w-full px-4 py-2.5 rounded-xl text-sm leading-relaxed placeholder-slate-400" rows="2" placeholder="Ex:&#10;• Supervisor: Erivelton Cão&#10;• Oficiais Líderes: Jair, Júlio&#10;• Ajudantes: Davi, Alexsander"></textarea>
             </div>
 
             <div class="space-y-1.5">
-                <label class="block text-xs font-semibold text-slate-300">Programação das Atividades</label>
-                <textarea class="emp-atividades glass-input w-full px-4 py-2.5 rounded-xl text-sm leading-relaxed" rows="2" placeholder="Ex: Iniciar instalação dos pavês e rejunte da base."></textarea>
+                <label class="block text-xs font-semibold text-slate-700">Programação das Atividades</label>
+                <textarea class="emp-atividades glass-input w-full px-4 py-2.5 rounded-xl text-sm leading-relaxed placeholder-slate-400" rows="2" placeholder="Ex: Iniciar instalação dos pavês e rejunte da base."></textarea>
             </div>
         `;
 
@@ -314,7 +314,7 @@
         const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
 
         let txt = `==================================================\n`;
-        txt += `           REPORT DIÁRIO DE ATIVIDADES (RDO)\n`;
+        txt += `            REPORT DIÁRIO DE ATIVIDADES (RDO)\n`;
         txt += `==================================================\n\n`;
         txt += `Obra: ${obra}\n`;
         txt += `OS/N° do projeto: ${os}\n`;
