@@ -12,9 +12,6 @@
     <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <!-- jsPDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-
     <!-- Fonte -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -24,9 +21,7 @@
         tailwind.config = {
             theme: {
                 extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif']
-                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
                     colors: {
                         gas: {
                             50: '#f0f9ff',
@@ -45,19 +40,7 @@
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; }
-        .item-row { animation: fadeIn .18s ease; }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-4px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .field-error { border-color: #ef4444 !important; background: #fef2f2 !important; }
-        .validation-error { color: #dc2626; font-size: 11px; margin-top: 4px; }
-        .validation-summary { border: 1px solid #fecaca; background: #fef2f2; color: #991b1b; border-radius: 12px; padding: 12px 14px; font-size: 12px; }
-        .image-preview-card { position: relative; overflow: hidden; border: 1px solid #cbd5e1; border-radius: 12px; background: #fff; }
-        .image-preview-card img { width: 100%; height: 150px; object-fit: cover; display: block; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-        .status-running { background: #f59e0b; }
-        .status-finished { background: #10b981; }
+        .image-preview-card img { width: 100%; height: 140px; object-fit: cover; display: block; }
         @media print { .no-print { display: none !important; } }
     </style>
 </head>
@@ -81,10 +64,10 @@
         </div>
 
         <div class="flex gap-2">
-            <button type="button" onclick="switchTab('formTab')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/20 hover:bg-white/30">
+            <button type="button" id="btnTabForm" onclick="switchTab('formTab')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/30 hover:bg-white/40">
                 <i class="fa-solid fa-pen-to-square"></i> Formulário
             </button>
-            <button type="button" onclick="switchTab('historyTab')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20">
+            <button type="button" id="btnTabHistory" onclick="switchTab('historyTab')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20">
                 <i class="fa-solid fa-database"></i> Histórico
                 <span id="historyBadge" class="bg-gas-orange text-white text-[10px] px-1.5 py-0.2 rounded-full">0</span>
             </button>
@@ -185,24 +168,12 @@
         <!-- SEÇÃO: RELATÓRIO INICIAL -->
         <section id="sectionInicial" class="space-y-6">
 
-            <!-- INFORMAÇÕES DE CHEGADA E EMPREITEIRA -->
+            <!-- INFORMAÇÕES DA EMPREITEIRA -->
             <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
                 <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4 text-slate-700">
                     <i class="fa-solid fa-clock text-gas-500 mr-1"></i> Horários e Empreiteira (Inicial)
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold mb-1">Horário Previsto Chegada Técnico</label>
-                        <input type="time" id="horarioPrevistoTecnico" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold mb-1">Horário Real Chegada Técnico</label>
-                        <input type="time" id="horarioRealTecnico" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold mb-1">Justificativa Atraso Técnico (se houver)</label>
-                        <input type="text" id="justificativaAtrasoTecnico" placeholder="Ex: Trânsito intenso" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
-                    </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label class="block text-xs font-semibold mb-1">Empreiteira</label>
                         <input type="text" id="nomeEmpreiteira" placeholder="Nome da empreiteira" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
@@ -218,7 +189,7 @@
                     <label class="block text-xs font-semibold mb-1">
                         <i class="fa-solid fa-camera text-gas-500 mr-1"></i> Enviar foto do canteiro (Time Stamp ESGas)
                     </label>
-                    <input type="file" id="fotoCanteiro" accept="image/*" onchange="previewImage(this, 'previewCanteiro')" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2">
+                    <input type="file" id="fotoCanteiro" accept="image/*" onchange="previewImage(this, 'previewCanteiro', 'canteiro')" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2">
                     <div id="previewCanteiro" class="mt-2 hidden max-w-xs"></div>
                 </div>
             </section>
@@ -228,8 +199,7 @@
                 <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
                     <i class="fa-solid fa-shield-halved text-emerald-600 mr-1"></i> Segurança do Trabalho
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <!-- CONDIÇÕES -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div class="bg-slate-50 p-3.5 rounded-xl border">
                         <span class="text-xs font-medium block mb-2">1. Condições de trabalho adequadas?</span>
                         <div class="flex gap-4">
@@ -238,7 +208,7 @@
                         </div>
                         <input type="text" id="descCondicoes" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mt-2">
                     </div>
-                    <!-- FERRAMENTAL -->
+
                     <div class="bg-slate-50 p-3.5 rounded-xl border">
                         <span class="text-xs font-medium block mb-2">2. Ferramental / caminhão adequado?</span>
                         <div class="flex gap-4">
@@ -247,7 +217,7 @@
                         </div>
                         <input type="text" id="descCaminhao" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mt-2">
                     </div>
-                    <!-- SINALIZAÇÃO -->
+
                     <div class="bg-slate-50 p-3.5 rounded-xl border">
                         <span class="text-xs font-medium block mb-2">3. Sinalização de via adequada?</span>
                         <div class="flex gap-4">
@@ -256,6 +226,15 @@
                         </div>
                         <input type="text" id="descSinalizacao" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mt-2">
                     </div>
+                </div>
+
+                <!-- FOTOS DE SEGURANÇA -->
+                <div class="pt-4 border-t">
+                    <label class="block text-xs font-semibold mb-1">
+                        <i class="fa-solid fa-camera text-emerald-600 mr-1"></i> Fotos de Segurança do Trabalho (Evidências / SST)
+                    </label>
+                    <input type="file" id="fotoSeguranca" accept="image/*" onchange="previewImage(this, 'previewSeguranca', 'seguranca')" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2">
+                    <div id="previewSeguranca" class="mt-2 hidden max-w-xs"></div>
                 </div>
             </section>
 
@@ -270,15 +249,13 @@
 
         <!-- SEÇÃO: RELATÓRIO DE ENCERRAMENTO -->
         <section id="sectionEncerramento" class="hidden space-y-6">
-
-            <!-- HORÁRIOS DE ENCERRAMENTO E INÍCIO -->
             <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
                 <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4 text-slate-700">
                     <i class="fa-solid fa-stopwatch text-red-500 mr-1"></i> Controle de Horários (Encerramento)
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold mb-1">Horário Real Chegada Empreiteira no Canteiro</label>
+                        <label class="block text-xs font-semibold mb-1">Horário Real Chegada Empreiteira</label>
                         <input type="time" id="horarioRealChegadaEmpreiteira" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
                     </div>
                     <div>
@@ -299,12 +276,11 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold mb-1">Se Encerrou Antes do Previsto, Justifique</label>
-                        <input type="text" id="justificativaEncerramentoAntecipado" placeholder="Ex: Meta cumprida antecipadamente" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                        <input type="text" id="justificativaEncerramentoAntecipado" placeholder="Ex: Meta cumprida" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
                     </div>
                 </div>
             </section>
 
-            <!-- ATIVIDADES REALIZADAS -->
             <section class="bg-white rounded-2xl p-5 shadow-sm border">
                 <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
                     <i class="fa-solid fa-clipboard-check text-indigo-600 mr-1"></i> Atividades Realizadas
@@ -312,7 +288,6 @@
                 <textarea id="atividadesRealizadas" rows="5" placeholder="Descreva detalhadamente o que foi realizado..." class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-3"></textarea>
             </section>
 
-            <!-- PRODUÇÃO -->
             <section class="bg-white rounded-2xl p-5 shadow-sm border">
                 <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
                     <i class="fa-solid fa-ruler-combined text-indigo-600 mr-1"></i> Produção / Assentamento PEAD
@@ -340,7 +315,7 @@
             </section>
         </section>
 
-        <!-- BOTÃO SUBMIT -->
+        <!-- SUBMIT -->
         <div class="flex justify-end gap-3 pt-4 border-t">
             <button type="submit" class="px-6 py-2.5 bg-gas-orange hover:bg-orange-600 text-white rounded-xl font-bold text-xs shadow-md">
                 <i class="fa-solid fa-floppy-disk mr-2"></i> Salvar Relatório
@@ -351,7 +326,6 @@
 
 <!-- ABA HISTÓRICO -->
 <div id="historyTab" class="hidden space-y-4">
-    <!-- FILTRO DO HISTÓRICO RESTAURADO -->
     <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
         <h2 class="text-xs font-bold uppercase text-slate-700 mb-3">
             <i class="fa-solid fa-filter text-gas-500 mr-1"></i> Filtrar Histórico
@@ -381,21 +355,39 @@
         </div>
     </section>
 
-    <!-- LISTA DE HISTÓRICO -->
-    <div id="historyContainer" class="space-y-3">
-        <!-- Renderizado via JS -->
-    </div>
+    <div id="historyContainer" class="space-y-3"></div>
 </div>
 
 </main>
 
 <script>
     let currentReportType = 'inicial';
-    let rdoHistory = [];
+    let rdoHistory = JSON.parse(localStorage.getItem('rdo_history_data') || '[]');
+    let currentBase64Canteiro = '';
+    let currentBase64Seguranca = '';
+
+    // Função Auxiliar para Evitar Erros ao Acessar Elementos Nulos
+    function getVal(id) {
+        const el = document.getElementById(id);
+        return el ? el.value : '';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        updateHistoryBadge();
+        renderHistory(rdoHistory);
+    });
 
     function switchTab(tabName) {
         document.getElementById('formTab').classList.toggle('hidden', tabName !== 'formTab');
         document.getElementById('historyTab').classList.toggle('hidden', tabName !== 'historyTab');
+        
+        document.getElementById('btnTabForm').className = tabName === 'formTab' ? 
+            "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/30 hover:bg-white/40" : 
+            "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20";
+            
+        document.getElementById('btnTabHistory').className = tabName === 'historyTab' ? 
+            "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/30 hover:bg-white/40" : 
+            "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20";
     }
 
     function setReportType(type) {
@@ -426,14 +418,20 @@
         if (field) field.classList.toggle('hidden');
     }
 
-    function previewImage(input, previewId) {
+    function previewImage(input, previewId, key) {
         const container = document.getElementById(previewId);
         container.innerHTML = '';
+        if (key === 'canteiro') currentBase64Canteiro = '';
+        if (key === 'seguranca') currentBase64Seguranca = '';
+
         if (input.files && input.files[0]) {
             const reader = new FileReader();
             reader.onload = function(e) {
+                if (key === 'canteiro') currentBase64Canteiro = e.target.result;
+                if (key === 'seguranca') currentBase64Seguranca = e.target.result;
+
                 container.classList.remove('hidden');
-                container.innerHTML = `<div class="image-preview-card p-1"><img src="${e.target.result}" class="rounded-lg"><p class="text-[10px] text-slate-500 mt-1 text-center">Imagem selecionada</p></div>`;
+                container.innerHTML = `<div class="image-preview-card border rounded-lg p-1 bg-white"><img src="${e.target.result}" class="rounded-lg"><p class="text-[10px] text-slate-500 mt-1 text-center">Imagem salva</p></div>`;
             }
             reader.readAsDataURL(input.files[0]);
         }
@@ -448,24 +446,127 @@
 
     function handleFormSubmit(e) {
         e.preventDefault();
+
+        const newRecord = {
+            id: Date.now(),
+            data: new Date().toISOString().split('T')[0],
+            dataHora: new Date().toLocaleString('pt-BR'),
+            tipo: currentReportType,
+            projeto: getVal('selectProjeto'),
+            tecnico: getVal('selectTecnico'),
+            engenheiro: getVal('selectEngenheiro'),
+            tipoObra: getVal('selectTipoObra'),
+            fotoCanteiro: currentBase64Canteiro,
+            fotoSeguranca: currentBase64Seguranca,
+            horarios: {
+                empreiteira: getVal('nomeEmpreiteira'),
+                previstoEmpreiteira: getVal('horarioPrevistoEmpreiteira'),
+                realEmpreiteira: getVal('horarioRealChegadaEmpreiteira'),
+                inicioAtividades: getVal('horarioInicioAtividades'),
+                justAtrasoInicio: getVal('justificativaAtrasoInicio'),
+                previstoEncerrar: getVal('horarioPrevistoEncerramento'),
+                realEncerrar: getVal('horarioRealEncerramento'),
+                justEncerrarAntes: getVal('justificativaEncerramentoAntecipado')
+            },
+            atividadesPrevistas: getVal('atividadesPrevistas'),
+            atividadesRealizadas: getVal('atividadesRealizadas'),
+            producao: {
+                pead63: {
+                    ativo: document.getElementById('checkPEAD63') ? document.getElementById('checkPEAD63').checked : false,
+                    extensao: getVal('extensao63'),
+                    estaca: getVal('estaca63')
+                },
+                pead125: {
+                    ativo: document.getElementById('checkPEAD125') ? document.getElementById('checkPEAD125').checked : false,
+                    extensao: getVal('extensao125'),
+                    estaca: getVal('estaca125')
+                }
+            }
+        };
+
+        rdoHistory.unshift(newRecord);
+        localStorage.setItem('rdo_history_data', JSON.stringify(rdoHistory));
+
+        updateHistoryBadge();
+        renderHistory(rdoHistory);
+
         alert('Relatório salvo com sucesso!');
-        // Lógica de persistência / envio
+        document.getElementById('rdoForm').reset();
+        document.getElementById('previewCanteiro').classList.add('hidden');
+        document.getElementById('previewSeguranca').classList.add('hidden');
+        currentBase64Canteiro = '';
+        currentBase64Seguranca = '';
+        switchTab('historyTab');
+    }
+
+    function updateHistoryBadge() {
+        document.getElementById('historyBadge').innerText = rdoHistory.length;
+    }
+
+    function renderHistory(data) {
+        const container = document.getElementById('historyContainer');
+        if (data.length === 0) {
+            container.innerHTML = `
+                <div class="bg-white rounded-2xl p-8 text-center text-slate-400 border border-slate-200">
+                    <i class="fa-solid fa-folder-open text-3xl mb-2"></i>
+                    <p class="text-xs">Nenhum registro encontrado.</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = data.map(item => `
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.tipo === 'inicial' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
+                            ${item.tipo === 'inicial' ? 'Abertura' : 'Encerramento'}
+                        </span>
+                        <span class="text-xs font-bold text-slate-800">${item.projeto}</span>
+                    </div>
+                    <p class="text-xs text-slate-600"><i class="fa-solid fa-user text-slate-400 mr-1"></i> Técnico: ${item.tecnico}</p>
+                    <p class="text-[11px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i> ${item.dataHora}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="deleteRecord(${item.id})" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
+                        <i class="fa-solid fa-trash"></i> Excluir
+                    </button>
+                </div>
+            </div>
+        `).join('');
     }
 
     function applyHistoryFilter() {
-        const search = document.getElementById('filterSearch').value.toLowerCase();
-        const date = document.getElementById('filterDate').value;
-        const type = document.getElementById('filterType').value;
+        const search = getVal('filterSearch').toLowerCase();
+        const date = getVal('filterDate');
+        const type = getVal('filterType');
 
-        // Implementação do filtro no array do histórico
-        console.log('Filtrando por:', { search, date, type });
+        const filtered = rdoHistory.filter(item => {
+            const matchesSearch = !search || 
+                item.projeto.toLowerCase().includes(search) || 
+                item.tecnico.toLowerCase().includes(search);
+            const matchesDate = !date || item.data === date;
+            const matchesType = !type || item.tipo === type;
+
+            return matchesSearch && matchesDate && matchesType;
+        });
+
+        renderHistory(filtered);
     }
 
     function clearHistoryFilters() {
         document.getElementById('filterSearch').value = '';
         document.getElementById('filterDate').value = '';
         document.getElementById('filterType').value = '';
-        applyHistoryFilter();
+        renderHistory(rdoHistory);
+    }
+
+    function deleteRecord(id) {
+        if (confirm('Deseja realmente excluir este registro?')) {
+            rdoHistory = rdoHistory.filter(item => item.id !== id);
+            localStorage.setItem('rdo_history_data', JSON.stringify(rdoHistory));
+            updateHistoryBadge();
+            applyHistoryFilter();
+        }
     }
 </script>
 
