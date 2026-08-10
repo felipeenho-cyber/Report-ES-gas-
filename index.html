@@ -69,13 +69,22 @@
                 </div>
             </div>
 
-            <!-- Botões de Ação Topo -->
-            <div class="flex items-center space-x-2">
+            <!-- Botões de NAVEGAÇÃO E EXPORTAÇÃO SEMPRE VISÍVEIS NO TOPO -->
+            <div class="flex items-center space-x-2 flex-wrap">
                 <button onclick="switchTab('formTab')" id="btnTabForm" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/20 hover:bg-white/30 transition flex items-center gap-1.5">
                     <i class="fa-solid fa-pen-to-square"></i> Formulário
                 </button>
                 <button onclick="switchTab('historyTab')" id="btnTabHistory" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 transition flex items-center gap-1.5">
                     <i class="fa-solid fa-list-check"></i> Histórico <span id="historyBadge" class="bg-gas-orange text-white text-[10px] px-1.5 py-0.2 rounded-full">0</span>
+                </button>
+                
+                <!-- BOTÕES DE EXPORTAÇÃO NO CABEÇALHO -->
+                <div class="h-4 w-px bg-white/30 mx-1"></div>
+                <button onclick="exportCSV()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-file-csv"></i> Exportar CSV
+                </button>
+                <button onclick="exportAllPDF()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gas-500 hover:bg-gas-700 text-white transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-file-pdf"></i> Exportar PDF
                 </button>
             </div>
         </div>
@@ -426,19 +435,30 @@
                     </div>
                 </div>
 
-                <!-- BOTÕES DE SUBMISSÃO -->
-                <div class="flex flex-wrap items-center justify-end gap-3 no-print pt-2">
-                    <button type="button" onclick="resetForm()" class="px-5 py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-600 hover:bg-slate-200 transition">
-                        Limpar Formulário
-                    </button>
-                    <button type="submit" class="px-6 py-2.5 rounded-xl text-xs font-bold bg-gas-orange hover:bg-orange-600 text-white shadow-md transition flex items-center gap-2">
-                        <i class="fa-solid fa-floppy-disk"></i> Salvar Relatório Diário
-                    </button>
+                <!-- BOTÕES DE SUBMISSÃO E EXPORTAÇÃO NO RODA PÉ -->
+                <div class="flex flex-wrap items-center justify-between gap-3 no-print pt-2 border-t">
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="exportCSV()" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-file-csv"></i> Exportar CSV
+                        </button>
+                        <button type="button" onclick="exportAllPDF()" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-gas-700 hover:bg-gas-900 text-white transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-file-pdf"></i> Exportar PDF
+                        </button>
+                    </div>
+
+                    <div class="flex items-center gap-3">
+                        <button type="button" onclick="resetForm()" class="px-5 py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-600 hover:bg-slate-200 transition">
+                            Limpar Formulário
+                        </button>
+                        <button type="submit" class="px-6 py-2.5 rounded-xl text-xs font-bold bg-gas-orange hover:bg-orange-600 text-white shadow-md transition flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar Relatório Diário
+                        </button>
+                    </div>
                 </div>
             </form>
         </div>
 
-        <!-- ABA DE HISTÓRICO COM OS BOTÕES EXPORTAR CSV E EXPORTAR PDF -->
+        <!-- ABA DE HISTÓRICO -->
         <div id="historyTab" class="space-y-6 hidden">
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
                 <div class="flex flex-wrap justify-between items-center gap-3 border-b pb-3">
@@ -446,14 +466,7 @@
                         <h2 class="text-base font-bold text-slate-800">Histórico de Relatórios Guardados</h2>
                         <p class="text-xs text-slate-500">Acompanhe todos os RDOs salvos no navegador local.</p>
                     </div>
-                    <!-- BOTÕES DE EXPORTAÇÃO CSV E PDF JUNTOS NO TOPO DO HISTÓRICO -->
                     <div class="flex items-center gap-2">
-                        <button onclick="exportCSV()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-file-csv"></i> Exportar CSV
-                        </button>
-                        <button onclick="exportAllPDF()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-gas-700 hover:bg-gas-900 text-white transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-file-pdf"></i> Exportar PDF Geral
-                        </button>
                         <button onclick="clearHistory()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-100 hover:bg-red-200 text-red-700 transition">
                             Limpar Histórico
                         </button>
@@ -482,7 +495,7 @@
 
     </main>
 
-    <!-- MODAL DE VISUALIZAÇÃO E DOWNLOAD PDF INDIVIDUAL -->
+    <!-- MODAL DE VISUALIZAÇÃO -->
     <div id="viewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 overflow-y-auto">
         <div class="bg-white rounded-2xl max-w-3xl w-full p-6 space-y-6 shadow-2xl my-8 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div class="flex justify-between items-start border-b pb-4">
@@ -500,7 +513,7 @@
             <div class="flex justify-end gap-3 border-t pt-4 no-print">
                 <button onclick="closeModal()" class="px-4 py-2 rounded-xl text-xs font-semibold border text-slate-600 hover:bg-slate-100">Fechar</button>
                 <button onclick="downloadSinglePDF()" class="px-4 py-2 rounded-xl text-xs font-bold bg-gas-700 hover:bg-gas-900 text-white flex items-center gap-2">
-                    <i class="fa-solid fa-file-pdf"></i> Baixar em PDF
+                    <i class="fa-solid fa-file-pdf"></i> Baixar este PDF
                 </button>
             </div>
         </div>
@@ -836,7 +849,7 @@
         function exportCSV() {
             const history = JSON.parse(localStorage.getItem('rdo_history') || '[]');
             if (history.length === 0) {
-                alert('Não há dados salvos para exportação.');
+                alert('Não há dados salvos para exportação. Preencha e salve ao menos um relatório primeiro.');
                 return;
             }
 
@@ -858,7 +871,7 @@
         function exportAllPDF() {
             const history = JSON.parse(localStorage.getItem('rdo_history') || '[]');
             if (history.length === 0) {
-                alert('Não há dados salvos para exportação.');
+                alert('Não há dados salvos para exportação. Preencha e salve ao menos um relatório primeiro.');
                 return;
             }
 
