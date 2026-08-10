@@ -4,16 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório Diário de Obra - Redes de Gás Natural</title>
-    <!-- Tailwind CSS CDN -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome CDN -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- jsPDF e HTML2Canvas para exportação em PDF -->
+    <!-- jsPDF e Plugins -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <script>
@@ -44,7 +45,6 @@
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         @media print {
             .no-print { display: none !important; }
-            .print-only { display: block !important; }
             body { background: white !important; color: black !important; }
             .shadow-lg, .shadow-md, .shadow-sm { box-shadow: none !important; }
             .border { border-color: #94a3b8 !important; }
@@ -130,7 +130,6 @@
                     </h2>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <!-- Projeto -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Projeto <span class="text-red-500">*</span></label>
                             <select id="selectProjeto" required onchange="checkCustomOption(this, 'customProjeto')" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-gas-500 focus:bg-white outline-none">
@@ -144,7 +143,6 @@
                             <input type="text" id="customProjeto" placeholder="Digite o nome do projeto..." class="hidden mt-2 w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-gas-500 outline-none">
                         </div>
 
-                        <!-- Técnico -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Técnico <span class="text-red-500">*</span></label>
                             <select id="selectTecnico" required onchange="checkCustomOption(this, 'customTecnico')" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-gas-500 focus:bg-white outline-none">
@@ -158,7 +156,6 @@
                             <input type="text" id="customTecnico" placeholder="Digite o nome do técnico..." class="hidden mt-2 w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-gas-500 outline-none">
                         </div>
 
-                        <!-- Engenheiro -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Engenheiro <span class="text-red-500">*</span></label>
                             <select id="selectEngenheiro" required onchange="checkCustomOption(this, 'customEngenheiro')" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-gas-500 focus:bg-white outline-none">
@@ -171,7 +168,6 @@
                             <input type="text" id="customEngenheiro" placeholder="Digite o nome do engenheiro..." class="hidden mt-2 w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-gas-500 outline-none">
                         </div>
 
-                        <!-- Tipo de Obra -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Tipo de Obra <span class="text-red-500">*</span></label>
                             <select id="selectTipoObra" required class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-gas-500 focus:bg-white outline-none">
@@ -185,7 +181,6 @@
                         </div>
                     </div>
 
-                    <!-- Data e Horário -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Data do Preenchimento</label>
@@ -200,7 +195,6 @@
 
                 <!-- SEÇÃO INICIAL -->
                 <div id="sectionInicial" class="space-y-6">
-                    <!-- Checklist de Segurança -->
                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
                         <div class="flex items-center justify-between border-b pb-2">
                             <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
@@ -239,7 +233,6 @@
                         </div>
                     </div>
 
-                    <!-- Horários e Equipe Inicial -->
                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
                         <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
                             <i class="fa-solid fa-clock text-gas-500"></i> Horários & Equipe de Contrato
@@ -280,7 +273,6 @@
 
                 <!-- SEÇÃO ENCERRAMENTO -->
                 <div id="sectionEncerramento" class="space-y-6 hidden">
-                    <!-- Produção e Atividades Executadas -->
                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
                         <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
                             <i class="fa-solid fa-helmet-safety text-indigo-600"></i> Produção & Atividades Realizadas
@@ -306,7 +298,6 @@
                             <textarea id="atividadesRealizadas" rows="3" placeholder="Descreva o que foi realizado..." class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-3 outline-none"></textarea>
                         </div>
 
-                        <!-- Assentamento de Tubos -->
                         <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                             <div class="flex justify-between items-center">
                                 <span class="text-xs font-bold text-slate-700 uppercase">Houve Assentamento de Tubos/Redes?</span>
@@ -318,7 +309,6 @@
 
                             <div id="divAssentamentoDetalhes" class="hidden space-y-3 pt-2 border-t border-slate-200">
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <!-- 63mm -->
                                     <div class="bg-white p-3 rounded-lg border">
                                         <label class="flex items-center gap-2 text-xs font-semibold mb-2">
                                             <input type="checkbox" id="checkDiam63" onchange="toggleDiamFields(63)"> 63mm PEAD
@@ -328,7 +318,6 @@
                                             <input type="text" id="estaca63" placeholder="Estaqueamento (ex: Est 10 a 15)" class="w-full text-xs p-2 border rounded">
                                         </div>
                                     </div>
-                                    <!-- 125mm -->
                                     <div class="bg-white p-3 rounded-lg border">
                                         <label class="flex items-center gap-2 text-xs font-semibold mb-2">
                                             <input type="checkbox" id="checkDiam125" onchange="toggleDiamFields(125)"> 125mm PEAD
@@ -338,7 +327,6 @@
                                             <input type="text" id="estaca125" placeholder="Estaqueamento" class="w-full text-xs p-2 border rounded">
                                         </div>
                                     </div>
-                                    <!-- 6 Pol -->
                                     <div class="bg-white p-3 rounded-lg border">
                                         <label class="flex items-center gap-2 text-xs font-semibold mb-2">
                                             <input type="checkbox" id="checkDiam6pol" onchange="toggleDiamFields('6pol')"> 6" Aço
@@ -348,7 +336,6 @@
                                             <input type="text" id="estaca6pol" placeholder="Estaqueamento" class="w-full text-xs p-2 border rounded">
                                         </div>
                                     </div>
-                                    <!-- 8 Pol -->
                                     <div class="bg-white p-3 rounded-lg border">
                                         <label class="flex items-center gap-2 text-xs font-semibold mb-2">
                                             <input type="checkbox" id="checkDiam8pol" onchange="toggleDiamFields('8pol')"> 8" Aço
@@ -363,9 +350,7 @@
                         </div>
                     </div>
 
-                    <!-- Efetivo & Equipamentos -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Efetivo -->
                         <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3">
                             <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
                                 <i class="fa-solid fa-users text-gas-500"></i> Efetivo de Equipe
@@ -386,7 +371,6 @@
                             </div>
                         </div>
 
-                        <!-- Equipamentos -->
                         <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3">
                             <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
                                 <i class="fa-solid fa-truck-monster text-gas-500"></i> Equipamentos em Campo
@@ -402,7 +386,6 @@
                         </div>
                     </div>
 
-                    <!-- Horários Encerramento & Considerações -->
                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
                         <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
                             <i class="fa-solid fa-flag-checkered text-gas-500"></i> Horários de Término & Considerações Finais
@@ -433,12 +416,12 @@
                     </h2>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Assinatura Digital do Responsável (Nome Completo / CPF ou Reg.) <span class="text-red-500">*</span></label>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Assinatura Digital do Responsável (Nome / CPF / Registro) <span class="text-red-500">*</span></label>
                             <input type="text" id="inputAssinatura" required placeholder="Ex: Carlos Eduardo Silva - CPF 000.000.000-00" class="w-full text-sm font-medium bg-slate-50 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500 outline-none">
                         </div>
                         <div class="flex items-center text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border">
                             <i class="fa-solid fa-circle-info text-gas-500 text-lg mr-2.5"></i>
-                            <span>Ao salvar, este nome será computado com carimbo de data, hora e registro imutável do relatório.</span>
+                            <span>Ao salvar, este nome será registrado junto com a data, hora exata e os dados do relatório.</span>
                         </div>
                     </div>
                 </div>
@@ -455,7 +438,7 @@
             </form>
         </div>
 
-        <!-- ABA DE HISTÓRICO -->
+        <!-- ABA DE HISTÓRICO COM OS BOTÕES EXPORTAR CSV E EXPORTAR PDF -->
         <div id="historyTab" class="space-y-6 hidden">
             <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
                 <div class="flex flex-wrap justify-between items-center gap-3 border-b pb-3">
@@ -463,9 +446,13 @@
                         <h2 class="text-base font-bold text-slate-800">Histórico de Relatórios Guardados</h2>
                         <p class="text-xs text-slate-500">Acompanhe todos os RDOs salvos no navegador local.</p>
                     </div>
+                    <!-- BOTÕES DE EXPORTAÇÃO CSV E PDF JUNTOS NO TOPO DO HISTÓRICO -->
                     <div class="flex items-center gap-2">
                         <button onclick="exportCSV()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition flex items-center gap-1.5">
                             <i class="fa-solid fa-file-csv"></i> Exportar CSV
+                        </button>
+                        <button onclick="exportAllPDF()" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-gas-700 hover:bg-gas-900 text-white transition flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-pdf"></i> Exportar PDF Geral
                         </button>
                         <button onclick="clearHistory()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-100 hover:bg-red-200 text-red-700 transition">
                             Limpar Histórico
@@ -486,7 +473,7 @@
                             </tr>
                         </thead>
                         <tbody id="historyTableBody" class="divide-y divide-slate-100">
-                            <!-- Preenchido via Javascript -->
+                            <!-- Preenchido dinamicamente via JS -->
                         </tbody>
                     </table>
                 </div>
@@ -495,7 +482,7 @@
 
     </main>
 
-    <!-- MODAL DE VISUALIZAÇÃO E PDF -->
+    <!-- MODAL DE VISUALIZAÇÃO E DOWNLOAD PDF INDIVIDUAL -->
     <div id="viewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 overflow-y-auto">
         <div class="bg-white rounded-2xl max-w-3xl w-full p-6 space-y-6 shadow-2xl my-8 max-h-[90vh] overflow-y-auto custom-scrollbar">
             <div class="flex justify-between items-start border-b pb-4">
@@ -506,26 +493,24 @@
                 <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">&times;</button>
             </div>
 
-            <!-- Conteúdo Impresso/Exportado -->
             <div id="modalPrintContent" class="space-y-4 text-xs text-slate-700 p-2 border rounded-xl bg-slate-50">
                 <!-- Preenchido via Javascript -->
             </div>
 
             <div class="flex justify-end gap-3 border-t pt-4 no-print">
                 <button onclick="closeModal()" class="px-4 py-2 rounded-xl text-xs font-semibold border text-slate-600 hover:bg-slate-100">Fechar</button>
-                <button onclick="downloadPDF()" class="px-4 py-2 rounded-xl text-xs font-bold bg-gas-700 hover:bg-gas-900 text-white flex items-center gap-2">
+                <button onclick="downloadSinglePDF()" class="px-4 py-2 rounded-xl text-xs font-bold bg-gas-700 hover:bg-gas-900 text-white flex items-center gap-2">
                     <i class="fa-solid fa-file-pdf"></i> Baixar em PDF
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- JAVASCRIPT DE LÓGICA -->
+    <!-- JAVASCRIPT COMPLETO -->
     <script>
         let currentReportType = 'inicial';
         let currentActiveRecord = null;
 
-        // Inicialização
         document.addEventListener('DOMContentLoaded', () => {
             setCurrentDateTime();
             startLiveClock();
@@ -545,39 +530,32 @@
             document.getElementById('inputHorario').value = now.toTimeString().substring(0, 5);
         }
 
-        // Alternar modo de relatório (Inicial / Encerramento)
         function setReportType(type) {
             currentReportType = type;
             const btnInicial = document.getElementById('btnReportInicial');
             const btnEncerramento = document.getElementById('btnReportEncerramento');
             const sectionInicial = document.getElementById('sectionInicial');
             const sectionEncerramento = document.getElementById('sectionEncerramento');
-
             const typeIndicatorIcon = document.getElementById('typeIndicatorIcon');
             const typeIndicatorText = document.getElementById('typeIndicatorText');
 
             if (type === 'inicial') {
                 btnInicial.className = "flex flex-col items-center justify-center p-3.5 rounded-xl border-2 transition-all duration-200 border-gas-500 bg-gas-50 text-gas-900 shadow-sm";
                 btnEncerramento.className = "flex flex-col items-center justify-center p-3.5 rounded-xl border-2 border-slate-200 hover:border-slate-300 text-slate-600 transition-all duration-200";
-
                 sectionInicial.classList.remove('hidden');
                 sectionEncerramento.classList.add('hidden');
-
                 typeIndicatorIcon.className = "fa-solid fa-sun text-gas-yellow text-lg";
                 typeIndicatorText.textContent = "Relatório Inicial (Abertura de Obra)";
             } else {
                 btnEncerramento.className = "flex flex-col items-center justify-center p-3.5 rounded-xl border-2 transition-all duration-200 border-indigo-600 bg-indigo-50 text-indigo-900 shadow-sm";
                 btnInicial.className = "flex flex-col items-center justify-center p-3.5 rounded-xl border-2 border-slate-200 hover:border-slate-300 text-slate-600 transition-all duration-200";
-
                 sectionInicial.classList.add('hidden');
                 sectionEncerramento.classList.remove('hidden');
-
                 typeIndicatorIcon.className = "fa-solid fa-moon text-indigo-400 text-lg";
                 typeIndicatorText.textContent = "Relatório de Encerramento (Fechamento do Turno)";
             }
         }
 
-        // Toggle campos "Outro" nos selects
         function checkCustomOption(selectElement, targetInputId) {
             const input = document.getElementById(targetInputId);
             if (selectElement.value === 'CUSTOM') {
@@ -608,7 +586,6 @@
             else fields.classList.add('hidden');
         }
 
-        // Alternância de Abas
         function switchTab(tabId) {
             const formTab = document.getElementById('formTab');
             const historyTab = document.getElementById('historyTab');
@@ -628,7 +605,6 @@
             }
         }
 
-        // Submissão do Formulário
         function handleFormSubmit(event) {
             event.preventDefault();
 
@@ -702,13 +678,12 @@
             }
 
             saveToStorage(record);
-            alert('Relatório e Assinatura gravados com sucesso!');
+            alert('Relatório gravado com sucesso!');
             resetForm();
             loadHistory();
             switchTab('historyTab');
         }
 
-        // Local Storage
         function saveToStorage(record) {
             const history = JSON.parse(localStorage.getItem('rdo_history') || '[]');
             history.unshift(record);
@@ -741,7 +716,7 @@
                     <td class="p-3">${typeBadge}</td>
                     <td class="p-3 font-semibold text-slate-700">${item.projeto}</td>
                     <td class="p-3">${item.tecnico}</td>
-                    <td class="p-3 text-emerald-700 font-semibold"><i class="fa-solid fa-signature mr-1"></i> ${item.assinatura || 'Não informada'}</td>
+                    <td class="p-3 text-emerald-700 font-semibold"><i class="fa-solid fa-signature mr-1"></i> ${item.assinatura || 'Sem Assinatura'}</td>
                     <td class="p-3 text-right">
                         <button onclick="viewRecord(${item.id})" class="px-2.5 py-1 rounded bg-gas-50 hover:bg-gas-100 text-gas-700 font-bold transition mr-1">
                             Ver / PDF
@@ -813,7 +788,6 @@
                 `;
             }
 
-            // Bloco visual de Assinatura Digital no modal/PDF
             html += `
                 <div class="mt-4 pt-3 border-t-2 border-emerald-500 bg-emerald-50/50 p-3 rounded-lg">
                     <p class="font-bold text-emerald-900 flex items-center gap-1.5 text-xs">
@@ -858,7 +832,7 @@
             });
         }
 
-        // Exportação CSV
+        // FUNÇÃO DE EXPORTAR CSV
         function exportCSV() {
             const history = JSON.parse(localStorage.getItem('rdo_history') || '[]');
             if (history.length === 0) {
@@ -880,8 +854,42 @@
             document.body.removeChild(link);
         }
 
-        // Exportação PDF
-        async function downloadPDF() {
+        // FUNÇÃO DE EXPORTAR PDF DA TABELA GERAL
+        function exportAllPDF() {
+            const history = JSON.parse(localStorage.getItem('rdo_history') || '[]');
+            if (history.length === 0) {
+                alert('Não há dados salvos para exportação.');
+                return;
+            }
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const headers = [["Data/Hora", "Tipo", "Projeto", "Técnico", "Assinatura Digital"]];
+            const rows = history.map(r => [
+                `${r.data} ${r.horario}`,
+                r.tipoRegistro.toUpperCase(),
+                r.projeto,
+                r.tecnico,
+                r.assinatura || 'N/A'
+            ]);
+
+            doc.setFontSize(14);
+            doc.text("Relatório Geral de Obras - ESGás", 14, 15);
+
+            doc.autoTable({
+                head: headers,
+                body: rows,
+                startY: 22,
+                theme: 'grid',
+                headStyles: { fillColor: [2, 132, 199] }
+            });
+
+            doc.save(`rdo_relatorio_geral_${new Date().toISOString().split('T')[0]}.pdf`);
+        }
+
+        // FUNÇÃO DE DOWNLOAD PDF DO RELATÓRIO INDIVIDUAL ATIVO
+        async function downloadSinglePDF() {
             if (!currentActiveRecord) return;
             const { jsPDF } = window.jspdf;
             const element = document.getElementById('modalPrintContent');
