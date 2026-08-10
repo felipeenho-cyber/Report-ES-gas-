@@ -3,935 +3,3900 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório Diário de Obra - Redes de Gás PEAD</title>
-    <!-- Tailwind CSS -->
+
+    <title>RDO - Relatório Diário de Obra</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Google Fonts -->
+
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- jsPDF e html2canvas -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { sans: ['Inter', 'sans-serif'] },
-                    colors: {
-                        gas: {
-                            50: '#f0f9ff', 100: '#e0f2fe', 500: '#0284c7',
-                            700: '#0369a1', 900: '#0c4a6e', orange: '#f97316'
-                        }
-                    }
-                }
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+          rel="stylesheet">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .required-error {
+            border-color: #ef4444 !important;
+            background: #fef2f2 !important;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 10px;
+        }
+
+        .item-row {
+            animation: fadeIn .2s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-4px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
             }
         }
-    </script>
-    <style>
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+        @media print {
+
+            .no-print {
+                display: none !important;
+            }
+
+        }
+
     </style>
 </head>
-<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
 
-    <!-- Header Principal -->
-    <header class="bg-gradient-to-r from-gas-900 via-gas-700 to-slate-900 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
-            <div class="flex items-center space-x-3">
-                <div class="bg-gas-orange p-2.5 rounded-xl text-white font-bold text-xl flex items-center justify-center">
-                    <i class="fa-solid fa-fire-flame-curved"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-lg leading-tight flex items-center gap-2">
-                        Relatório Diário de Obra - RDO
-                        <span class="bg-gas-orange text-[10px] text-white px-2 py-0.5 rounded-full font-medium">PEAD</span>
-                    </h1>
-                    <p class="text-xs text-slate-300">Acompanhamento e Gestão de Campo</p>
-                </div>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+
+
+<!-- ========================================================= -->
+<!-- HEADER -->
+<!-- ========================================================= -->
+
+<header class="bg-gradient-to-r from-sky-900 via-sky-700 to-slate-900 text-white shadow-lg sticky top-0 z-50 no-print">
+
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+
+        <div class="flex items-center gap-3">
+
+            <div class="bg-orange-500 p-3 rounded-xl">
+                <i class="fa-solid fa-hard-hat text-xl"></i>
             </div>
 
-            <!-- Navegação de Abas -->
-            <div class="flex items-center space-x-2">
-                <button onclick="switchTab('formTab')" id="btnTabForm" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/20 hover:bg-white/30 transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-pen-to-square"></i> Formulário
-                </button>
-                <button onclick="switchTab('historyTab')" id="btnTabHistory" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 transition flex items-center gap-1.5">
-                    <i class="fa-solid fa-database"></i> Banco de Dados / Histórico <span id="historyBadge" class="bg-gas-orange text-white text-[10px] px-1.5 py-0.2 rounded-full">0</span>
-                </button>
-            </div>
-        </div>
-    </header>
+            <div>
 
-    <main class="max-w-6xl mx-auto px-4 py-6 flex-1 w-full">
+                <h1 class="font-bold text-lg">
+                    Relatório Diário de Obra - RDO
+                </h1>
 
-        <!-- ABA FORMULÁRIO -->
-        <div id="formTab" class="space-y-6">
+                <p class="text-xs text-slate-300">
+                    Acompanhamento e Gestão de Campo
+                </p>
 
-            <!-- SELETOR DE MODO DO RELATÓRIO -->
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
-                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-center">
-                    <i class="fa-solid fa-sliders text-gas-500 mr-1"></i> Selecione a Etapa do Relatório
-                </label>
-                <div class="grid grid-cols-2 gap-3 max-w-xl mx-auto">
-                    <button type="button" onclick="setReportType('inicial')" id="btnReportInicial"
-                        class="flex flex-col items-center justify-center p-3 rounded-xl border-2 transition border-gas-500 bg-gas-50 text-gas-900 shadow-sm">
-                        <i class="fa-solid fa-sun text-amber-500 text-xl mb-1"></i>
-                        <span class="font-bold text-xs">1. Relatório Inicial</span>
-                        <span class="text-[10px] text-slate-500 mt-0.5">Parcial (Sem Assinatura)</span>
-                    </button>
-
-                    <button type="button" onclick="setReportType('encerramento')" id="btnReportEncerramento"
-                        class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200 hover:border-slate-300 text-slate-600 transition">
-                        <i class="fa-solid fa-moon text-indigo-500 text-xl mb-1"></i>
-                        <span class="font-bold text-xs">2. Encerramento</span>
-                        <span class="text-[10px] text-slate-500 mt-0.5">Fechamento do Dia (Com Assinatura)</span>
-                    </button>
-                </div>
             </div>
 
-            <form id="rdoForm" onsubmit="handleFormSubmit(event)" class="space-y-6">
-
-                <!-- STATUS BANNER -->
-                <div class="flex items-center justify-between bg-gas-900 text-white px-5 py-3 rounded-xl shadow-sm">
-                    <div class="flex items-center space-x-2">
-                        <i id="typeIndicatorIcon" class="fa-solid fa-sun text-amber-400 text-lg"></i>
-                        <span id="typeIndicatorText" class="font-bold text-sm">Relatório Inicial (Abertura de Obra - Parcial)</span>
-                    </div>
-                    <div class="text-xs text-slate-300 font-mono">
-                        <i class="fa-regular fa-clock mr-1"></i><span id="autoDateTime">--/--/---- --:--</span>
-                    </div>
-                </div>
-
-                <!-- IDENTIFICAÇÃO -->
-                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
-                    <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-id-card text-gas-500"></i> Identificação da Obra
-                    </h2>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Projeto <span class="text-red-500">*</span></label>
-                            <select id="selectProjeto" required class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-gas-500">
-                                <option value="">Selecione...</option>
-                                <option value="PRJ-GAS-01 - Redes Vitória">PRJ-GAS-01 - Redes Vitória</option>
-                                <option value="PRJ-GAS-02 - Expansão PEAD Serra">PRJ-GAS-02 - Expansão PEAD Serra</option>
-                                <option value="PRJ-GAS-03 - Vila Velha PEAD">PRJ-GAS-03 - Vila Velha PEAD</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Técnico <span class="text-red-500">*</span></label>
-                            <select id="selectTecnico" required class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-gas-500">
-                                <option value="">Selecione...</option>
-                                <option value="Akilah Daher Alves Fernandes Pires">Akilah Daher Alves Fernandes Pires</option>
-                                <option value="Alice Gomes Tirelli">Alice Gomes Tirelli</option>
-                                <option value="Antônio Marcos Santos de Barros">Antônio Marcos Santos de Barros</option>
-                                <option value="Ivana Natana Evangelista">Ivana Natana Evangelista</option>
-                                <option value="Felipe Wanisangk Marinho">Felipe Wanisangk Marinho</option>
-                                <option value="Jonatas Rocha Pereira">Jonatas Rocha Pereira</option>
-                                <option value="Juan Carlos Pereira Ridolf">Juan Carlos Pereira Ridolf</option>
-                                <option value="Kelly Regina Pereira">Kelly Regina Pereira</option>
-                                <option value="Lorhanna Luduvig Ferreira Costa">Lorhanna Luduvig Ferreira Costa</option>
-                                <option value="Maielly Regina Gonçalves Ribeiro Lima">Maielly Regina Gonçalves Ribeiro Lima</option>
-                                <option value="Marcelayne Vitorino Cantao de Souza">Marcelayne Vitorino Cantao de Souza</option>
-                                <option value="Marcos Soares de Sousa">Marcos Soares de Sousa</option>
-                                <option value="Marcus Vinicius da Silva Panetto">Marcus Vinicius da Silva Panetto</option>
-                                <option value="Wanderson de Carvalho Malaquias">Wanderson de Carvalho Malaquias</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Engenheiro <span class="text-red-500">*</span></label>
-                            <select id="selectEngenheiro" required class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none focus:ring-2 focus:ring-gas-500">
-                                <option value="">Selecione...</option>
-                                <option value="Rodolfo Messias Maciel">Rodolfo Messias Maciel</option>
-                                <option value="Juliano Menezes dos Santos">Juliano Menezes dos Santos</option>
-                                <option value="Magno Antonio Colombo Foppa">Magno Antonio Colombo Foppa</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Tipo de Obra</label>
-                            <input type="text" id="selectTipoObra" value="Rede de PEAD" readonly class="w-full text-xs bg-slate-100 border border-slate-300 rounded-lg p-2.5 font-bold text-gas-700 outline-none">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SEÇÃO 1: RELATÓRIO INICIAL -->
-                <div id="sectionInicial" class="space-y-6">
-                    <!-- SEGURANÇA DO TRABALHO -->
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
-                        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-shield-halved text-emerald-600"></i> Segurança do Trabalho
-                        </h2>
-
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <!-- ITEM 1 -->
-                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2">
-                                <span class="text-xs font-medium text-slate-700 block">1. Condições de trabalho adequadas?</span>
-                                <div class="flex gap-4">
-                                    <label class="text-xs font-semibold"><input type="radio" name="condicoesTrabalho" value="Sim" checked onclick="toggleNC('descCondicoes', false)"> Sim</label>
-                                    <label class="text-xs font-semibold"><input type="radio" name="condicoesTrabalho" value="Não" onclick="toggleNC('descCondicoes', true)"> Não</label>
-                                </div>
-                                <input type="text" id="descCondicoes" placeholder="Descreva o que não está conforme *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 outline-none">
-                                <div>
-                                    <label class="block text-[10px] font-semibold text-slate-500 mb-1">Anexar Foto (Opcional):</label>
-                                    <input type="file" id="fotoCondicoes" accept="image/*" class="text-[10px] w-full text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:bg-slate-200">
-                                </div>
-                            </div>
-
-                            <!-- ITEM 2 -->
-                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2">
-                                <span class="text-xs font-medium text-slate-700 block">2. Ferramental/Caminhão limpo?</span>
-                                <div class="flex gap-4">
-                                    <label class="text-xs font-semibold"><input type="radio" name="caminhaoOrganizado" value="Sim" checked onclick="toggleNC('descCaminhao', false)"> Sim</label>
-                                    <label class="text-xs font-semibold"><input type="radio" name="caminhaoOrganizado" value="Não" onclick="toggleNC('descCaminhao', true)"> Não</label>
-                                </div>
-                                <input type="text" id="descCaminhao" placeholder="Descreva o que não está conforme *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 outline-none">
-                                <div>
-                                    <label class="block text-[10px] font-semibold text-slate-500 mb-1">Anexar Foto (Opcional):</label>
-                                    <input type="file" id="fotoCaminhao" accept="image/*" class="text-[10px] w-full text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:bg-slate-200">
-                                </div>
-                            </div>
-
-                            <!-- ITEM 3 -->
-                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2">
-                                <span class="text-xs font-medium text-slate-700 block">3. Sinalização de via adequada?</span>
-                                <div class="flex gap-4">
-                                    <label class="text-xs font-semibold"><input type="radio" name="sinalizacaoAdequada" value="Sim" checked onclick="toggleNC('descSinalizacao', false)"> Sim</label>
-                                    <label class="text-xs font-semibold"><input type="radio" name="sinalizacaoAdequada" value="Não" onclick="toggleNC('descSinalizacao', true)"> Não</label>
-                                </div>
-                                <input type="text" id="descSinalizacao" placeholder="Descreva o que não está conforme *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 outline-none">
-                                <div>
-                                    <label class="block text-[10px] font-semibold text-slate-500 mb-1">Anexar Foto (Opcional):</label>
-                                    <input type="file" id="fotoSinalizacao" accept="image/*" class="text-[10px] w-full text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:text-[10px] file:bg-slate-200">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- PLANEJAMENTO INICIAL -->
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
-                        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-list-check text-gas-500"></i> Planejamento do Dia
-                        </h2>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Atividades Previstas para o Dia:</label>
-                            <textarea id="atividadesPrevistas" rows="3" placeholder="Descreva o planejamento do turno..." class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-3 outline-none"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- SEÇÃO 2: ENCERRAMENTO -->
-                <div id="sectionEncerramento" class="space-y-6 hidden">
-                    <!-- PRODUÇÃO PEAD -->
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
-                        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-pipe-valve text-indigo-600"></i> Produção & Assentamento PEAD
-                        </h2>
-
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Atividades Efetivamente Realizadas:</label>
-                            <textarea id="atividadesRealizadas" rows="3" placeholder="Descreva o que foi executado..." class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-3 outline-none"></textarea>
-                        </div>
-
-                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
-                            <span class="text-xs font-bold text-slate-700 uppercase block">Diâmetros PEAD Assentados no Turno:</span>
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <div class="bg-white p-3 rounded-lg border">
-                                    <label class="flex items-center gap-2 text-xs font-bold text-gas-700 mb-2">
-                                        <input type="checkbox" id="checkPEAD63" onchange="togglePEAD('FieldsPEAD63')"> PEAD 63mm
-                                    </label>
-                                    <div id="FieldsPEAD63" class="hidden space-y-2">
-                                        <input type="number" id="extensao63" placeholder="Metragem (m)" class="w-full text-xs p-2 border rounded">
-                                        <input type="text" id="estaca63" placeholder="Estaqueamento / Trecho" class="w-full text-xs p-2 border rounded">
-                                    </div>
-                                </div>
-                                <div class="bg-white p-3 rounded-lg border">
-                                    <label class="flex items-center gap-2 text-xs font-bold text-gas-700 mb-2">
-                                        <input type="checkbox" id="checkPEAD125" onchange="togglePEAD('FieldsPEAD125')"> PEAD 125mm
-                                    </label>
-                                    <div id="FieldsPEAD125" class="hidden space-y-2">
-                                        <input type="number" id="extensao125" placeholder="Metragem (m)" class="w-full text-xs p-2 border rounded">
-                                        <input type="text" id="estaca125" placeholder="Estaqueamento / Trecho" class="w-full text-xs p-2 border rounded">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- EFETIVO E EQUIPAMENTOS -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- EFETIVO -->
-                        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3">
-                            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                                <i class="fa-solid fa-users text-gas-500"></i> Efetivo de Equipe
-                            </h2>
-                            <div class="grid grid-cols-2 gap-2 text-xs">
-                                <div><span class="block text-slate-500">Encarregado</span><input type="number" min="0" value="1" id="efEncarregado" class="w-full p-1.5 font-bold border rounded"></div>
-                                <div><span class="block text-slate-500">Soldador PEAD</span><input type="number" min="0" value="1" id="efSoldador" class="w-full p-1.5 font-bold border rounded"></div>
-                                <div><span class="block text-slate-500">Operador</span><input type="number" min="0" value="1" id="efOperador" class="w-full p-1.5 font-bold border rounded"></div>
-                                <div><span class="block text-slate-500">Ajudantes</span><input type="number" min="0" value="3" id="efAjudante" class="w-full p-1.5 font-bold border rounded"></div>
-                            </div>
-
-                            <div class="pt-2 border-t space-y-2">
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-700">
-                                    <input type="checkbox" id="checkFaltaEfetivo" onchange="toggleFalta('descFaltaEfetivo', this.checked)"> Houve falta de efetivo?
-                                </label>
-                                <textarea id="descFaltaEfetivo" rows="2" placeholder="Descreva os profissionais ausentes e o impacto *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 outline-none"></textarea>
-                            </div>
-                        </div>
-
-                        <!-- EQUIPAMENTOS -->
-                        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3">
-                            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                                <i class="fa-solid fa-truck-monster text-gas-500"></i> Equipamentos em Campo
-                            </h2>
-                            <div class="grid grid-cols-2 gap-2 text-xs">
-                                <div><span class="block text-slate-500">Máq. Solda PEAD</span><input type="number" min="0" value="1" id="eqSolda" class="w-full p-1.5 font-bold border rounded"></div>
-                                <div><span class="block text-slate-500">Retroescavadeira</span><input type="number" min="0" value="1" id="eqRetro" class="w-full p-1.5 font-bold border rounded"></div>
-                                <div><span class="block text-slate-500">Caminhão Munck</span><input type="number" min="0" value="1" id="eqMunck" class="w-full p-1.5 font-bold border rounded"></div>
-                                <div><span class="block text-slate-500">Gerador</span><input type="number" min="0" value="1" id="eqGerador" class="w-full p-1.5 font-bold border rounded"></div>
-                            </div>
-
-                            <div class="pt-2 border-t space-y-2">
-                                <label class="flex items-center gap-2 text-xs font-bold text-slate-700">
-                                    <input type="checkbox" id="checkFaltaEqp" onchange="toggleFalta('descFaltaEqp', this.checked)"> Houve falta de equipamento?
-                                </label>
-                                <textarea id="descFaltaEqp" rows="2" placeholder="Descreva os equipamentos ausentes/quebrados *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 outline-none"></textarea>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ASSINATURA TÉCNICA COM DESENHO / CANVAS -->
-                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3">
-                        <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-signature text-emerald-600"></i> Validação Técnica e Encerramento
-                        </h2>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Assinatura Digital (Desenhe com o dedo ou mouse) <span class="text-red-500">*</span></label>
-                            
-                            <div class="border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 p-2 text-center" id="signatureContainer">
-                                <canvas id="signaturePad" class="w-full h-36 bg-white rounded-lg border border-slate-200 cursor-crosshair touch-none"></canvas>
-                                <div class="flex justify-between items-center mt-2 px-1">
-                                    <span id="signatureTimestamp" class="text-[10px] text-slate-500 font-mono">Data/Hora: Não assinada</span>
-                                    <button type="button" onclick="clearSignature()" class="px-2.5 py-1 text-[11px] bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-lg font-semibold transition">
-                                        <i class="fa-solid fa-eraser mr-1"></i> Limpar Assinatura
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- BOTAO SUBMIT -->
-                <div class="flex justify-end gap-3 pt-2">
-                    <button type="submit" id="btnSubmitForm" class="px-6 py-2.5 rounded-xl text-xs font-bold bg-gas-orange hover:bg-orange-600 text-white shadow-md transition flex items-center gap-2">
-                        <i class="fa-solid fa-floppy-disk"></i> Salvar Relatório Inicial (Parcial)
-                    </button>
-                </div>
-            </form>
         </div>
 
-        <!-- ABA HISTÓRICO E BANCO DE DADOS -->
-        <div id="historyTab" class="space-y-6 hidden">
-            <!-- FILTROS -->
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
-                <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-filter text-gas-500"></i> Filtros de Pesquisa
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase">Projeto</label>
-                        <select id="filterProjeto" onchange="renderHistory()" class="w-full text-xs p-2 border rounded-lg bg-slate-50">
-                            <option value="">Todos</option>
-                            <option value="PRJ-GAS-01 - Redes Vitória">PRJ-GAS-01 - Redes Vitória</option>
-                            <option value="PRJ-GAS-02 - Expansão PEAD Serra">PRJ-GAS-02 - Expansão PEAD Serra</option>
-                            <option value="PRJ-GAS-03 - Vila Velha PEAD">PRJ-GAS-03 - Vila Velha PEAD</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase">Data</label>
-                        <input type="date" id="filterData" onchange="renderHistory()" class="w-full text-xs p-2 border rounded-lg bg-slate-50">
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase">Técnico</label>
-                        <select id="filterTecnico" onchange="renderHistory()" class="w-full text-xs p-2 border rounded-lg bg-slate-50">
-                            <option value="">Todos</option>
-                            <option value="Akilah Daher Alves Fernandes Pires">Akilah Daher Alves Fernandes Pires</option>
-                            <option value="Alice Gomes Tirelli">Alice Gomes Tirelli</option>
-                            <option value="Antônio Marcos Santos de Barros">Antônio Marcos Santos de Barros</option>
-                            <option value="Ivana Natana Evangelista">Ivana Natana Evangelista</option>
-                            <option value="Felipe Wanisangk Marinho">Felipe Wanisangk Marinho</option>
-                            <option value="Jonatas Rocha Pereira">Jonatas Rocha Pereira</option>
-                            <option value="Juan Carlos Pereira Ridolf">Juan Carlos Pereira Ridolf</option>
-                            <option value="Kelly Regina Pereira">Kelly Regina Pereira</option>
-                            <option value="Lorhanna Luduvig Ferreira Costa">Lorhanna Luduvig Ferreira Costa</option>
-                            <option value="Maielly Regina Gonçalves Ribeiro Lima">Maielly Regina Gonçalves Ribeiro Lima</option>
-                            <option value="Marcelayne Vitorino Cantao de Souza">Marcelayne Vitorino Cantao de Souza</option>
-                            <option value="Marcos Soares de Sousa">Marcos Soares de Sousa</option>
-                            <option value="Marcus Vinicius da Silva Panetto">Marcus Vinicius da Silva Panetto</option>
-                            <option value="Wanderson de Carvalho Malaquias">Wanderson de Carvalho Malaquias</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase">Engenheiro</label>
-                        <select id="filterEngenheiro" onchange="renderHistory()" class="w-full text-xs p-2 border rounded-lg bg-slate-50">
-                            <option value="">Todos</option>
-                            <option value="Rodolfo Messias Maciel">Rodolfo Messias Maciel</option>
-                            <option value="Juliano Menezes dos Santos">Juliano Menezes dos Santos</option>
-                            <option value="Magno Antonio Colombo Foppa">Magno Antonio Colombo Foppa</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold text-slate-500 uppercase">Tipo de Obra</label>
-                        <select id="filterTipoObra" onchange="renderHistory()" class="w-full text-xs p-2 border rounded-lg bg-slate-50">
-                            <option value="">Todos</option>
-                            <option value="Rede de PEAD">Rede de PEAD</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
 
-            <!-- TABELA BANCO DE DADOS -->
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
-                <div class="flex justify-between items-center border-b pb-3">
-                    <h2 class="text-sm font-bold text-slate-800">Registros Armazenados</h2>
-                    <div class="flex gap-2">
-                        <button onclick="exportFilteredCSV()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 text-white hover:bg-emerald-700 transition">
-                            <i class="fa-solid fa-file-csv mr-1"></i> Exportar CSV (Filtrado)
-                        </button>
-                    </div>
-                </div>
+        <div class="flex gap-2">
 
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-xs">
-                        <thead class="bg-slate-100 text-slate-600 uppercase font-bold border-b">
-                            <tr>
-                                <th class="p-3">Data</th>
-                                <th class="p-3">Projeto</th>
-                                <th class="p-3">Técnico / Eng.</th>
-                                <th class="p-3">Status</th>
-                                <th class="p-3 text-right">Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody id="historyTableBody" class="divide-y divide-slate-100">
-                            <!-- JS preenche dinamicamente -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <button
+                type="button"
+                onclick="switchTab('formTab')"
+                class="px-4 py-2 rounded-lg text-xs font-bold bg-white/20 hover:bg-white/30">
+
+                <i class="fa-solid fa-file-pen mr-1"></i>
+
+                Formulário
+
+            </button>
+
+
+            <button
+                type="button"
+                onclick="switchTab('historyTab')"
+                class="px-4 py-2 rounded-lg text-xs font-bold bg-white/10 hover:bg-white/20">
+
+                <i class="fa-solid fa-clock-rotate-left mr-1"></i>
+
+                Histórico
+
+                <span id="historyBadge"
+                      class="ml-1 bg-orange-500 px-1.5 py-0.5 rounded-full">
+                    0
+                </span>
+
+            </button>
+
         </div>
 
-    </main>
-
-    <!-- MODAL DE VISUALIZAÇÃO APENAS LEITURA / PDF -->
-    <div id="viewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 overflow-y-auto">
-        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 space-y-6 shadow-2xl my-8 max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <div class="flex justify-between items-start border-b pb-4">
-                <div>
-                    <h3 class="font-bold text-base text-slate-800" id="modalTitle">Relatório Diário de Obra PEAD</h3>
-                    <p class="text-xs text-slate-500" id="modalSubTitle"></p>
-                </div>
-                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">&times;</button>
-            </div>
-
-            <div id="modalPrintContent" class="space-y-4 text-xs text-slate-700 p-4 border rounded-xl bg-slate-50">
-                <!-- Conteúdo Visual gerado via JS -->
-            </div>
-
-            <div class="flex justify-end gap-3 border-t pt-4">
-                <button onclick="closeModal()" class="px-4 py-2 rounded-xl text-xs font-semibold border text-slate-600 hover:bg-slate-100">Fechar</button>
-                <button onclick="downloadSinglePDF()" class="px-4 py-2 rounded-xl text-xs font-bold bg-gas-700 hover:bg-gas-900 text-white flex items-center gap-2">
-                    <i class="fa-solid fa-file-pdf"></i> Baixar PDF
-                </button>
-            </div>
-        </div>
     </div>
 
-    <script>
-        let currentReportType = 'inicial';
-        let activeRecordForPDF = null;
+</header>
 
-        // Controle da Assinatura Digital
-        let signatureCanvas, sigCtx;
-        let isSigning = false;
-        let signatureDataUrl = null;
-        let signatureTimestampStr = null;
 
-        document.addEventListener('DOMContentLoaded', () => {
-            updateLiveClock();
-            setInterval(updateLiveClock, 1000);
-            renderHistory();
-            initSignaturePad();
+<main class="max-w-6xl mx-auto px-4 py-6">
+
+
+<!-- ========================================================= -->
+<!-- FORMULÁRIO -->
+<!-- ========================================================= -->
+
+<div id="formTab">
+
+
+    <!-- TIPO DO RDO -->
+
+    <div class="bg-white rounded-2xl border shadow-sm p-5 mb-6 no-print">
+
+        <div class="text-center mb-4">
+
+            <h2 class="text-sm font-bold uppercase">
+                Etapa do RDO
+            </h2>
+
+            <p class="text-xs text-slate-500 mt-1">
+                O horário de abertura e encerramento será registrado automaticamente.
+            </p>
+
+        </div>
+
+
+        <div class="grid grid-cols-2 gap-3 max-w-xl mx-auto">
+
+
+            <button
+                type="button"
+                id="btnInicial"
+                onclick="setReportType('inicial')"
+                class="p-4 rounded-xl border-2 border-sky-500 bg-sky-50">
+
+                <i class="fa-solid fa-play text-sky-600 text-xl"></i>
+
+                <div class="font-bold text-xs mt-2">
+                    Abrir RDO
+                </div>
+
+                <div class="text-[10px] text-slate-500">
+                    Registrar início
+                </div>
+
+            </button>
+
+
+            <button
+                type="button"
+                id="btnEncerramento"
+                onclick="setReportType('encerramento')"
+                class="p-4 rounded-xl border-2 border-slate-200">
+
+                <i class="fa-solid fa-stop text-red-600 text-xl"></i>
+
+                <div class="font-bold text-xs mt-2">
+                    Encerrar RDO
+                </div>
+
+                <div class="text-[10px] text-slate-500">
+                    Registrar finalização
+                </div>
+
+            </button>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- INDICADOR -->
+
+    <div class="bg-sky-900 text-white rounded-xl p-4 mb-6 flex justify-between items-center">
+
+        <div>
+
+            <div id="typeIndicator"
+                 class="font-bold text-sm">
+                Abertura do RDO
+            </div>
+
+            <div class="text-xs text-slate-300">
+                O sistema utilizará o horário real do dispositivo.
+            </div>
+
+        </div>
+
+
+        <div class="font-mono text-xs">
+
+            <i class="fa-regular fa-clock mr-1"></i>
+
+            <span id="currentDateTime">
+                --/--/---- --:--
+            </span>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================================================= -->
+    <!-- SELEÇÃO RDO PARA ENCERRAMENTO -->
+    <!-- ========================================================= -->
+
+    <div id="closureSelector"
+         class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-5 mb-6">
+
+        <h2 class="font-bold text-sm text-amber-900 mb-3">
+
+            <i class="fa-solid fa-link mr-1"></i>
+
+            Selecionar RDO em andamento
+
+        </h2>
+
+
+        <select
+            id="openRdoSelect"
+            onchange="loadOpenRdo()"
+            class="w-full p-3 border rounded-lg bg-white text-sm">
+
+            <option value="">
+                Selecione o RDO que deseja encerrar...
+            </option>
+
+        </select>
+
+
+        <div id="openRdoInfo"
+             class="mt-3">
+        </div>
+
+    </div>
+
+
+    <form
+        id="rdoForm"
+        onsubmit="handleSubmit(event)"
+        class="space-y-6">
+
+
+        <!-- ========================================================= -->
+        <!-- IDENTIFICAÇÃO -->
+        <!-- ========================================================= -->
+
+        <section class="bg-white rounded-2xl border shadow-sm p-5">
+
+            <h2 class="text-xs font-bold uppercase border-b pb-3 mb-5">
+
+                <i class="fa-solid fa-id-card text-sky-600 mr-1"></i>
+
+                Identificação da Obra
+
+            </h2>
+
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+
+                <div>
+
+                    <label class="text-xs font-semibold">
+                        Projeto *
+                    </label>
+
+                    <select
+                        id="projeto"
+                        required
+                        class="w-full mt-1 p-2.5 text-xs border rounded-lg bg-slate-50">
+
+                        <option value="">
+                            Selecione...
+                        </option>
+
+                        <option>
+                            PRJ-GAS-01 - Redes Vitória
+                        </option>
+
+                        <option>
+                            PRJ-GAS-02 - Expansão PEAD Serra
+                        </option>
+
+                        <option>
+                            PRJ-GAS-03 - Vila Velha PEAD
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div>
+
+                    <label class="text-xs font-semibold">
+                        Técnico *
+                    </label>
+
+                    <select
+                        id="tecnico"
+                        required
+                        class="w-full mt-1 p-2.5 text-xs border rounded-lg bg-slate-50">
+
+                        <option value="">
+                            Selecione...
+                        </option>
+
+                        <option>
+                            Akilah Daher Alves Fernandes Pires
+                        </option>
+
+                        <option>
+                            Alice Gomes Tirelli
+                        </option>
+
+                        <option>
+                            Antônio Marcos Santos de Barros
+                        </option>
+
+                        <option>
+                            Ivana Natana Evangelista
+                        </option>
+
+                        <option>
+                            Felipe Wanisangk Marinho
+                        </option>
+
+                        <option>
+                            Jonatas Rocha Pereira
+                        </option>
+
+                        <option>
+                            Juan Carlos Pereira Ridolf
+                        </option>
+
+                        <option>
+                            Kelly Regina Pereira
+                        </option>
+
+                        <option>
+                            Lorhanna Luduvig Ferreira Costa
+                        </option>
+
+                        <option>
+                            Maielly Regina Gonçalves Ribeiro Lima
+                        </option>
+
+                        <option>
+                            Marcelayne Vitorino Cantao de Souza
+                        </option>
+
+                        <option>
+                            Marcos Soares de Sousa
+                        </option>
+
+                        <option>
+                            Marcus Vinicius da Silva Panetto
+                        </option>
+
+                        <option>
+                            Wanderson de Carvalho Malaquias
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div>
+
+                    <label class="text-xs font-semibold">
+                        Engenheiro *
+                    </label>
+
+                    <select
+                        id="engenheiro"
+                        required
+                        class="w-full mt-1 p-2.5 text-xs border rounded-lg bg-slate-50">
+
+                        <option value="">
+                            Selecione...
+                        </option>
+
+                        <option>
+                            Rodolfo Messias Maciel
+                        </option>
+
+                        <option>
+                            Juliano Menezes dos Santos
+                        </option>
+
+                        <option>
+                            Magno Antonio Colombo Foppa
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                <div>
+
+                    <label class="text-xs font-semibold">
+                        Tipo de Obra
+                    </label>
+
+                    <input
+                        id="tipoObra"
+                        value="Rede de PEAD"
+                        class="w-full mt-1 p-2.5 text-xs border rounded-lg bg-slate-100 font-semibold">
+
+                </div>
+
+
+            </div>
+
+        </section>
+
+
+        <!-- ========================================================= -->
+        <!-- ABERTURA -->
+        <!-- ========================================================= -->
+
+        <section id="initialSection"
+                 class="space-y-6">
+
+
+            <!-- SEGURANÇA -->
+
+            <section class="bg-white rounded-2xl border shadow-sm p-5">
+
+                <h2 class="text-xs font-bold uppercase border-b pb-3 mb-5">
+
+                    <i class="fa-solid fa-shield-halved text-emerald-600 mr-1"></i>
+
+                    Validação de Segurança
+
+                </h2>
+
+
+                <div class="grid md:grid-cols-3 gap-4">
+
+
+                    <!-- CONDIÇÕES -->
+
+                    <div class="bg-slate-50 border rounded-xl p-4">
+
+                        <div class="text-xs font-bold mb-3">
+                            Condições de trabalho adequadas?
+                        </div>
+
+
+                        <label class="text-xs mr-4">
+
+                            <input
+                                type="radio"
+                                name="condicoes"
+                                value="Sim"
+                                checked
+                                onchange="toggleValidationDescription('descCondicoes', false)">
+
+                            Sim
+
+                        </label>
+
+
+                        <label class="text-xs">
+
+                            <input
+                                type="radio"
+                                name="condicoes"
+                                value="Não"
+                                onchange="toggleValidationDescription('descCondicoes', true)">
+
+                            Não
+
+                        </label>
+
+
+                        <textarea
+                            id="descCondicoes"
+                            rows="2"
+                            placeholder="Informe a não conformidade..."
+                            class="hidden mt-3 w-full p-2 text-xs border rounded-lg bg-red-50"></textarea>
+
+                    </div>
+
+
+                    <!-- FERRAMENTAL -->
+
+                    <div class="bg-slate-50 border rounded-xl p-4">
+
+                        <div class="text-xs font-bold mb-3">
+                            Ferramental adequado?
+                        </div>
+
+
+                        <label class="text-xs mr-4">
+
+                            <input
+                                type="radio"
+                                name="ferramental"
+                                value="Sim"
+                                checked
+                                onchange="toggleValidationDescription('descFerramental', false)">
+
+                            Sim
+
+                        </label>
+
+
+                        <label class="text-xs">
+
+                            <input
+                                type="radio"
+                                name="ferramental"
+                                value="Não"
+                                onchange="toggleValidationDescription('descFerramental', true)">
+
+                            Não
+
+                        </label>
+
+
+                        <textarea
+                            id="descFerramental"
+                            rows="2"
+                            placeholder="Informe a não conformidade..."
+                            class="hidden mt-3 w-full p-2 text-xs border rounded-lg bg-red-50"></textarea>
+
+                    </div>
+
+
+                    <!-- SINALIZAÇÃO -->
+
+                    <div class="bg-slate-50 border rounded-xl p-4">
+
+                        <div class="text-xs font-bold mb-3">
+                            Sinalização adequada?
+                        </div>
+
+
+                        <label class="text-xs mr-4">
+
+                            <input
+                                type="radio"
+                                name="sinalizacao"
+                                value="Sim"
+                                checked
+                                onchange="toggleValidationDescription('descSinalizacao', false)">
+
+                            Sim
+
+                        </label>
+
+
+                        <label class="text-xs">
+
+                            <input
+                                type="radio"
+                                name="sinalizacao"
+                                value="Não"
+                                onchange="toggleValidationDescription('descSinalizacao', true)">
+
+                            Não
+
+                        </label>
+
+
+                        <textarea
+                            id="descSinalizacao"
+                            rows="2"
+                            placeholder="Informe a não conformidade..."
+                            class="hidden mt-3 w-full p-2 text-xs border rounded-lg bg-red-50"></textarea>
+
+                    </div>
+
+
+                </div>
+
+            </section>
+
+
+            <!-- PLANEJAMENTO -->
+
+            <section class="bg-white rounded-2xl border shadow-sm p-5">
+
+                <h2 class="text-xs font-bold uppercase border-b pb-3 mb-4">
+
+                    <i class="fa-solid fa-list-check text-sky-600 mr-1"></i>
+
+                    Planejamento
+
+                </h2>
+
+
+                <textarea
+                    id="atividadesPrevistas"
+                    rows="5"
+                    required
+                    placeholder="Descreva o que está previsto para o serviço..."
+                    class="w-full p-3 text-xs border rounded-lg bg-slate-50"></textarea>
+
+            </section>
+
+
+        </section>
+
+
+        <!-- ========================================================= -->
+        <!-- ENCERRAMENTO -->
+        <!-- ========================================================= -->
+
+        <section id="closureSection"
+                 class="hidden space-y-6">
+
+
+            <!-- ATIVIDADES -->
+
+            <section class="bg-white rounded-2xl border shadow-sm p-5">
+
+                <h2 class="text-xs font-bold uppercase border-b pb-3 mb-4">
+
+                    <i class="fa-solid fa-clipboard-check text-indigo-600 mr-1"></i>
+
+                    Atividades Realizadas
+
+                </h2>
+
+
+                <textarea
+                    id="atividadesRealizadas"
+                    rows="6"
+                    placeholder="Descreva detalhadamente o que foi realizado..."
+                    class="w-full p-3 text-xs border rounded-lg bg-slate-50"></textarea>
+
+            </section>
+
+
+            <!-- ===================================================== -->
+            <!-- PRODUÇÃO -->
+            <!-- ===================================================== -->
+
+            <section class="bg-white rounded-2xl border shadow-sm p-5">
+
+                <h2 class="text-xs font-bold uppercase border-b pb-3 mb-4">
+
+                    <i class="fa-solid fa-ruler-combined text-indigo-600 mr-1"></i>
+
+                    Produção / Medição
+
+                </h2>
+
+
+                <div class="grid md:grid-cols-2 gap-4">
+
+
+                    <div class="border rounded-xl p-4">
+
+                        <label class="flex items-center gap-2 text-xs font-bold">
+
+                            <input
+                                type="checkbox"
+                                id="pead63"
+                                onchange="toggleProduction('fields63')">
+
+                            PEAD 63 mm
+
+                        </label>
+
+
+                        <div
+                            id="fields63"
+                            class="hidden mt-3 space-y-2">
+
+                            <input
+                                id="metragem63"
+                                type="number"
+                                min="0.01"
+                                step="0.01"
+                                placeholder="Metragem (m)"
+                                class="w-full p-2.5 text-xs border rounded-lg">
+
+                            <input
+                                id="trecho63"
+                                type="text"
+                                placeholder="Trecho / Estaqueamento"
+                                class="w-full p-2.5 text-xs border rounded-lg">
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="border rounded-xl p-4">
+
+                        <label class="flex items-center gap-2 text-xs font-bold">
+
+                            <input
+                                type="checkbox"
+                                id="pead125"
+                                onchange="toggleProduction('fields125')">
+
+                            PEAD 125 mm
+
+                        </label>
+
+
+                        <div
+                            id="fields125"
+                            class="hidden mt-3 space-y-2">
+
+                            <input
+                                id="metragem125"
+                                type="number"
+                                min="0.01"
+                                step="0.01"
+                                placeholder="Metragem (m)"
+                                class="w-full p-2.5 text-xs border rounded-lg">
+
+                            <input
+                                id="trecho125"
+                                type="text"
+                                placeholder="Trecho / Estaqueamento"
+                                class="w-full p-2.5 text-xs border rounded-lg">
+
+                        </div>
+
+                    </div>
+
+
+                </div>
+
+            </section>
+
+
+            <!-- ===================================================== -->
+            <!-- EFETIVO -->
+            <!-- ===================================================== -->
+
+            <section class="bg-white rounded-2xl border shadow-sm p-5">
+
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b pb-3 mb-4">
+
+
+                    <div>
+
+                        <h2 class="text-xs font-bold uppercase">
+
+                            <i class="fa-solid fa-users text-sky-600 mr-1"></i>
+
+                            Efetivo da Equipe
+
+                        </h2>
+
+                        <p class="text-[11px] text-slate-500 mt-1">
+
+                            Inclua manualmente cada função utilizada no serviço.
+
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        onclick="addEmployee()"
+                        class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold">
+
+                        <i class="fa-solid fa-plus mr-1"></i>
+
+                        Adicionar efetivo
+
+                    </button>
+
+
+                </div>
+
+
+                <!-- CABEÇALHO -->
+
+                <div
+                    id="employeeHeader"
+                    class="hidden md:grid grid-cols-12 gap-3 px-2 mb-2 text-[10px] uppercase font-bold text-slate-400">
+
+                    <div class="col-span-8">
+                        Função / Profissional
+                    </div>
+
+                    <div class="col-span-3">
+                        Quantidade
+                    </div>
+
+                    <div class="col-span-1 text-center">
+                        Ação
+                    </div>
+
+                </div>
+
+
+                <!-- ITENS -->
+
+                <div
+                    id="employeesContainer"
+                    class="space-y-2">
+
+                </div>
+
+
+                <!-- VAZIO -->
+
+                <div
+                    id="employeesEmpty"
+                    class="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center">
+
+                    <i class="fa-solid fa-users text-slate-300 text-2xl"></i>
+
+                    <p class="text-xs text-slate-400 mt-2">
+                        Nenhum efetivo adicionado.
+                    </p>
+
+                    <p class="text-[10px] text-slate-400">
+                        Clique em "Adicionar efetivo".
+                    </p>
+
+                </div>
+
+
+            </section>
+
+
+            <!-- ===================================================== -->
+            <!-- EQUIPAMENTOS -->
+            <!-- ===================================================== -->
+
+            <section class="bg-white rounded-2xl border shadow-sm p-5">
+
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b pb-3 mb-4">
+
+
+                    <div>
+
+                        <h2 class="text-xs font-bold uppercase">
+
+                            <i class="fa-solid fa-truck text-sky-600 mr-1"></i>
+
+                            Equipamentos Utilizados
+
+                        </h2>
+
+                        <p class="text-[11px] text-slate-500 mt-1">
+
+                            Inclua manualmente cada equipamento utilizado no serviço.
+
+                        </p>
+
+                    </div>
+
+
+                    <button
+                        type="button"
+                        onclick="addEquipment()"
+                        class="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white rounded-lg text-xs font-bold">
+
+                        <i class="fa-solid fa-plus mr-1"></i>
+
+                        Adicionar equipamento
+
+                    </button>
+
+
+                </div>
+
+
+                <!-- CABEÇALHO -->
+
+                <div
+                    id="equipmentHeader"
+                    class="hidden md:grid grid-cols-12 gap-3 px-2 mb-2 text-[10px] uppercase font-bold text-slate-400">
+
+                    <div class="col-span-8">
+                        Equipamento
+                    </div>
+
+                    <div class="col-span-3">
+                        Quantidade
+                    </div>
+
+                    <div class="col-span-1 text-center">
+                        Ação
+                    </div>
+
+                </div>
+
+
+                <!-- ITENS -->
+
+                <div
+                    id="equipmentContainer"
+                    class="space-y-2">
+
+                </div>
+
+
+                <!-- VAZIO -->
+
+                <div
+                    id="equipmentEmpty"
+                    class="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center">
+
+                    <i class="fa-solid fa-truck text-slate-300 text-2xl"></i>
+
+                    <p class="text-xs text-slate-400 mt-2">
+                        Nenhum equipamento adicionado.
+                    </p>
+
+                    <p class="text-[10px] text-slate-400">
+                        Clique em "Adicionar equipamento".
+                    </p>
+
+                </div>
+
+
+            </section>
+
+
+            <!-- ===================================================== -->
+            <!-- ASSINATURA -->
+            <!-- ===================================================== -->
+
+            <section class="bg-white rounded-2xl border shadow-sm p-5">
+
+                <h2 class="text-xs font-bold uppercase border-b pb-3 mb-4">
+
+                    <i class="fa-solid fa-signature text-emerald-600 mr-1"></i>
+
+                    Validação Técnica e Encerramento
+
+                </h2>
+
+
+                <label class="text-xs font-semibold">
+                    Assinatura Digital *
+                </label>
+
+
+                <canvas
+                    id="signatureCanvas"
+                    width="900"
+                    height="250"
+                    class="w-full h-48 border-2 border-dashed border-slate-300 rounded-xl mt-2 touch-none bg-white">
+                </canvas>
+
+
+                <div class="flex justify-between items-center mt-2">
+
+                    <span
+                        id="signatureStatus"
+                        class="text-xs text-slate-500">
+                        Não assinada
+                    </span>
+
+
+                    <button
+                        type="button"
+                        onclick="clearSignature()"
+                        class="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 rounded-lg text-xs font-semibold">
+
+                        <i class="fa-solid fa-eraser mr-1"></i>
+
+                        Limpar assinatura
+
+                    </button>
+
+                </div>
+
+            </section>
+
+
+        </section>
+
+
+        <!-- ========================================================= -->
+        <!-- BOTÃO -->
+        <!-- ========================================================= -->
+
+        <div class="flex justify-end no-print">
+
+            <button
+                id="submitButton"
+                type="submit"
+                class="px-7 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-sm shadow">
+
+                <i class="fa-solid fa-play mr-1"></i>
+
+                Abrir RDO
+
+            </button>
+
+        </div>
+
+
+    </form>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- HISTÓRICO -->
+<!-- ========================================================= -->
+
+<div id="historyTab"
+     class="hidden">
+
+
+    <section class="bg-white rounded-2xl border shadow-sm p-5">
+
+        <div class="flex flex-wrap items-center justify-between gap-3 border-b pb-4 mb-4">
+
+            <div>
+
+                <h2 class="font-bold text-sm">
+                    Histórico de RDOs
+                </h2>
+
+                <p class="text-xs text-slate-500 mt-1">
+                    Consulte, exporte ou exclua os registros.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                onclick="exportCSV()"
+                class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold">
+
+                <i class="fa-solid fa-file-csv mr-1"></i>
+
+                Exportar CSV
+
+            </button>
+
+        </div>
+
+
+        <div class="overflow-x-auto">
+
+            <table class="w-full text-left text-xs">
+
+                <thead class="bg-slate-100">
+
+                    <tr>
+
+                        <th class="p-3">
+                            ID
+                        </th>
+
+                        <th class="p-3">
+                            Abertura
+                        </th>
+
+                        <th class="p-3">
+                            Projeto
+                        </th>
+
+                        <th class="p-3">
+                            Técnico
+                        </th>
+
+                        <th class="p-3">
+                            Status
+                        </th>
+
+                        <th class="p-3">
+                            Encerramento
+                        </th>
+
+                        <th class="p-3">
+                            Duração
+                        </th>
+
+                        <th class="p-3 text-center">
+                            Ações
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+
+                <tbody id="historyBody"
+                       class="divide-y">
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+</main>
+
+
+<script>
+
+/* =========================================================
+   BANCO
+========================================================= */
+
+let database = JSON.parse(
+    localStorage.getItem('rdo_database') || '[]'
+);
+
+let reportType = 'inicial';
+
+let signatureData = null;
+
+let signatureDate = null;
+
+
+/* =========================================================
+   UTILITÁRIOS
+========================================================= */
+
+function nowISO() {
+
+    return new Date().toISOString();
+
+}
+
+
+function formatDateTime(date) {
+
+    if (!date) {
+        return '';
+    }
+
+    return new Date(date).toLocaleString(
+        'pt-BR'
+    );
+
+}
+
+
+function escapeHTML(value) {
+
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+
+}
+
+
+function formatDuration(start, end) {
+
+    if (!start) {
+        return '-';
+    }
+
+    if (!end) {
+        return 'Em andamento';
+    }
+
+
+    const startDate =
+        new Date(start);
+
+    const endDate =
+        new Date(end);
+
+
+    const difference =
+        endDate - startDate;
+
+
+    if (difference < 0) {
+        return 'Erro de horário';
+    }
+
+
+    const minutes =
+        Math.floor(
+            difference / 60000
+        );
+
+
+    const days =
+        Math.floor(
+            minutes / 1440
+        );
+
+
+    const hours =
+        Math.floor(
+            (minutes % 1440) / 60
+        );
+
+
+    const mins =
+        minutes % 60;
+
+
+    let result = '';
+
+
+    if (days > 0) {
+        result += `${days}d `;
+    }
+
+
+    result += `${hours}h ${mins}min`;
+
+
+    return result;
+
+}
+
+
+function saveDatabase() {
+
+    localStorage.setItem(
+        'rdo_database',
+        JSON.stringify(database)
+    );
+
+    updateHistoryBadge();
+
+}
+
+
+function updateHistoryBadge() {
+
+    document.getElementById(
+        'historyBadge'
+    ).innerText = database.length;
+
+}
+
+
+/* =========================================================
+   TIPO DO RDO
+========================================================= */
+
+function setReportType(type) {
+
+    reportType = type;
+
+
+    const initialSection =
+        document.getElementById(
+            'initialSection'
+        );
+
+
+    const closureSection =
+        document.getElementById(
+            'closureSection'
+        );
+
+
+    const selector =
+        document.getElementById(
+            'closureSelector'
+        );
+
+
+    const btnInicial =
+        document.getElementById(
+            'btnInicial'
+        );
+
+
+    const btnEncerramento =
+        document.getElementById(
+            'btnEncerramento'
+        );
+
+
+    const button =
+        document.getElementById(
+            'submitButton'
+        );
+
+
+    const indicator =
+        document.getElementById(
+            'typeIndicator'
+        );
+
+
+    if (type === 'inicial') {
+
+        initialSection.classList.remove(
+            'hidden'
+        );
+
+        closureSection.classList.add(
+            'hidden'
+        );
+
+        selector.classList.add(
+            'hidden'
+        );
+
+
+        btnInicial.className =
+            'p-4 rounded-xl border-2 border-sky-500 bg-sky-50';
+
+
+        btnEncerramento.className =
+            'p-4 rounded-xl border-2 border-slate-200';
+
+
+        button.innerHTML =
+            '<i class="fa-solid fa-play mr-1"></i> Abrir RDO';
+
+
+        indicator.innerText =
+            'Abertura do RDO';
+
+    }
+
+    else {
+
+        initialSection.classList.add(
+            'hidden'
+        );
+
+        closureSection.classList.remove(
+            'hidden'
+        );
+
+        selector.classList.remove(
+            'hidden'
+        );
+
+
+        btnInicial.className =
+            'p-4 rounded-xl border-2 border-slate-200';
+
+
+        btnEncerramento.className =
+            'p-4 rounded-xl border-2 border-red-500 bg-red-50';
+
+
+        button.innerHTML =
+            '<i class="fa-solid fa-stop mr-1"></i> Finalizar e Encerrar RDO';
+
+
+        indicator.innerText =
+            'Encerramento do RDO';
+
+
+        populateOpenRdos();
+
+    }
+
+}
+
+
+/* =========================================================
+   VALIDAÇÕES DE SEGURANÇA
+========================================================= */
+
+function toggleValidationDescription(
+    elementId,
+    show
+) {
+
+    const element =
+        document.getElementById(
+            elementId
+        );
+
+
+    element.classList.toggle(
+        'hidden',
+        !show
+    );
+
+
+    element.required = show;
+
+
+    if (!show) {
+        element.value = '';
+    }
+
+}
+
+
+/* =========================================================
+   PRODUÇÃO
+========================================================= */
+
+function toggleProduction(id) {
+
+    const element =
+        document.getElementById(id);
+
+    element.classList.toggle(
+        'hidden'
+    );
+
+}
+
+
+/* =========================================================
+   EFETIVO
+========================================================= */
+
+function addEmployee(
+    name = '',
+    quantity = 1
+) {
+
+    const container =
+        document.getElementById(
+            'employeesContainer'
+        );
+
+
+    const row =
+        document.createElement('div');
+
+
+    row.className =
+        'item-row grid grid-cols-12 gap-2 items-center bg-slate-50 border rounded-xl p-2';
+
+
+    row.innerHTML = `
+
+        <div class="col-span-12 md:col-span-8">
+
+            <label class="md:hidden text-[10px] font-bold text-slate-400 uppercase">
+                Função / Profissional
+            </label>
+
+            <input
+                type="text"
+                value="${escapeHTML(name)}"
+                placeholder="Ex.: Soldador PEAD"
+                class="employee-name w-full p-2.5 text-xs border rounded-lg bg-white"
+            >
+
+        </div>
+
+
+        <div class="col-span-10 md:col-span-3">
+
+            <label class="md:hidden text-[10px] font-bold text-slate-400 uppercase">
+                Quantidade
+            </label>
+
+            <input
+                type="number"
+                min="1"
+                step="1"
+                value="${quantity}"
+                class="employee-quantity w-full p-2.5 text-xs border rounded-lg bg-white"
+            >
+
+        </div>
+
+
+        <div class="col-span-2 md:col-span-1 flex justify-center">
+
+            <button
+                type="button"
+                onclick="removeEmployee(this)"
+                class="w-9 h-9 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">
+
+                <i class="fa-solid fa-trash"></i>
+
+            </button>
+
+        </div>
+
+    `;
+
+
+    container.appendChild(row);
+
+
+    updateEmployeeEmptyState();
+
+}
+
+
+function removeEmployee(button) {
+
+    const row =
+        button.closest('.item-row');
+
+
+    if (row) {
+        row.remove();
+    }
+
+
+    updateEmployeeEmptyState();
+
+}
+
+
+function updateEmployeeEmptyState() {
+
+    const container =
+        document.getElementById(
+            'employeesContainer'
+        );
+
+
+    const empty =
+        document.getElementById(
+            'employeesEmpty'
+        );
+
+
+    const header =
+        document.getElementById(
+            'employeeHeader'
+        );
+
+
+    const hasItems =
+        container.children.length > 0;
+
+
+    empty.classList.toggle(
+        'hidden',
+        hasItems
+    );
+
+
+    header.classList.toggle(
+        'hidden',
+        !hasItems
+    );
+
+}
+
+
+function collectEmployees() {
+
+    const rows =
+        document.querySelectorAll(
+            '#employeesContainer .item-row'
+        );
+
+
+    return Array.from(rows)
+        .map(row => {
+
+            const name =
+                row.querySelector(
+                    '.employee-name'
+                ).value.trim();
+
+
+            const quantity =
+                Number(
+                    row.querySelector(
+                        '.employee-quantity'
+                    ).value
+                );
+
+
+            return {
+
+                funcao: name,
+
+                quantidade: quantity
+
+            };
+
+        })
+        .filter(
+            item =>
+                item.funcao &&
+                item.quantidade > 0
+        );
+
+}
+
+
+/* =========================================================
+   EQUIPAMENTOS
+========================================================= */
+
+function addEquipment(
+    name = '',
+    quantity = 1
+) {
+
+    const container =
+        document.getElementById(
+            'equipmentContainer'
+        );
+
+
+    const row =
+        document.createElement('div');
+
+
+    row.className =
+        'item-row grid grid-cols-12 gap-2 items-center bg-slate-50 border rounded-xl p-2';
+
+
+    row.innerHTML = `
+
+        <div class="col-span-12 md:col-span-8">
+
+            <label class="md:hidden text-[10px] font-bold text-slate-400 uppercase">
+                Equipamento
+            </label>
+
+            <input
+                type="text"
+                value="${escapeHTML(name)}"
+                placeholder="Ex.: Retroescavadeira"
+                class="equipment-name w-full p-2.5 text-xs border rounded-lg bg-white"
+            >
+
+        </div>
+
+
+        <div class="col-span-10 md:col-span-3">
+
+            <label class="md:hidden text-[10px] font-bold text-slate-400 uppercase">
+                Quantidade
+            </label>
+
+            <input
+                type="number"
+                min="1"
+                step="1"
+                value="${quantity}"
+                class="equipment-quantity w-full p-2.5 text-xs border rounded-lg bg-white"
+            >
+
+        </div>
+
+
+        <div class="col-span-2 md:col-span-1 flex justify-center">
+
+            <button
+                type="button"
+                onclick="removeEquipment(this)"
+                class="w-9 h-9 rounded-lg bg-red-50 text-red-600 hover:bg-red-100">
+
+                <i class="fa-solid fa-trash"></i>
+
+            </button>
+
+        </div>
+
+    `;
+
+
+    container.appendChild(row);
+
+
+    updateEquipmentEmptyState();
+
+}
+
+
+function removeEquipment(button) {
+
+    const row =
+        button.closest('.item-row');
+
+
+    if (row) {
+        row.remove();
+    }
+
+
+    updateEquipmentEmptyState();
+
+}
+
+
+function updateEquipmentEmptyState() {
+
+    const container =
+        document.getElementById(
+            'equipmentContainer'
+        );
+
+
+    const empty =
+        document.getElementById(
+            'equipmentEmpty'
+        );
+
+
+    const header =
+        document.getElementById(
+            'equipmentHeader'
+        );
+
+
+    const hasItems =
+        container.children.length > 0;
+
+
+    empty.classList.toggle(
+        'hidden',
+        hasItems
+    );
+
+
+    header.classList.toggle(
+        'hidden',
+        !hasItems
+    );
+
+}
+
+
+function collectEquipment() {
+
+    const rows =
+        document.querySelectorAll(
+            '#equipmentContainer .item-row'
+        );
+
+
+    return Array.from(rows)
+        .map(row => {
+
+            const name =
+                row.querySelector(
+                    '.equipment-name'
+                ).value.trim();
+
+
+            const quantity =
+                Number(
+                    row.querySelector(
+                        '.equipment-quantity'
+                    ).value
+                );
+
+
+            return {
+
+                equipamento: name,
+
+                quantidade: quantity
+
+            };
+
+        })
+        .filter(
+            item =>
+                item.equipamento &&
+                item.quantidade > 0
+        );
+
+}
+
+
+/* =========================================================
+   ASSINATURA
+========================================================= */
+
+const signatureCanvas =
+    document.getElementById(
+        'signatureCanvas'
+    );
+
+
+const signatureContext =
+    signatureCanvas.getContext(
+        '2d'
+    );
+
+
+let drawing = false;
+
+
+function getPointerPosition(event) {
+
+    const rect =
+        signatureCanvas.getBoundingClientRect();
+
+
+    const clientX =
+        event.touches
+            ? event.touches[0].clientX
+            : event.clientX;
+
+
+    const clientY =
+        event.touches
+            ? event.touches[0].clientY
+            : event.clientY;
+
+
+    return {
+
+        x:
+            (clientX - rect.left)
+            *
+            (
+                signatureCanvas.width /
+                rect.width
+            ),
+
+        y:
+            (clientY - rect.top)
+            *
+            (
+                signatureCanvas.height /
+                rect.height
+            )
+
+    };
+
+}
+
+
+function startSignature(event) {
+
+    drawing = true;
+
+
+    const position =
+        getPointerPosition(event);
+
+
+    signatureContext.beginPath();
+
+
+    signatureContext.moveTo(
+        position.x,
+        position.y
+    );
+
+}
+
+
+function drawSignature(event) {
+
+    if (!drawing) {
+        return;
+    }
+
+
+    event.preventDefault();
+
+
+    const position =
+        getPointerPosition(event);
+
+
+    signatureContext.lineWidth = 2;
+
+    signatureContext.lineCap = 'round';
+
+    signatureContext.lineJoin = 'round';
+
+
+    signatureContext.lineTo(
+        position.x,
+        position.y
+    );
+
+
+    signatureContext.stroke();
+
+}
+
+
+function finishSignature() {
+
+    if (!drawing) {
+        return;
+    }
+
+
+    drawing = false;
+
+
+    signatureData =
+        signatureCanvas.toDataURL(
+            'image/png'
+        );
+
+
+    signatureDate =
+        nowISO();
+
+
+    document.getElementById(
+        'signatureStatus'
+    ).innerText =
+        `Assinada em ${formatDateTime(signatureDate)}`;
+
+}
+
+
+signatureCanvas.addEventListener(
+    'mousedown',
+    startSignature
+);
+
+
+signatureCanvas.addEventListener(
+    'mousemove',
+    drawSignature
+);
+
+
+signatureCanvas.addEventListener(
+    'mouseup',
+    finishSignature
+);
+
+
+signatureCanvas.addEventListener(
+    'mouseleave',
+    finishSignature
+);
+
+
+signatureCanvas.addEventListener(
+    'touchstart',
+    startSignature
+);
+
+
+signatureCanvas.addEventListener(
+    'touchmove',
+    drawSignature
+);
+
+
+signatureCanvas.addEventListener(
+    'touchend',
+    finishSignature
+);
+
+
+function clearSignature() {
+
+    signatureContext.clearRect(
+        0,
+        0,
+        signatureCanvas.width,
+        signatureCanvas.height
+    );
+
+
+    signatureData = null;
+
+    signatureDate = null;
+
+
+    document.getElementById(
+        'signatureStatus'
+    ).innerText =
+        'Não assinada';
+
+}
+
+
+/* =========================================================
+   RDOs ABERTOS
+========================================================= */
+
+function populateOpenRdos() {
+
+    const select =
+        document.getElementById(
+            'openRdoSelect'
+        );
+
+
+    select.innerHTML = `
+        <option value="">
+            Selecione o RDO que deseja encerrar...
+        </option>
+    `;
+
+
+    database
+        .filter(
+            rdo =>
+                rdo.status === 'Em Andamento'
+        )
+        .forEach(rdo => {
+
+            const option =
+                document.createElement(
+                    'option'
+                );
+
+
+            option.value =
+                rdo.id;
+
+
+            option.textContent =
+                `${rdo.id} | ${rdo.projeto} | ${rdo.tecnico} | ${formatDateTime(rdo.dataHoraAbertura)}`;
+
+
+            select.appendChild(
+                option
+            );
+
         });
 
-        function updateLiveClock() {
-            const now = new Date();
-            document.getElementById('autoDateTime').textContent = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR');
-        }
+}
 
-        /* --- LÓGICA REVISADA DO CANVAS DE ASSINATURA --- */
-        function initSignaturePad() {
-            signatureCanvas = document.getElementById('signaturePad');
-            if (!signatureCanvas) return;
-            
-            // Reajusta tamanho com base na largura real do elemento pai
-            const container = document.getElementById('signatureContainer');
-            signatureCanvas.width = container ? container.clientWidth - 20 : 500;
-            signatureCanvas.height = 140;
 
-            sigCtx = signatureCanvas.getContext('2d');
-            sigCtx.strokeStyle = "#0f172a";
-            sigCtx.lineWidth = 2.5;
-            sigCtx.lineCap = "round";
+function loadOpenRdo() {
 
-            // Eventos de Mouse
-            signatureCanvas.onmousedown = startDrawing;
-            signatureCanvas.onmousemove = draw;
-            signatureCanvas.onmouseup = stopDrawing;
-            signatureCanvas.onmouseleave = stopDrawing;
+    const id =
+        document.getElementById(
+            'openRdoSelect'
+        ).value;
 
-            // Eventos de Touch
-            signatureCanvas.ontouchstart = (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                startDrawing(touch);
-            };
-            signatureCanvas.ontouchmove = (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                draw(touch);
-            };
-            signatureCanvas.ontouchend = stopDrawing;
-        }
 
-        function getCanvasPos(e) {
-            const rect = signatureCanvas.getBoundingClientRect();
-            return {
-                x: e.clientX - rect.left,
-                y: e.clientY - rect.top
-            };
-        }
+    const info =
+        document.getElementById(
+            'openRdoInfo'
+        );
 
-        function startDrawing(e) {
-            isSigning = true;
-            const pos = getCanvasPos(e);
-            sigCtx.beginPath();
-            sigCtx.moveTo(pos.x, pos.y);
 
-            if (!signatureTimestampStr) {
-                const now = new Date();
-                signatureTimestampStr = `${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR')}`;
-                document.getElementById('signatureTimestamp').textContent = `Assinado em: ${signatureTimestampStr}`;
-            }
-        }
+    if (!id) {
 
-        function draw(e) {
-            if (!isSigning) return;
-            const pos = getCanvasPos(e);
-            sigCtx.lineTo(pos.x, pos.y);
-            sigCtx.stroke();
-        }
+        info.innerHTML = '';
 
-        function stopDrawing() {
-            if (isSigning) {
-                isSigning = false;
-                signatureDataUrl = signatureCanvas.toDataURL();
-            }
-        }
+        return;
 
-        function clearSignature() {
-            if (!sigCtx) return;
-            sigCtx.clearRect(0, 0, signatureCanvas.width, signatureCanvas.height);
-            signatureDataUrl = null;
-            signatureTimestampStr = null;
-            document.getElementById('signatureTimestamp').textContent = 'Data/Hora: Não assinada';
-        }
+    }
 
-        /* --- TROCA DE MODO E ABAS --- */
-        function setReportType(type) {
-            currentReportType = type;
-            const btnInicial = document.getElementById('btnReportInicial');
-            const btnEncerramento = document.getElementById('btnReportEncerramento');
-            const sectionInicial = document.getElementById('sectionInicial');
-            const sectionEncerramento = document.getElementById('sectionEncerramento');
-            const btnSubmitForm = document.getElementById('btnSubmitForm');
 
-            if (type === 'inicial') {
-                btnInicial.className = "flex flex-col items-center justify-center p-3 rounded-xl border-2 transition border-gas-500 bg-gas-50 text-gas-900 shadow-sm";
-                btnEncerramento.className = "flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200 hover:border-slate-300 text-slate-600 transition";
-                sectionInicial.classList.remove('hidden');
-                sectionEncerramento.classList.add('hidden');
-                document.getElementById('typeIndicatorText').textContent = "Relatório Inicial (Abertura de Obra - Parcial)";
-                btnSubmitForm.innerHTML = `<i class="fa-solid fa-floppy-disk"></i> Salvar Relatório Inicial (Parcial)`;
-            } else {
-                btnEncerramento.className = "flex flex-col items-center justify-center p-3 rounded-xl border-2 transition border-indigo-600 bg-indigo-50 text-indigo-900 shadow-sm";
-                btnInicial.className = "flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200 hover:border-slate-300 text-slate-600 transition";
-                sectionInicial.classList.add('hidden');
-                sectionEncerramento.classList.remove('hidden');
-                document.getElementById('typeIndicatorText').textContent = "Relatório de Encerramento (Fechamento do Dia)";
-                btnSubmitForm.innerHTML = `<i class="fa-solid fa-check-double"></i> Concluir e Assinar Relatório do Dia`;
-                
-                // Recalcula o canvas assim que exibe a aba de encerramento
-                setTimeout(initSignaturePad, 50);
-            }
-        }
+    const rdo =
+        database.find(
+            item =>
+                item.id === id
+        );
 
-        function toggleNC(inputId, isNC) {
-            const el = document.getElementById(inputId);
-            if (isNC) {
-                el.classList.remove('hidden');
-                el.setAttribute('required', 'true');
-            } else {
-                el.classList.add('hidden');
-                el.removeAttribute('required');
-            }
-        }
 
-        function togglePEAD(id) {
-            document.getElementById(id).classList.toggle('hidden');
-        }
+    if (!rdo) {
+        return;
+    }
 
-        function toggleFalta(id, isChecked) {
-            const el = document.getElementById(id);
-            if (isChecked) {
-                el.classList.remove('hidden');
-                el.setAttribute('required', 'true');
-            } else {
-                el.classList.add('hidden');
-                el.removeAttribute('required');
-            }
-        }
 
-        function switchTab(tab) {
-            if (tab === 'formTab') {
-                document.getElementById('formTab').classList.remove('hidden');
-                document.getElementById('historyTab').classList.add('hidden');
-                document.getElementById('btnTabForm').className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/20 hover:bg-white/30 transition flex items-center gap-1.5";
-                document.getElementById('btnTabHistory').className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 transition flex items-center gap-1.5";
-            } else {
-                document.getElementById('historyTab').classList.remove('hidden');
-                document.getElementById('formTab').classList.add('hidden');
-                document.getElementById('btnTabHistory').className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/20 hover:bg-white/30 transition flex items-center gap-1.5";
-                document.getElementById('btnTabForm').className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 transition flex items-center gap-1.5";
-            }
-        }
+    document.getElementById(
+        'projeto'
+    ).value =
+        rdo.projeto;
 
-        /* --- SUBMISSÃO DE DADOS --- */
-        async function handleFormSubmit(e) {
-            e.preventDefault();
 
-            const now = new Date();
-            const currentDateStr = now.toLocaleDateString('pt-BR');
-            const currentTimeStr = now.toLocaleTimeString('pt-BR');
+    document.getElementById(
+        'tecnico'
+    ).value =
+        rdo.tecnico;
 
-            const projeto = document.getElementById('selectProjeto').value;
-            const tecnico = document.getElementById('selectTecnico').value;
-            const engenheiro = document.getElementById('selectEngenheiro').value;
-            const tipoObra = document.getElementById('selectTipoObra').value;
 
-            let history = JSON.parse(localStorage.getItem('rdo_database') || '[]');
-            let recordIndex = history.findIndex(r => r.data === currentDateStr && r.projeto === projeto);
+    document.getElementById(
+        'engenheiro'
+    ).value =
+        rdo.engenheiro;
 
-            if (currentReportType === 'inicial') {
-                const fotoCond = await fileToBase64(document.getElementById('fotoCondicoes').files[0]);
-                const fotoCam = await fileToBase64(document.getElementById('fotoCaminhao').files[0]);
-                const fotoSinal = await fileToBase64(document.getElementById('fotoSinalizacao').files[0]);
 
-                const inicialData = {
-                    horaRegistro: currentTimeStr,
-                    condicoes: { status: document.querySelector('input[name="condicoesTrabalho"]:checked').value, nc: document.getElementById('descCondicoes').value, foto: fotoCond },
-                    caminhao: { status: document.querySelector('input[name="caminhaoOrganizado"]:checked').value, nc: document.getElementById('descCaminhao').value, foto: fotoCam },
-                    sinalizacao: { status: document.querySelector('input[name="sinalizacaoAdequada"]:checked').value, nc: document.getElementById('descSinalizacao').value, foto: fotoSinal },
-                    atividadesPrevistas: document.getElementById('atividadesPrevistas').value
-                };
+    document.getElementById(
+        'tipoObra'
+    ).value =
+        rdo.tipoObra;
 
-                if (recordIndex >= 0) {
-                    history[recordIndex].inicial = inicialData;
-                } else {
-                    history.unshift({
-                        id: Date.now(),
-                        data: currentDateStr,
-                        projeto, tecnico, engenheiro, tipoObra,
-                        status: 'Parcial',
-                        inicial: inicialData,
-                        encerramento: null
-                    });
-                }
-                alert('Relatório Inicial salvo com sucesso!');
-            } else {
-                if (!signatureDataUrl) {
-                    alert('Por favor, faça a assinatura com o dedo ou mouse antes de encerrar!');
-                    return;
-                }
 
-                const encerramentoData = {
-                    horaRegistro: currentTimeStr,
-                    atividadesRealizadas: document.getElementById('atividadesRealizadas').value,
-                    pead63: document.getElementById('checkPEAD63').checked ? { ext: document.getElementById('extensao63').value, estaca: document.getElementById('estaca63').value } : null,
-                    pead125: document.getElementById('checkPEAD125').checked ? { ext: document.getElementById('extensao125').value, estaca: document.getElementById('estaca125').value } : null,
-                    efetivo: {
-                        encarregado: document.getElementById('efEncarregado').value,
-                        soldador: document.getElementById('efSoldador').value,
-                        operador: document.getElementById('efOperador').value,
-                        ajudante: document.getElementById('efAjudante').value,
-                        falta: document.getElementById('checkFaltaEfetivo').checked,
-                        descFalta: document.getElementById('descFaltaEfetivo').value
-                    },
-                    equipamentos: {
-                        solda: document.getElementById('eqSolda').value,
-                        retro: document.getElementById('eqRetro').value,
-                        munck: document.getElementById('eqMunck').value,
-                        gerador: document.getElementById('eqGerador').value,
-                        falta: document.getElementById('checkFaltaEqp').checked,
-                        descFalta: document.getElementById('descFaltaEqp').value
-                    },
-                    assinatura: {
-                        imagem: signatureDataUrl,
-                        dataHora: signatureTimestampStr
-                    }
-                };
+    document.getElementById(
+        'atividadesPrevistas'
+    ).value =
+        rdo.atividadesPrevistas || '';
 
-                if (recordIndex >= 0) {
-                    history[recordIndex].encerramento = encerramentoData;
-                    history[recordIndex].status = 'Concluído';
-                } else {
-                    history.unshift({
-                        id: Date.now(),
-                        data: currentDateStr,
-                        projeto, tecnico, engenheiro, tipoObra,
-                        status: 'Concluído',
-                        inicial: null,
-                        encerramento: encerramentoData
-                    });
-                }
-                alert('Relatório de Encerramento assinado e concluído!');
-            }
 
-            localStorage.setItem('rdo_database', JSON.stringify(history));
-            document.getElementById('rdoForm').reset();
-            clearSignature();
-            renderHistory();
-            switchTab('historyTab');
-        }
+    info.innerHTML = `
 
-        function fileToBase64(file) {
-            return new Promise((resolve) => {
-                if (!file) resolve(null);
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.readAsDataURL(file);
-            });
-        }
+        <div class="bg-white border rounded-xl p-4">
 
-        /* --- RENDERIZAÇÃO DE HISTÓRICO --- */
-        function renderHistory() {
-            const history = JSON.parse(localStorage.getItem('rdo_database') || '[]');
-            document.getElementById('historyBadge').textContent = history.length;
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
 
-            const fProj = document.getElementById('filterProjeto').value;
-            const fData = document.getElementById('filterData').value;
-            const fTec = document.getElementById('filterTecnico').value;
-            const fEng = document.getElementById('filterEngenheiro').value;
-            const fTipo = document.getElementById('filterTipoObra').value;
+                <div>
 
-            const filtered = history.filter(r => {
-                if (fProj && r.projeto !== fProj) return false;
-                if (fData) {
-                    const parts = r.data.split('/');
-                    const formattedRData = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-                    if (formattedRData !== fData) return false;
-                }
-                if (fTec && r.tecnico !== fTec) return false;
-                if (fEng && r.engenheiro !== fEng) return false;
-                if (fTipo && r.tipoObra !== fTipo) return false;
-                return true;
-            });
+                    <span class="text-slate-400">
+                        RDO
+                    </span>
 
-            const tbody = document.getElementById('historyTableBody');
-            tbody.innerHTML = '';
+                    <div class="font-bold">
+                        ${escapeHTML(rdo.id)}
+                    </div>
 
-            if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-4 text-center text-slate-400">Nenhum registro encontrado.</td></tr>`;
-                return;
-            }
-
-            filtered.forEach(r => {
-                const statusBadge = r.status === 'Concluído' 
-                    ? `<span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-full text-[10px] font-bold">Concluído</span>`
-                    : `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold">Parcial (Inicial)</span>`;
-
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 border-b";
-                tr.innerHTML = `
-                    <td class="p-3 font-medium">${r.data}</td>
-                    <td class="p-3 font-bold text-slate-700">${r.projeto}</td>
-                    <td class="p-3">${r.tecnico} / <span class="text-slate-500">${r.engenheiro}</span></td>
-                    <td class="p-3">${statusBadge}</td>
-                    <td class="p-3 text-right">
-                        <button onclick="viewRecord(${r.id})" class="px-2.5 py-1 rounded bg-gas-50 hover:bg-gas-100 text-gas-700 font-bold transition">
-                            <i class="fa-solid fa-eye mr-1"></i> Visualizar / PDF
-                        </button>
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        /* --- VISUALIZAÇÃO E PDF --- */
-        function viewRecord(id) {
-            const history = JSON.parse(localStorage.getItem('rdo_database') || '[]');
-            const r = history.find(item => item.id === id);
-            if (!r) return;
-
-            activeRecordForPDF = r;
-
-            document.getElementById('modalTitle').textContent = `Relatório Diário do Dia - ${r.projeto}`;
-            document.getElementById('modalSubTitle').textContent = `Data: ${r.data} | Tipo de Obra: ${r.tipoObra}`;
-
-            let html = `
-                <div class="grid grid-cols-2 gap-2 border-b pb-2 mb-2 font-semibold">
-                    <div><strong>Técnico:</strong> ${r.tecnico}</div>
-                    <div><strong>Engenheiro:</strong> ${r.engenheiro}</div>
                 </div>
+
+
+                <div>
+
+                    <span class="text-slate-400">
+                        Início
+                    </span>
+
+                    <div class="font-bold">
+                        ${escapeHTML(formatDateTime(rdo.dataHoraAbertura))}
+                    </div>
+
+                </div>
+
+
+                <div>
+
+                    <span class="text-slate-400">
+                        Tempo em andamento
+                    </span>
+
+                    <div class="font-bold text-amber-600">
+                        ${escapeHTML(formatDuration(rdo.dataHoraAbertura, nowISO()))}
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    `;
+
+}
+
+
+/* =========================================================
+   VALIDAÇÃO DE ENCERRAMENTO
+========================================================= */
+
+function validateClosure() {
+
+    const errors = [];
+
+
+    const rdoId =
+        document.getElementById(
+            'openRdoSelect'
+        ).value;
+
+
+    if (!rdoId) {
+
+        errors.push(
+            'Selecione o RDO que será encerrado.'
+        );
+
+    }
+
+
+    const activities =
+        document.getElementById(
+            'atividadesRealizadas'
+        ).value.trim();
+
+
+    if (!activities) {
+
+        errors.push(
+            'Informe as atividades realizadas.'
+        );
+
+    }
+
+
+    if (!signatureData) {
+
+        errors.push(
+            'A assinatura digital é obrigatória.'
+        );
+
+    }
+
+
+    /* PEAD 63 */
+
+    if (
+        document.getElementById(
+            'pead63'
+        ).checked
+    ) {
+
+        const metragem =
+            Number(
+                document.getElementById(
+                    'metragem63'
+                ).value
+            );
+
+
+        const trecho =
+            document.getElementById(
+                'trecho63'
+            ).value.trim();
+
+
+        if (!(metragem > 0)) {
+
+            errors.push(
+                'Informe a metragem do PEAD 63 mm.'
+            );
+
+        }
+
+
+        if (!trecho) {
+
+            errors.push(
+                'Informe o trecho do PEAD 63 mm.'
+            );
+
+        }
+
+    }
+
+
+    /* PEAD 125 */
+
+    if (
+        document.getElementById(
+            'pead125'
+        ).checked
+    ) {
+
+        const metragem =
+            Number(
+                document.getElementById(
+                    'metragem125'
+                ).value
+            );
+
+
+        const trecho =
+            document.getElementById(
+                'trecho125'
+            ).value.trim();
+
+
+        if (!(metragem > 0)) {
+
+            errors.push(
+                'Informe a metragem do PEAD 125 mm.'
+            );
+
+        }
+
+
+        if (!trecho) {
+
+            errors.push(
+                'Informe o trecho do PEAD 125 mm.'
+            );
+
+        }
+
+    }
+
+
+    /* Efetivo */
+
+    const employees =
+        collectEmployees();
+
+
+    const employeeRows =
+        document.querySelectorAll(
+            '#employeesContainer .item-row'
+        );
+
+
+    if (
+        employeeRows.length > 0 &&
+        employees.length === 0
+    ) {
+
+        errors.push(
+            'Preencha corretamente o efetivo adicionado.'
+        );
+
+    }
+
+
+    /* Equipamentos */
+
+    const equipments =
+        collectEquipment();
+
+
+    const equipmentRows =
+        document.querySelectorAll(
+            '#equipmentContainer .item-row'
+        );
+
+
+    if (
+        equipmentRows.length > 0 &&
+        equipments.length === 0
+    ) {
+
+        errors.push(
+            'Preencha corretamente os equipamentos adicionados.'
+        );
+
+    }
+
+
+    return errors;
+
+}
+
+
+/* =========================================================
+   CRIAR RDO
+========================================================= */
+
+function createRdo() {
+
+    const now =
+        nowISO();
+
+
+    const rdo = {
+
+        id:
+            'RDO-' +
+            Date.now(),
+
+        status:
+            'Em Andamento',
+
+        dataHoraAbertura:
+            now,
+
+        dataHoraEncerramento:
+            null,
+
+        projeto:
+            document.getElementById(
+                'projeto'
+            ).value,
+
+        tecnico:
+            document.getElementById(
+                'tecnico'
+            ).value,
+
+        engenheiro:
+            document.getElementById(
+                'engenheiro'
+            ).value,
+
+        tipoObra:
+            document.getElementById(
+                'tipoObra'
+            ).value,
+
+        atividadesPrevistas:
+            document.getElementById(
+                'atividadesPrevistas'
+            ).value.trim(),
+
+        atividadesRealizadas:
+            '',
+
+        seguranca: {
+
+            condicoes:
+                document.querySelector(
+                    'input[name="condicoes"]:checked'
+                )?.value || '',
+
+            descCondicoes:
+                document.getElementById(
+                    'descCondicoes'
+                ).value.trim(),
+
+            ferramental:
+                document.querySelector(
+                    'input[name="ferramental"]:checked'
+                )?.value || '',
+
+            descFerramental:
+                document.getElementById(
+                    'descFerramental'
+                ).value.trim(),
+
+            sinalizacao:
+                document.querySelector(
+                    'input[name="sinalizacao"]:checked'
+                )?.value || '',
+
+            descSinalizacao:
+                document.getElementById(
+                    'descSinalizacao'
+                ).value.trim()
+
+        },
+
+        producao: [],
+
+        efetivo: [],
+
+        equipamentos: [],
+
+        assinatura:
+            null,
+
+        dataAssinatura:
+            null
+
+    };
+
+
+    database.push(rdo);
+
+
+    saveDatabase();
+
+
+    alert(
+        `RDO ${rdo.id} aberto com sucesso!\n\n` +
+        `Início: ${formatDateTime(now)}`
+    );
+
+
+    resetForm();
+
+}
+
+
+/* =========================================================
+   ENCERRAR RDO
+========================================================= */
+
+function closeRdo() {
+
+    const errors =
+        validateClosure();
+
+
+    if (errors.length > 0) {
+
+        alert(
+            'Corrija os seguintes itens:\n\n' +
+            errors
+                .map(
+                    (error, index) =>
+                        `${index + 1}. ${error}`
+                )
+                .join('\n')
+        );
+
+        return;
+
+    }
+
+
+    const id =
+        document.getElementById(
+            'openRdoSelect'
+        ).value;
+
+
+    const rdo =
+        database.find(
+            item =>
+                item.id === id
+        );
+
+
+    if (!rdo) {
+
+        alert(
+            'RDO não encontrado.'
+        );
+
+        return;
+
+    }
+
+
+    if (
+        rdo.status !==
+        'Em Andamento'
+    ) {
+
+        alert(
+            'Este RDO já foi encerrado.'
+        );
+
+        return;
+
+    }
+
+
+    const endTime =
+        nowISO();
+
+
+    const startTime =
+        new Date(
+            rdo.dataHoraAbertura
+        );
+
+
+    const finishTime =
+        new Date(
+            endTime
+        );
+
+
+    if (
+        finishTime < startTime
+    ) {
+
+        alert(
+            'O horário de encerramento não pode ser anterior ao horário de abertura.'
+        );
+
+        return;
+
+    }
+
+
+    /* ATIVIDADES */
+
+    rdo.atividadesRealizadas =
+        document.getElementById(
+            'atividadesRealizadas'
+        ).value.trim();
+
+
+    /* PRODUÇÃO */
+
+    rdo.producao = [];
+
+
+    if (
+        document.getElementById(
+            'pead63'
+        ).checked
+    ) {
+
+        rdo.producao.push({
+
+            diametro:
+                '63 mm',
+
+            metragem:
+                Number(
+                    document.getElementById(
+                        'metragem63'
+                    ).value
+                ),
+
+            trecho:
+                document.getElementById(
+                    'trecho63'
+                ).value.trim()
+
+        });
+
+    }
+
+
+    if (
+        document.getElementById(
+            'pead125'
+        ).checked
+    ) {
+
+        rdo.producao.push({
+
+            diametro:
+                '125 mm',
+
+            metragem:
+                Number(
+                    document.getElementById(
+                        'metragem125'
+                    ).value
+                ),
+
+            trecho:
+                document.getElementById(
+                    'trecho125'
+                ).value.trim()
+
+        });
+
+    }
+
+
+    /* =====================================================
+       EFETIVO DINÂMICO
+    ===================================================== */
+
+    rdo.efetivo =
+        collectEmployees();
+
+
+    /* =====================================================
+       EQUIPAMENTOS DINÂMICOS
+    ===================================================== */
+
+    rdo.equipamentos =
+        collectEquipment();
+
+
+    /* ASSINATURA */
+
+    rdo.assinatura =
+        signatureData;
+
+
+    rdo.dataAssinatura =
+        signatureDate;
+
+
+    /* HORÁRIO DE ENCERRAMENTO */
+
+    rdo.dataHoraEncerramento =
+        endTime;
+
+
+    /* STATUS */
+
+    rdo.status =
+        'Concluído';
+
+
+    saveDatabase();
+
+
+    alert(
+
+        `RDO ${rdo.id} encerrado com sucesso!\n\n` +
+
+        `Abertura: ${formatDateTime(
+            rdo.dataHoraAbertura
+        )}\n` +
+
+        `Encerramento: ${formatDateTime(
+            rdo.dataHoraEncerramento
+        )}\n` +
+
+        `Duração: ${formatDuration(
+            rdo.dataHoraAbertura,
+            rdo.dataHoraEncerramento
+        )}`
+
+    );
+
+
+    resetForm();
+
+}
+
+
+/* =========================================================
+   SUBMIT
+========================================================= */
+
+function handleSubmit(event) {
+
+    event.preventDefault();
+
+
+    const form =
+        document.getElementById(
+            'rdoForm'
+        );
+
+
+    if (
+        reportType ===
+        'inicial'
+    ) {
+
+        if (!form.checkValidity()) {
+
+            form.reportValidity();
+
+            return;
+
+        }
+
+
+        createRdo();
+
+    }
+
+    else {
+
+        closeRdo();
+
+    }
+
+}
+
+
+/* =========================================================
+   RESET
+========================================================= */
+
+function resetForm() {
+
+    document.getElementById(
+        'rdoForm'
+    ).reset();
+
+
+    document.getElementById(
+        'openRdoSelect'
+    ).value = '';
+
+
+    document.getElementById(
+        'openRdoInfo'
+    ).innerHTML = '';
+
+
+    document.getElementById(
+        'employeesContainer'
+    ).innerHTML = '';
+
+
+    document.getElementById(
+        'equipmentContainer'
+    ).innerHTML = '';
+
+
+    document.getElementById(
+        'fields63'
+    ).classList.add('hidden');
+
+
+    document.getElementById(
+        'fields125'
+    ).classList.add('hidden');
+
+
+    clearSignature();
+
+
+    updateEmployeeEmptyState();
+
+    updateEquipmentEmptyState();
+
+
+    setReportType(
+        'inicial'
+    );
+
+}
+
+
+/* =========================================================
+   HISTÓRICO
+========================================================= */
+
+function renderHistory() {
+
+    const body =
+        document.getElementById(
+            'historyBody'
+        );
+
+
+    body.innerHTML = '';
+
+
+    if (
+        database.length === 0
+    ) {
+
+        body.innerHTML = `
+
+            <tr>
+
+                <td
+                    colspan="8"
+                    class="p-8 text-center text-slate-400">
+
+                    Nenhum RDO cadastrado.
+
+                </td>
+
+            </tr>
+
+        `;
+
+        return;
+
+    }
+
+
+    [...database]
+        .reverse()
+        .forEach(rdo => {
+
+
+            const row =
+                document.createElement(
+                    'tr'
+                );
+
+
+            const statusClass =
+                rdo.status ===
+                'Concluído'
+
+                    ? 'bg-emerald-100 text-emerald-700'
+
+                    : 'bg-amber-100 text-amber-700';
+
+
+            row.innerHTML = `
+
+                <td class="p-3 font-mono">
+                    ${escapeHTML(rdo.id)}
+                </td>
+
+                <td class="p-3">
+                    ${escapeHTML(formatDateTime(rdo.dataHoraAbertura))}
+                </td>
+
+                <td class="p-3 font-semibold">
+                    ${escapeHTML(rdo.projeto)}
+                </td>
+
+                <td class="p-3">
+                    ${escapeHTML(rdo.tecnico)}
+                </td>
+
+                <td class="p-3">
+
+                    <span class="px-2 py-1 rounded-full text-[10px] font-bold ${statusClass}">
+
+                        ${escapeHTML(rdo.status)}
+
+                    </span>
+
+                </td>
+
+                <td class="p-3">
+
+                    ${
+                        rdo.dataHoraEncerramento
+
+                            ? escapeHTML(
+                                formatDateTime(
+                                    rdo.dataHoraEncerramento
+                                )
+                            )
+
+                            : 'Em aberto'
+                    }
+
+                </td>
+
+                <td class="p-3">
+
+                    ${escapeHTML(
+                        formatDuration(
+                            rdo.dataHoraAbertura,
+                            rdo.dataHoraEncerramento
+                        )
+                    )}
+
+                </td>
+
+                <td class="p-3">
+
+                    <div class="flex justify-center gap-3">
+
+                        <button
+                            type="button"
+                            onclick="exportPDF('${rdo.id}')"
+                            class="text-red-600 hover:text-red-800"
+                            title="Gerar PDF">
+
+                            <i class="fa-solid fa-file-pdf"></i>
+
+                        </button>
+
+
+                        <button
+                            type="button"
+                            onclick="deleteRdo('${rdo.id}')"
+                            class="text-slate-500 hover:text-red-600"
+                            title="Excluir">
+
+                            <i class="fa-solid fa-trash"></i>
+
+                        </button>
+
+                    </div>
+
+                </td>
+
             `;
 
-            if (r.inicial) {
-                html += `
-                    <div class="space-y-2 border-b pb-3">
-                        <h4 class="font-bold text-gas-700 uppercase text-[11px]">1. Abertura do Dia (${r.inicial.horaRegistro})</h4>
-                        <p>• <strong>Condições de Trabalho:</strong> ${r.inicial.condicoes.status} ${r.inicial.condicoes.nc ? `(${r.inicial.condicoes.nc})` : ''}</p>
-                        ${r.inicial.condicoes.foto ? `<img src="${r.inicial.condicoes.foto}" class="h-20 rounded border mt-1">` : ''}
-                        
-                        <p>• <strong>Caminhão/Ferramental:</strong> ${r.inicial.caminhao.status} ${r.inicial.caminhao.nc ? `(${r.inicial.caminhao.nc})` : ''}</p>
-                        ${r.inicial.caminhao.foto ? `<img src="${r.inicial.caminhao.foto}" class="h-20 rounded border mt-1">` : ''}
 
-                        <p>• <strong>Sinalização de Via:</strong> ${r.inicial.sinalizacao.status} ${r.inicial.sinalizacao.nc ? `(${r.inicial.sinalizacao.nc})` : ''}</p>
-                        ${r.inicial.sinalizacao.foto ? `<img src="${r.inicial.sinalizacao.foto}" class="h-20 rounded border mt-1">` : ''}
+            body.appendChild(
+                row
+            );
 
-                        <p class="pt-1"><strong>Atividades Previstas:</strong> ${r.inicial.atividadesPrevistas || 'Sem registros'}</p>
-                    </div>
-                `;
+        });
+
+}
+
+
+function deleteRdo(id) {
+
+    const rdo =
+        database.find(
+            item =>
+                item.id === id
+        );
+
+
+    if (!rdo) {
+        return;
+    }
+
+
+    const confirmation =
+        confirm(
+            `Deseja realmente excluir o RDO ${id}?`
+        );
+
+
+    if (!confirmation) {
+        return;
+    }
+
+
+    database =
+        database.filter(
+            item =>
+                item.id !== id
+        );
+
+
+    saveDatabase();
+
+    renderHistory();
+
+}
+
+
+/* =========================================================
+   PDF
+========================================================= */
+
+function exportPDF(id) {
+
+    const rdo =
+        database.find(
+            item =>
+                item.id === id
+        );
+
+
+    if (!rdo) {
+        return;
+    }
+
+
+    const {
+        jsPDF
+    } = window.jspdf;
+
+
+    const doc =
+        new jsPDF();
+
+
+    let y = 18;
+
+
+    function checkPage() {
+
+        if (y > 270) {
+
+            doc.addPage();
+
+            y = 20;
+
+        }
+
+    }
+
+
+    function title(text) {
+
+        checkPage();
+
+
+        doc.setFillColor(
+            241,
+            245,
+            249
+        );
+
+
+        doc.rect(
+            10,
+            y - 5,
+            190,
+            9,
+            'F'
+        );
+
+
+        doc.setFont(
+            'helvetica',
+            'bold'
+        );
+
+
+        doc.setFontSize(
+            10
+        );
+
+
+        doc.setTextColor(
+            30,
+            41,
+            59
+        );
+
+
+        doc.text(
+            text,
+            14,
+            y
+        );
+
+
+        y += 10;
+
+    }
+
+
+    function field(
+        label,
+        value
+    ) {
+
+        checkPage();
+
+
+        doc.setFont(
+            'helvetica',
+            'bold'
+        );
+
+
+        doc.setFontSize(
+            8.5
+        );
+
+
+        doc.text(
+            `${label}:`,
+            14,
+            y
+        );
+
+
+        doc.setFont(
+            'helvetica',
+            'normal'
+        );
+
+
+        const text =
+            doc.splitTextToSize(
+                String(
+                    value || '-'
+                ),
+                150
+            );
+
+
+        doc.text(
+            text,
+            48,
+            y
+        );
+
+
+        y +=
+            Math.max(
+                6,
+                text.length * 4.5
+            );
+
+    }
+
+
+    /* CABEÇALHO */
+
+    doc.setFillColor(
+        7,
+        89,
+        133
+    );
+
+
+    doc.rect(
+        0,
+        0,
+        210,
+        27,
+        'F'
+    );
+
+
+    doc.setTextColor(
+        255,
+        255,
+        255
+    );
+
+
+    doc.setFont(
+        'helvetica',
+        'bold'
+    );
+
+
+    doc.setFontSize(
+        16
+    );
+
+
+    doc.text(
+        'RELATÓRIO DIÁRIO DE OBRA - RDO',
+        14,
+        17
+    );
+
+
+    doc.setTextColor(
+        30,
+        41,
+        59
+    );
+
+
+    y = 37;
+
+
+    /* IDENTIFICAÇÃO */
+
+    title(
+        'IDENTIFICAÇÃO'
+    );
+
+
+    field(
+        'RDO',
+        rdo.id
+    );
+
+
+    field(
+        'Projeto',
+        rdo.projeto
+    );
+
+
+    field(
+        'Técnico',
+        rdo.tecnico
+    );
+
+
+    field(
+        'Engenheiro',
+        rdo.engenheiro
+    );
+
+
+    field(
+        'Tipo de obra',
+        rdo.tipoObra
+    );
+
+
+    field(
+        'Status',
+        rdo.status
+    );
+
+
+    field(
+        'Abertura',
+        formatDateTime(
+            rdo.dataHoraAbertura
+        )
+    );
+
+
+    field(
+        'Encerramento',
+        rdo.dataHoraEncerramento
+            ? formatDateTime(
+                rdo.dataHoraEncerramento
+            )
+            : 'Em aberto'
+    );
+
+
+    field(
+        'Duração',
+        formatDuration(
+            rdo.dataHoraAbertura,
+            rdo.dataHoraEncerramento
+        )
+    );
+
+
+    /* ATIVIDADES */
+
+    title(
+        'ATIVIDADES'
+    );
+
+
+    field(
+        'Previstas',
+        rdo.atividadesPrevistas
+    );
+
+
+    field(
+        'Realizadas',
+        rdo.atividadesRealizadas
+    );
+
+
+    /* PRODUÇÃO */
+
+    title(
+        'PRODUÇÃO / MEDIÇÃO'
+    );
+
+
+    if (
+        rdo.producao &&
+        rdo.producao.length
+    ) {
+
+        rdo.producao.forEach(
+            item => {
+
+                field(
+                    `PEAD ${item.diametro}`,
+                    `${item.metragem} m - Trecho: ${item.trecho}`
+                );
+
             }
+        );
 
-            if (r.encerramento) {
-                html += `
-                    <div class="space-y-2 pt-2">
-                        <h4 class="font-bold text-indigo-700 uppercase text-[11px]">2. Encerramento do Turno (${r.encerramento.horaRegistro})</h4>
-                        <p><strong>Atividades Realizadas:</strong> ${r.encerramento.atividadesRealizadas || 'Sem registros'}</p>
-                        
-                        <h5 class="font-bold text-slate-700 pt-1">Assentamento PEAD:</h5>
-                        ${r.encerramento.pead63 ? `<p>- PEAD 63mm: ${r.encerramento.pead63.ext}m (${r.encerramento.pead63.estaca})</p>` : ''}
-                        ${r.encerramento.pead125 ? `<p>- PEAD 125mm: ${r.encerramento.pead125.ext}m (${r.encerramento.pead125.estaca})</p>` : ''}
-                        ${!r.encerramento.pead63 && !r.encerramento.pead125 ? '<p>- Nenhum assentamento registrado.</p>' : ''}
+    }
 
-                        <h5 class="font-bold text-slate-700 pt-1">Efetivo & Ocorrências:</h5>
-                        <p>Encarregado: ${r.encerramento.efetivo.encarregado} | Soldador PEAD: ${r.encerramento.efetivo.soldador} | Operador: ${r.encerramento.efetivo.operador} | Ajudante: ${r.encerramento.efetivo.ajudante}</p>
-                        ${r.encerramento.efetivo.falta ? `<p class="text-red-600 font-semibold">• Falta de Efetivo: ${r.encerramento.efetivo.descFalta}</p>` : ''}
+    else {
 
-                        <h5 class="font-bold text-slate-700 pt-1">Equipamentos & Ocorrências:</h5>
-                        <p>Máq. Solda: ${r.encerramento.equipamentos.solda} | Retro: ${r.encerramento.equipamentos.retro} | Munck: ${r.encerramento.equipamentos.munck} | Gerador: ${r.encerramento.equipamentos.gerador}</p>
-                        ${r.encerramento.equipamentos.falta ? `<p class="text-red-600 font-semibold">• Falta de Equipamento: ${r.encerramento.equipamentos.descFalta}</p>` : ''}
+        field(
+            'Produção',
+            'Nenhuma medição registrada'
+        );
 
-                        <div class="mt-4 p-3 bg-emerald-50 border-l-4 border-emerald-500 rounded space-y-1">
-                            <p class="font-bold text-emerald-900 text-[10px] uppercase">Assinatura Digital Validada:</p>
-                            <img src="${r.encerramento.assinatura.imagem}" class="h-16 bg-white border rounded p-1 my-1">
-                            <p class="text-[10px] font-mono text-slate-600">Assinado em: ${r.encerramento.assinatura.dataHora}</p>
-                        </div>
-                    </div>
-                `;
-            } else {
-                html += `<div class="p-3 bg-amber-50 text-amber-800 border rounded font-semibold mt-2">Relatório Inicial parcial em aberto. Aguardando o preenchimento de Encerramento.</div>`;
+    }
+
+
+    /* =====================================================
+       EFETIVO
+    ===================================================== */
+
+    title(
+        'EFETIVO DA EQUIPE'
+    );
+
+
+    if (
+        rdo.efetivo &&
+        rdo.efetivo.length
+    ) {
+
+        rdo.efetivo.forEach(
+            item => {
+
+                field(
+                    item.funcao,
+                    `${item.quantidade} pessoa(s)`
+                );
+
             }
+        );
 
-            document.getElementById('modalPrintContent').innerHTML = html;
-            document.getElementById('viewModal').classList.remove('hidden');
-            document.getElementById('viewModal').classList.add('flex');
+    }
+
+    else {
+
+        field(
+            'Efetivo',
+            'Nenhum efetivo informado'
+        );
+
+    }
+
+
+    /* =====================================================
+       EQUIPAMENTOS
+    ===================================================== */
+
+    title(
+        'EQUIPAMENTOS UTILIZADOS'
+    );
+
+
+    if (
+        rdo.equipamentos &&
+        rdo.equipamentos.length
+    ) {
+
+        rdo.equipamentos.forEach(
+            item => {
+
+                field(
+                    item.equipamento,
+                    `${item.quantidade} unidade(s)`
+                );
+
+            }
+        );
+
+    }
+
+    else {
+
+        field(
+            'Equipamentos',
+            'Nenhum equipamento informado'
+        );
+
+    }
+
+
+    /* SEGURANÇA */
+
+    title(
+        'VALIDAÇÃO DE SEGURANÇA'
+    );
+
+
+    if (rdo.seguranca) {
+
+        field(
+            'Condições',
+            rdo.seguranca.condicoes
+        );
+
+
+        if (
+            rdo.seguranca.descCondicoes
+        ) {
+
+            field(
+                'Observação',
+                rdo.seguranca.descCondicoes
+            );
+
         }
 
-        function closeModal() {
-            document.getElementById('viewModal').classList.add('hidden');
-            document.getElementById('viewModal').classList.remove('flex');
+
+        field(
+            'Ferramental',
+            rdo.seguranca.ferramental
+        );
+
+
+        if (
+            rdo.seguranca.descFerramental
+        ) {
+
+            field(
+                'Observação',
+                rdo.seguranca.descFerramental
+            );
+
         }
 
-        /* --- EXPORTAÇÃO CSV --- */
-        function exportFilteredCSV() {
-            const history = JSON.parse(localStorage.getItem('rdo_database') || '[]');
-            if (history.length === 0) return alert('Nenhum dado cadastrado para exportação.');
 
-            const fProj = document.getElementById('filterProjeto').value;
-            const fData = document.getElementById('filterData').value;
-            const fTec = document.getElementById('filterTecnico').value;
-            const fEng = document.getElementById('filterEngenheiro').value;
-            const fTipo = document.getElementById('filterTipoObra').value;
+        field(
+            'Sinalização',
+            rdo.seguranca.sinalizacao
+        );
 
-            const filtered = history.filter(r => {
-                if (fProj && r.projeto !== fProj) return false;
-                if (fData) {
-                    const parts = r.data.split('/');
-                    const formattedRData = `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
-                    if (formattedRData !== fData) return false;
-                }
-                if (fTec && r.tecnico !== fTec) return false;
-                if (fEng && r.engenheiro !== fEng) return false;
-                if (fTipo && r.tipoObra !== fTipo) return false;
-                return true;
-            });
 
-            if (filtered.length === 0) return alert('Nenhum registro encontrado com os filtros selecionados.');
+        if (
+            rdo.seguranca.descSinalizacao
+        ) {
 
-            const headers = ["ID", "Data", "Projeto", "Tecnico", "Engenheiro", "Tipo de Obra", "Status", "Atividades Previstas", "Atividades Realizadas", "Data/Hora Assinatura"];
-            
-            const rows = filtered.map(r => [
-                r.id,
-                `"${r.data}"`,
-                `"${r.projeto.replace(/"/g, '""')}"`,
-                `"${r.tecnico.replace(/"/g, '""')}"`,
-                `"${r.engenheiro.replace(/"/g, '""')}"`,
-                `"${r.tipoObra.replace(/"/g, '""')}"`,
-                `"${r.status}"`,
-                `"${(r.inicial?.atividadesPrevistas || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
-                `"${(r.encerramento?.atividadesRealizadas || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
-                `"${(r.encerramento?.assinatura?.dataHora || 'Sem Assinatura').replace(/"/g, '""')}"`
-            ]);
+            field(
+                'Observação',
+                rdo.seguranca.descSinalizacao
+            );
 
-            const csvContent = [headers.join(";"), ...rows.map(row => row.join(";"))].join("\n");
-            const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
-            const url = URL.createObjectURL(blob);
-            
-            const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", `rdo_banco_de_dados_${new Date().toISOString().split('T')[0]}.csv`);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
         }
 
-        /* --- PDF --- */
-        async function downloadSinglePDF() {
-            if (!activeRecordForPDF) return;
-            const { jsPDF } = window.jspdf;
-            const element = document.getElementById('modalPrintContent');
+    }
 
-            const canvas = await html2canvas(element, { scale: 2 });
-            const imgData = canvas.toDataURL('image/png');
 
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const imgProps = pdf.getImageProperties(imgData);
-            const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
-            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+    /* ASSINATURA */
 
-            pdf.setFontSize(14);
-            pdf.text("Relatório Diário de Obra - PEAD", 10, 15);
-            pdf.addImage(imgData, 'PNG', 10, 25, pdfWidth, pdfHeight);
-            pdf.save(`RDO_${activeRecordForPDF.projeto}_${activeRecordForPDF.data}.pdf`);
+    if (
+        rdo.assinatura
+    ) {
+
+        checkPage();
+
+
+        title(
+            'VALIDAÇÃO / ASSINATURA'
+        );
+
+
+        doc.addImage(
+            rdo.assinatura,
+            'PNG',
+            14,
+            y,
+            85,
+            28
+        );
+
+
+        y += 35;
+
+
+        field(
+            'Assinado em',
+            formatDateTime(
+                rdo.dataAssinatura
+            )
+        );
+
+    }
+
+
+    /* RODAPÉ */
+
+    const pages =
+        doc.internal.getNumberOfPages();
+
+
+    for (
+        let page = 1;
+        page <= pages;
+        page++
+    ) {
+
+        doc.setPage(
+            page
+        );
+
+
+        doc.setFontSize(
+            7
+        );
+
+
+        doc.setTextColor(
+            100,
+            116,
+            139
+        );
+
+
+        doc.text(
+            `RDO ${rdo.id} - Página ${page}/${pages}`,
+            14,
+            290
+        );
+
+    }
+
+
+    doc.save(
+        `RDO_${rdo.id}.pdf`
+    );
+
+}
+
+
+/* =========================================================
+   CSV
+========================================================= */
+
+function csvEscape(value) {
+
+    return '"' +
+        String(
+            value ?? ''
+        )
+        .replace(
+            /"/g,
+            '""'
+        )
+        .replace(
+            /\r?\n/g,
+            ' '
+        ) +
+        '"';
+
+}
+
+
+function exportCSV() {
+
+    if (
+        database.length === 0
+    ) {
+
+        alert(
+            'Não existem RDOs para exportar.'
+        );
+
+        return;
+
+    }
+
+
+    const headers = [
+
+        'ID',
+
+        'Abertura',
+
+        'Encerramento',
+
+        'Projeto',
+
+        'Técnico',
+
+        'Engenheiro',
+
+        'Tipo de Obra',
+
+        'Status',
+
+        'Duração',
+
+        'Atividades Previstas',
+
+        'Atividades Realizadas',
+
+        'Efetivo',
+
+        'Equipamentos',
+
+        'Produção',
+
+        'Condições de Trabalho',
+
+        'Observação Condições',
+
+        'Ferramental',
+
+        'Observação Ferramental',
+
+        'Sinalização',
+
+        'Observação Sinalização',
+
+        'Assinatura'
+
+    ];
+
+
+    let csv =
+        '\uFEFF' +
+        headers
+            .map(csvEscape)
+            .join(';') +
+        '\n';
+
+
+    database.forEach(
+        rdo => {
+
+
+            const employees =
+                (rdo.efetivo || [])
+                    .map(
+                        item =>
+                            `${item.funcao}: ${item.quantidade}`
+                    )
+                    .join(' | ');
+
+
+            const equipment =
+                (rdo.equipamentos || [])
+                    .map(
+                        item =>
+                            `${item.equipamento}: ${item.quantidade}`
+                    )
+                    .join(' | ');
+
+
+            const production =
+                (rdo.producao || [])
+                    .map(
+                        item =>
+                            `PEAD ${item.diametro}: ${item.metragem} m - ${item.trecho}`
+                    )
+                    .join(' | ');
+
+
+            const row = [
+
+                rdo.id,
+
+                formatDateTime(
+                    rdo.dataHoraAbertura
+                ),
+
+                rdo.dataHoraEncerramento
+                    ? formatDateTime(
+                        rdo.dataHoraEncerramento
+                    )
+                    : 'Em aberto',
+
+                rdo.projeto,
+
+                rdo.tecnico,
+
+                rdo.engenheiro,
+
+                rdo.tipoObra,
+
+                rdo.status,
+
+                formatDuration(
+                    rdo.dataHoraAbertura,
+                    rdo.dataHoraEncerramento
+                ),
+
+                rdo.atividadesPrevistas,
+
+                rdo.atividadesRealizadas,
+
+                employees,
+
+                equipment,
+
+                production,
+
+                rdo.seguranca?.condicoes,
+
+                rdo.seguranca?.descCondicoes,
+
+                rdo.seguranca?.ferramental,
+
+                rdo.seguranca?.descFerramental,
+
+                rdo.seguranca?.sinalizacao,
+
+                rdo.seguranca?.descSinalizacao,
+
+                rdo.dataAssinatura
+                    ? formatDateTime(
+                        rdo.dataAssinatura
+                    )
+                    : ''
+
+            ];
+
+
+            csv +=
+                row
+                    .map(csvEscape)
+                    .join(';') +
+                '\n';
+
         }
-    </script>
+    );
+
+
+    const blob =
+        new Blob(
+            [csv],
+            {
+                type:
+                    'text/csv;charset=utf-8;'
+            }
+        );
+
+
+    const url =
+        URL.createObjectURL(
+            blob
+        );
+
+
+    const link =
+        document.createElement(
+            'a'
+        );
+
+
+    link.href =
+        url;
+
+
+    link.download =
+        `RDO_${new Date()
+            .toISOString()
+            .slice(0, 10)}.csv`;
+
+
+    document.body.appendChild(
+        link
+    );
+
+
+    link.click();
+
+
+    link.remove();
+
+
+    URL.revokeObjectURL(
+        url
+    );
+
+}
+
+
+/* =========================================================
+   ABAS
+========================================================= */
+
+function switchTab(tab) {
+
+    document
+        .getElementById(
+            'formTab'
+        )
+        .classList.toggle(
+            'hidden',
+            tab !== 'formTab'
+        );
+
+
+    document
+        .getElementById(
+            'historyTab'
+        )
+        .classList.toggle(
+            'hidden',
+            tab !== 'historyTab'
+        );
+
+
+    if (
+        tab === 'historyTab'
+    ) {
+
+        renderHistory();
+
+    }
+
+}
+
+
+/* =========================================================
+   RELÓGIO
+========================================================= */
+
+function updateClock() {
+
+    document.getElementById(
+        'currentDateTime'
+    ).innerText =
+        new Date().toLocaleString(
+            'pt-BR'
+        );
+
+}
+
+
+/* =========================================================
+   INICIALIZAÇÃO
+========================================================= */
+
+window.addEventListener(
+    'load',
+    function() {
+
+        updateClock();
+
+
+        setInterval(
+            updateClock,
+            1000
+        );
+
+
+        updateHistoryBadge();
+
+
+        updateEmployeeEmptyState();
+
+
+        updateEquipmentEmptyState();
+
+
+        setReportType(
+            'inicial'
+        );
+
+    }
+);
+
+</script>
+
 </body>
 </html>
