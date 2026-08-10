@@ -316,7 +316,7 @@
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Assinatura Digital (Desenhe com o dedo ou mouse) <span class="text-red-500">*</span></label>
                             
-                            <div class="border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 p-2 text-center">
+                            <div class="border-2 border-dashed border-slate-300 rounded-xl bg-slate-50 p-2 text-center" id="signatureContainer">
                                 <canvas id="signaturePad" class="w-full h-36 bg-white rounded-lg border border-slate-200 cursor-crosshair touch-none"></canvas>
                                 <div class="flex justify-between items-center mt-2 px-1">
                                     <span id="signatureTimestamp" class="text-[10px] text-slate-500 font-mono">Data/Hora: Não assinada</span>
@@ -476,43 +476,39 @@
             document.getElementById('autoDateTime').textContent = now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR');
         }
 
-        /* --- LÓGICA DO PAINEL DE ASSINATURA --- */
+        /* --- LÓGICA REVISADA DO CANVAS DE ASSINATURA --- */
         function initSignaturePad() {
             signatureCanvas = document.getElementById('signaturePad');
             if (!signatureCanvas) return;
             
-            signatureCanvas.width = signatureCanvas.offsetWidth || 500;
-            signatureCanvas.height = 150;
+            // Reajusta tamanho com base na largura real do elemento pai
+            const container = document.getElementById('signatureContainer');
+            signatureCanvas.width = container ? container.clientWidth - 20 : 500;
+            signatureCanvas.height = 140;
+
             sigCtx = signatureCanvas.getContext('2d');
             sigCtx.strokeStyle = "#0f172a";
-            sigCtx.lineWidth = 2;
+            sigCtx.lineWidth = 2.5;
             sigCtx.lineCap = "round";
 
             // Eventos de Mouse
-            signatureCanvas.addEventListener('mousedown', startDrawing);
-            signatureCanvas.addEventListener('mousemove', draw);
-            signatureCanvas.addEventListener('mouseup', stopDrawing);
-            signatureCanvas.addEventListener('mouseleave', stopDrawing);
+            signatureCanvas.onmousedown = startDrawing;
+            signatureCanvas.onmousemove = draw;
+            signatureCanvas.onmouseup = stopDrawing;
+            signatureCanvas.onmouseleave = stopDrawing;
 
-            // Eventos de Touch (Celulares e Tablets)
-            signatureCanvas.addEventListener('touchstart', (e) => {
+            // Eventos de Touch
+            signatureCanvas.ontouchstart = (e) => {
                 e.preventDefault();
                 const touch = e.touches[0];
-                const mouseEvent = new MouseEvent("mousedown", { clientX: touch.clientX, clientY: touch.clientY });
-                signatureCanvas.dispatchEvent(mouseEvent);
-            }, { passive: false });
-
-            signatureCanvas.addEventListener('touchmove', (e) => {
+                startDrawing(touch);
+            };
+            signatureCanvas.ontouchmove = (e) => {
                 e.preventDefault();
                 const touch = e.touches[0];
-                const mouseEvent = new MouseEvent("mousemove", { clientX: touch.clientX, clientY: touch.clientY });
-                signatureCanvas.dispatchEvent(mouseEvent);
-            }, { passive: false });
-
-            signatureCanvas.addEventListener('touchend', () => {
-                const mouseEvent = new MouseEvent("mouseup", {});
-                signatureCanvas.dispatchEvent(mouseEvent);
-            });
+                draw(touch);
+            };
+            signatureCanvas.ontouchend = stopDrawing;
         }
 
         function getCanvasPos(e) {
@@ -529,9 +525,11 @@
             sigCtx.beginPath();
             sigCtx.moveTo(pos.x, pos.y);
 
-            const now = new Date();
-            signatureTimestampStr = `${now.toLocaleDateString('pt-BR')} ${now.toLocaleTimeString('pt-BR')}`;
-            document.getElementById('signatureTimestamp').textContent = `Assinado em: ${signatureTimestampStr}`;
+            if (!signatureTimestampStr) {
+                const now = new Date();
+                signatureTimestampStr = `${now.toLocaleDateString('pt-BR')} às ${now.toLocaleTimeString('pt-BR')}`;
+                document.getElementById('signatureTimestamp').textContent = `Assinado em: ${signatureTimestampStr}`;
+            }
         }
 
         function draw(e) {
@@ -579,7 +577,9 @@
                 sectionEncerramento.classList.remove('hidden');
                 document.getElementById('typeIndicatorText').textContent = "Relatório de Encerramento (Fechamento do Dia)";
                 btnSubmitForm.innerHTML = `<i class="fa-solid fa-check-double"></i> Concluir e Assinar Relatório do Dia`;
-                setTimeout(initSignaturePad, 100);
+                
+                // Recalcula o canvas assim que exibe a aba de encerramento
+                setTimeout(initSignaturePad, 50);
             }
         }
 
@@ -623,7 +623,7 @@
             }
         }
 
-        /* --- SUBMISSÃO E UNIFICAÇÃO DE RELATÓRIOS --- */
+        /* --- SUBMISSÃO DE DADOS --- */
         async function handleFormSubmit(e) {
             e.preventDefault();
 
@@ -664,7 +664,7 @@
                         encerramento: null
                     });
                 }
-                alert('Relatório Inicial salvo como PARCIAL!');
+                alert('Relatório Inicial salvo com sucesso!');
             } else {
                 if (!signatureDataUrl) {
                     alert('Por favor, faça a assinatura com o dedo ou mouse antes de encerrar!');
@@ -711,7 +711,7 @@
                         encerramento: encerramentoData
                     });
                 }
-                alert('Relatório de Encerramento gravado com sucesso! Status atualizado para CONCLUÍDO.');
+                alert('Relatório de Encerramento assinado e concluído!');
             }
 
             localStorage.setItem('rdo_database', JSON.stringify(history));
@@ -730,7 +730,7 @@
             });
         }
 
-        /* --- RENDERIZAÇÃO E FILTROS DO BANCO DE DADOS --- */
+        /* --- RENDERIZAÇÃO DE HISTÓRICO --- */
         function renderHistory() {
             const history = JSON.parse(localStorage.getItem('rdo_database') || '[]');
             document.getElementById('historyBadge').textContent = history.length;
@@ -784,7 +784,7 @@
             });
         }
 
-        /* --- VISUALIZAÇÃO DE REGISTRO E PDF --- */
+        /* --- VISUALIZAÇÃO E PDF --- */
         function viewRecord(id) {
             const history = JSON.parse(localStorage.getItem('rdo_database') || '[]');
             const r = history.find(item => item.id === id);
@@ -860,7 +860,7 @@
             document.getElementById('viewModal').classList.remove('flex');
         }
 
-        /* --- EXPORTAÇÃO CSV CORRIGIDA --- */
+        /* --- EXPORTAÇÃO CSV --- */
         function exportFilteredCSV() {
             const history = JSON.parse(localStorage.getItem('rdo_database') || '[]');
             if (history.length === 0) return alert('Nenhum dado cadastrado para exportação.');
@@ -913,7 +913,7 @@
             document.body.removeChild(link);
         }
 
-        /* --- DOWNLOAD EM PDF --- */
+        /* --- PDF --- */
         async function downloadSinglePDF() {
             if (!activeRecordForPDF) return;
             const { jsPDF } = window.jspdf;
