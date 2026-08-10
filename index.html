@@ -3,414 +3,979 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Report Diário de Atividades (RDO)</title>
+    <title>Relatório Diário de Obra - Redes de Gás Natural</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- html2pdf.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- jsPDF para exportação em PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        gas: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            700: '#0369a1',
+                            900: '#0c4a6e',
+                            orange: '#f97316',
+                            yellow: '#eab308'
+                        }
                     }
                 }
             }
         }
     </script>
     <style>
-        body {
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            background-color: #f8fafc;
-            color: #0f172a;
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
         }
-        .glass-card {
-            background: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(226, 232, 240, 0.8);
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
         }
-        .glass-input {
-            background: #ffffff;
-            border: 1px solid #cbd5e1;
-            color: #0f172a;
-            transition: all 0.2s ease;
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
         }
-        .glass-input:focus {
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-            outline: none;
-        }
-        #pdf-template {
-            display: none;
-            background: #ffffff;
-            color: #0f172a;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+        @media print {
+            .no-print { display: none !important; }
+            .print-only { display: block !important; }
+            body { background: white !important; color: black !important; }
+            .shadow-lg, .shadow-md, .shadow-sm { box-shadow: none !important; }
+            .border { border-color: #94a3b8 !important; }
         }
     </style>
 </head>
-<body class="min-h-screen pb-16 pt-8 px-4 sm:px-6 lg:px-8">
+<body class="bg-slate-100 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
 
-    <div class="max-w-4xl mx-auto space-y-8">
-        
-        <!-- HEADER -->
-        <header class="text-center space-y-3">
-            <div class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-100 border border-blue-200 text-blue-700 text-xs font-semibold tracking-wide uppercase">
-                <i class="fa-solid fa-hard-hat text-blue-600"></i> Sistema de Gestão de Obra
-            </div>
-            <h1 class="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-900">
-                Report Diário de Atividades
-            </h1>
-            <p class="text-slate-600 text-sm sm:text-base max-w-lg mx-auto">
-                Registre os avanços diários, condições climáticas e equipes mobilizadas com geração rápida em PDF e TXT.
-            </p>
-        </header>
-
-        <!-- FORM -->
-        <form id="rdoForm" class="space-y-6">
-            
-            <!-- DADOS GERAIS -->
-            <div class="glass-card rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl shadow-slate-200/50">
-                <div class="flex items-center gap-3 border-b border-slate-200 pb-4">
-                    <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg">
-                        <i class="fa-solid fa-building"></i>
-                    </div>
-                    <div>
-                        <h2 class="text-lg font-bold text-slate-900">Informações da Obra</h2>
-                        <p class="text-xs text-slate-500">Identificação do projeto e data de execução</p>
-                    </div>
+    <!-- Header Principal -->
+    <header class="bg-gradient-to-r from-gas-900 via-gas-700 to-slate-900 text-white shadow-md sticky top-0 z-50 no-print">
+        <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+            <div class="flex items-center space-x-3">
+                <div class="bg-gas-orange p-2.5 rounded-xl shadow-inner flex items-center justify-center text-white font-bold text-xl">
+                    <i class="fa-solid fa-fire-flame-curved"></i>
                 </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                    <div class="space-y-2">
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700">
-                            Obra <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="text" id="obra" placeholder="Ex: Marca Ambiental - Galpão 03" required
-                            class="glass-input w-full px-4 py-3 rounded-xl text-sm placeholder-slate-400">
-                    </div>
-
-                    <div class="space-y-2">
-                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700">
-                            OS / N° do Projeto <span class="text-rose-500">*</span>
-                        </label>
-                        <input type="text" id="os" placeholder="Ex: OS-4024958" required
-                            class="glass-input w-full px-4 py-3 rounded-xl text-sm placeholder-slate-400">
-                    </div>
+                <div>
+                    <h1 class="font-bold text-lg leading-tight flex items-center gap-2">
+                        Relatório Diário de Obra - RDO
+                        <span class="bg-gas-orange text-xs text-white px-2 py-0.5 rounded-full font-medium">ESGás</span>
+                    </h1>
+                    <p class="text-xs text-slate-300">Construção de Redes de Distribuição de Gás Natural</p>
                 </div>
-
-                <div class="space-y-2">
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700">
-                        Data do Report <span class="text-rose-500">*</span>
-                    </label>
-                    <input type="date" id="data" required
-                        class="glass-input w-full px-4 py-3 rounded-xl text-sm text-slate-800">
-                </div>
-
-                <!-- CLIMA -->
-                <div class="pt-2">
-                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-3">
-                        <i class="fa-solid fa-cloud-sun text-amber-500 mr-1"></i> Condições Climáticas
-                    </label>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <div class="space-y-1.5">
-                            <span class="text-xs font-medium text-slate-600">Manhã</span>
-                            <select id="clima-manha" class="glass-input w-full px-3 py-2.5 rounded-xl text-sm">
-                                <option value="Bom / Claro">☀️ Bom / Claro</option>
-                                <option value="Nublado">☁️ Nublado</option>
-                                <option value="Chuva Leve">🌦️ Chuva Leve</option>
-                                <option value="Chuva Forte">🌧️ Chuva Forte / Impraticável</option>
-                            </select>
-                        </div>
-                        <div class="space-y-1.5">
-                            <span class="text-xs font-medium text-slate-600">Tarde</span>
-                            <select id="clima-tarde" class="glass-input w-full px-3 py-2.5 rounded-xl text-sm">
-                                <option value="Bom / Claro">☀️ Bom / Claro</option>
-                                <option value="Nublado">☁️ Nublado</option>
-                                <option value="Chuva Leve">🌦️ Chuva Leve</option>
-                                <option value="Chuva Forte">🌧️ Chuva Forte / Impraticável</option>
-                            </select>
-                        </div>
-                        <div class="space-y-1.5">
-                            <span class="text-xs font-medium text-slate-600">Noite</span>
-                            <select id="clima-noite" class="glass-input w-full px-3 py-2.5 rounded-xl text-sm">
-                                <option value="Bom / Claro">🌙 Bom / Claro</option>
-                                <option value="Nublado">☁️ Nublado</option>
-                                <option value="Chuva Leve">🌦️ Chuva Leve</option>
-                                <option value="Chuva Forte">🌧️ Chuva Forte / Impraticável</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-
             </div>
 
-            <!-- EMPREITEIRAS -->
-            <div class="glass-card rounded-2xl p-6 sm:p-8 space-y-6 shadow-xl shadow-slate-200/50">
-                <div class="flex items-center justify-between border-b border-slate-200 pb-4">
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-lg">
-                            <i class="fa-solid fa-users-gear"></i>
+            <!-- Botões de Ação Topo -->
+            <div class="flex items-center space-x-2">
+                <button onclick="switchTab('formTab' )" id="btnTabForm" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/20 hover:bg-white/30 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-pen-to-square"></i> Formulário
+                </button>
+                <button onclick="switchTab('historyTab')" id="btnTabHistory" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 transition flex items-center gap-1.5">
+                    <i class="fa-solid fa-list-check"></i> Histórico <span id="historyBadge" class="bg-gas-orange text-white text-[10px] px-1.5 py-0.2 rounded-full">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-5xl mx-auto px-4 py-6 flex-1 w-full">
+
+        <!-- ABA DE FORMULÁRIO -->
+        <div id="formTab" class="space-y-6">
+
+            <!-- SELETOR DE MODO DO RELATÓRIO -->
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 no-print">
+                <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-center">
+                    <i class="fa-solid fa-sliders text-gas-500 mr-1"></i> Selecione o Tipo de Relatório do Dia
+                </label>
+                <div class="grid grid-cols-2 gap-3 max-w-xl mx-auto">
+                    <button type="button" onclick="setReportType('inicial')" id="btnReportInicial"
+                        class="flex flex-col items-center justify-center p-3.5 rounded-xl border-2 transition-all duration-200 border-gas-500 bg-gas-50 text-gas-900 shadow-sm">
+                        <i class="fa-solid fa-sun text-gas-orange text-2xl mb-1"></i>
+                        <span class="font-bold text-sm">Relatório Inicial</span>
+                        <span class="text-[11px] text-slate-500 mt-0.5">Abertura de Turno & Planejamento</span>
+                    </button>
+
+                    <button type="button" onclick="setReportType('encerramento')" id="btnReportEncerramento"
+                        class="flex flex-col items-center justify-center p-3.5 rounded-xl border-2 border-slate-200 hover:border-slate-300 text-slate-600 transition-all duration-200">
+                        <i class="fa-solid fa-moon text-indigo-500 text-2xl mb-1"></i>
+                        <span class="font-bold text-sm">Encerramento</span>
+                        <span class="text-[11px] text-slate-500 mt-0.5">Fechamento & Produção Realizada</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- FORMULÁRIO PRINCIPAL -->
+            <form id="rdoForm" onsubmit="handleFormSubmit(event)" class="space-y-6">
+
+                <!-- INDICADOR DE TIPO ATIVO -->
+                <div class="flex items-center justify-between bg-gas-900 text-white px-5 py-3 rounded-xl shadow-sm">
+                    <div class="flex items-center space-x-2">
+                        <i id="typeIndicatorIcon" class="fa-solid fa-sun text-gas-yellow text-lg"></i>
+                        <span id="typeIndicatorText" class="font-bold text-sm">Relatório Inicial (Abertura de Obra)</span>
+                    </div>
+                    <div class="text-xs text-slate-300 flex items-center gap-1.5">
+                        <i class="fa-regular fa-clock"></i>
+                        <span id="liveClock" class="font-mono">--:--:--</span>
+                    </div>
+                </div>
+
+                <!-- SEÇÃO 1: CABEÇALHO E IDENTIFICAÇÃO -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
+                    <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-id-card text-gas-500"></i> Identificação da Obra e Responsáveis
+                    </h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Projeto -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Projeto <span class="text-red-500">*</span></label>
+                            <select id="selectProjeto" required onchange="checkCustomOption(this, 'customProjeto')" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-gas-500 focus:bg-white outline-none">
+                                <option value="">Selecione o Projeto...</option>
+                                <option value="PRJ-GAS-01 - Redes Vitória Centro">PRJ-GAS-01 - Redes Vitória Centro</option>
+                                <option value="PRJ-GAS-02 - Expansão PEAD Serra">PRJ-GAS-02 - Expansão PEAD Serra</option>
+                                <option value="PRJ-GAS-03 - Ramal Industrial Vila Velha">PRJ-GAS-03 - Ramal Industrial Vila Velha</option>
+                                <option value="PRJ-GAS-04 - Conversão Interna Cariacica">PRJ-GAS-04 - Conversão Interna Cariacica</option>
+                                <option value="CUSTOM">+ Inserir Outro Projeto</option>
+                            </select>
+                            <input type="text" id="customProjeto" placeholder="Digite o nome do projeto..." class="hidden mt-2 w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-gas-500 outline-none">
+                        </div>
+
+                        <!-- Técnico -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Técnico <span class="text-red-500">*</span></label>
+                            <select id="selectTecnico" required onchange="checkCustomOption(this, 'customTecnico')" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-gas-500 focus:bg-white outline-none">
+                                <option value="">Selecione o Técnico...</option>
+                                <option value="Carlos Eduardo Silva">Carlos Eduardo Silva</option>
+                                <option value="Roberto Alves Santana">Roberto Alves Santana</option>
+                                <option value="Juliana Mendes Costa">Juliana Mendes Costa</option>
+                                <option value="Marcelo Oliveira Ramos">Marcelo Oliveira Ramos</option>
+                                <option value="CUSTOM">+ Outro Técnico</option>
+                            </select>
+                            <input type="text" id="customTecnico" placeholder="Digite o nome do técnico..." class="hidden mt-2 w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-gas-500 outline-none">
+                        </div>
+
+                        <!-- Engenheiro -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Engenheiro <span class="text-red-500">*</span></label>
+                            <select id="selectEngenheiro" required onchange="checkCustomOption(this, 'customEngenheiro')" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-gas-500 focus:bg-white outline-none">
+                                <option value="">Selecione o Engenheiro...</option>
+                                <option value="Eng. Marcos Antonio Oliveira">Eng. Marcos Antonio Oliveira</option>
+                                <option value="Enga. Patricia Santos Lima">Enga. Patricia Santos Lima</option>
+                                <option value="Eng. Fernando Henrique Costa">Eng. Fernando Henrique Costa</option>
+                                <option value="CUSTOM">+ Outro Engenheiro</option>
+                            </select>
+                            <input type="text" id="customEngenheiro" placeholder="Digite o nome do engenheiro..." class="hidden mt-2 w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-gas-500 outline-none">
+                        </div>
+
+                        <!-- Tipo de Obra -->
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Tipo de Obra <span class="text-red-500">*</span></label>
+                            <select id="selectTipoObra" required class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-gas-500 focus:bg-white outline-none">
+                                <option value="">Selecione o Tipo...</option>
+                                <option value="Ramal">Ramal</option>
+                                <option value="Rede de Aço">Rede de Aço</option>
+                                <option value="Rede de PEAD">Rede de PEAD</option>
+                                <option value="Interna">Interna</option>
+                                <option value="Outros">Outros</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Data e Horário -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Data do Preenchimento</label>
+                            <input type="date" id="inputData" required class="w-full text-sm bg-slate-100 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-gas-500 outline-none">
                         </div>
                         <div>
-                            <h2 class="text-lg font-bold text-slate-900">Empreiteiras e Equipes</h2>
-                            <p class="text-xs text-slate-500">Efetivo mobilizado e atividades do dia</p>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Horário do Registro</label>
+                            <input type="time" id="inputHorario" required class="w-full text-sm bg-slate-100 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-gas-500 outline-none">
                         </div>
                     </div>
                 </div>
 
-                <div id="container-empreiteiras" class="space-y-6"></div>
+                <!-- SEÇÃO INICIAL -->
+                <div id="sectionInicial" class="space-y-6">
+                    <!-- Checklist de Segurança -->
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
+                        <div class="flex items-center justify-between border-b pb-2">
+                            <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
+                                <i class="fa-solid fa-shield-halved text-emerald-600"></i> Segurança do Trabalho & Condições do Canteiro
+                            </h2>
+                            <span class="text-[11px] bg-emerald-100 text-emerald-800 font-semibold px-2 py-0.5 rounded">Obrigatório</span>
+                        </div>
 
-                <button type="button" onclick="adicionarEmpreiteira()"
-                    class="w-full py-3.5 px-4 rounded-xl border-2 border-dashed border-slate-300 hover:border-blue-500 hover:bg-blue-50/50 text-slate-700 hover:text-blue-600 text-sm font-semibold transition flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-circle-plus text-base"></i> Adicionar Outra Empreiteira
-                </button>
-            </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col justify-between">
+                                <span class="text-xs font-medium text-slate-700 mb-2">Condições de trabalho adequadas (sanitários, água)?</span>
+                                <div class="flex gap-4">
+                                    <label class="text-xs font-semibold"><input type="radio" name="condicoesTrabalho" value="Sim" checked class="mr-1"> Sim</label>
+                                    <label class="text-xs font-semibold"><input type="radio" name="condicoesTrabalho" value="Não" class="mr-1"> Não</label>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col justify-between">
+                                <span class="text-xs font-medium text-slate-700 mb-2">Caminhão/Ferramental limpo e organizado?</span>
+                                <div class="flex gap-4">
+                                    <label class="text-xs font-semibold"><input type="radio" name="caminhaoOrganizado" value="Sim" checked class="mr-1"> Sim</label>
+                                    <label class="text-xs font-semibold"><input type="radio" name="caminhaoOrganizado" value="Não" class="mr-1"> Não</label>
+                                </div>
+                            </div>
+                            <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col justify-between">
+                                <span class="text-xs font-medium text-slate-700 mb-2">Sinalização de via adequada implantada?</span>
+                                <div class="flex gap-4">
+                                    <label class="text-xs font-semibold"><input type="radio" name="sinalizacaoAdequada" value="Sim" checked onclick="toggleSinalizacaoDesc(false)" class="mr-1"> Sim</label>
+                                    <label class="text-xs font-semibold"><input type="radio" name="sinalizacaoAdequada" value="Não" onclick="toggleSinalizacaoDesc(true)" class="mr-1"> Não</label>
+                                </div>
+                            </div>
+                        </div>
 
-            <!-- BOTÕES DE AÇÃO -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-                <button type="button" onclick="gerarETbaixarTXT()"
-                    class="w-full py-4 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm shadow-lg shadow-emerald-600/20 transition duration-200 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-file-lines text-lg"></i> Baixar Report em TXT
-                </button>
-                <button type="button" onclick="gerarETbaixarPDF()"
-                    class="w-full py-4 px-6 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-sm shadow-lg shadow-rose-600/20 transition duration-200 flex items-center justify-center gap-2">
-                    <i class="fa-solid fa-file-pdf text-lg"></i> Baixar Report em PDF
-                </button>
-            </div>
+                        <div id="divSinalizacaoDesc" class="hidden">
+                            <label class="block text-xs font-semibold text-red-600 mb-1">Justifique a deficiência na sinalização:</label>
+                            <input type="text" id="descSinalizacao" placeholder="Ex: Placas faltantes na rotatória..." class="w-full text-sm bg-red-50 border border-red-300 rounded-lg p-2.5 outline-none">
+                        </div>
+                    </div>
 
-        </form>
-    </div>
+                    <!-- Horários e Equipe Inicial -->
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
+                        <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-clock text-gas-500"></i> Horários & Equipe de Contrato
+                        </h2>
 
-    <!-- TEMPLATE OCULTO PARA IMPRESSÃO DO PDF -->
-    <div id="pdf-template" class="p-8 space-y-6">
-        <div class="border-b-4 border-blue-600 pb-4 flex justify-between items-end">
-            <div>
-                <h1 class="text-2xl font-black text-slate-900 uppercase tracking-tight">Report Diário de Atividades</h1>
-                <p class="text-xs text-slate-500 font-semibold mt-1">RELATÓRIO DIÁRIO DE OBRA (RDO)</p>
-            </div>
-            <div class="text-right">
-                <span class="inline-block px-3 py-1 bg-blue-100 text-blue-800 rounded font-bold text-xs uppercase" id="pdf-data-tag"></span>
-            </div>
-        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Horário Previsto do Técnico:</label>
+                                <input type="time" id="horarioPrevistoTecnico" value="07:00" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Horário Real de Chegada do Técnico:</label>
+                                <input type="time" id="horarioRealTecnico" value="07:00" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Justificativa de Atraso (se houver):</label>
+                                <input type="text" id="justificativaAtrasoTecnico" placeholder="Nenhuma" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none">
+                            </div>
+                        </div>
 
-        <div class="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-lg border border-slate-200 text-xs">
-            <div>
-                <p class="text-slate-500 uppercase font-semibold text-[10px]">Obra / Local</p>
-                <p class="font-bold text-slate-800 text-sm" id="pdf-obra"></p>
-            </div>
-            <div>
-                <p class="text-slate-500 uppercase font-semibold text-[10px]">OS / N° do Projeto</p>
-                <p class="font-bold text-slate-800 text-sm" id="pdf-os"></p>
-            </div>
-            <div class="col-span-2 border-t border-slate-200 pt-2 mt-1">
-                <p class="text-slate-500 uppercase font-semibold text-[10px]">Condições Climáticas</p>
-                <p class="font-semibold text-slate-700" id="pdf-clima"></p>
-            </div>
-        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Nome da Empreiteira Executante:</label>
+                                <input type="text" id="nomeEmpreiteira" placeholder="Ex: Construcap / Geen / Serbeg" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Horário Previsto Chegada Empreiteira:</label>
+                                <input type="time" id="horarioPrevistoEmpreiteira" value="07:30" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none">
+                            </div>
+                        </div>
 
-        <div>
-            <h3 class="text-sm font-bold text-slate-900 uppercase border-b border-slate-200 pb-2 mb-3">Empreiteiras e Atividades</h3>
-            <div id="pdf-empreiteiras-list" class="space-y-4"></div>
-        </div>
-    </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Atividades Previstas para o Dia:</label>
+                            <textarea id="atividadesPrevistas" rows="3" placeholder="Descreva os serviços planejados..." class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-3 outline-none"></textarea>
+                        </div>
+                    </div>
+                </div>
 
-<script>
-    let contadorEmpreiteiras = 0;
-    const listaEmpresas = ["TEXCAL", "CONCREJATO", "MN Engenharia", "Engenhar"];
+                <!-- SEÇÃO ENCERRAMENTO -->
+                <div id="sectionEncerramento" class="space-y-6 hidden">
+                    <!-- Produção e Atividades Executadas -->
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
+                        <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-helmet-safety text-indigo-600"></i> Produção & Atividades Realizadas
+                        </h2>
 
-    window.onload = function() {
-        document.getElementById('data').valueAsDate = new Date();
-        adicionarEmpreiteira();
-    };
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Chegada Real Empreiteira:</label>
+                                <input type="time" id="horarioRealChegadaEmpreiteira" value="07:30" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Início Efetivo das Atividades:</label>
+                                <input type="time" id="horarioInicioAtividades" value="08:00" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Justificativa Atraso Início:</label>
+                                <input type="text" id="justificativaAtrasoInicio" placeholder="Nenhuma" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none">
+                            </div>
+                        </div>
 
-    function adicionarEmpreiteira() {
-        contadorEmpreiteiras++;
-        const container = document.getElementById('container-empreiteiras');
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Atividades Executadas no Turno:</label>
+                            <textarea id="atividadesRealizadas" rows="3" placeholder="Descreva o que foi realizado..." class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-3 outline-none"></textarea>
+                        </div>
 
-        let optionsEmpresas = listaEmpresas.map(emp => `<option value="${emp}">${emp}</option>`).join('');
+                        <!-- Assentamento de Tubos -->
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
+                            <div class="flex justify-between items-center">
+                                <span class="text-xs font-bold text-slate-700 uppercase">Houve Assentamento de Tubos/Redes?</span>
+                                <div class="flex gap-4">
+                                    <label class="text-xs font-semibold"><input type="radio" name="houveAssentamento" value="Sim" onclick="toggleAssentamentoSection(true)" class="mr-1"> Sim</label>
+                                    <label class="text-xs font-semibold"><input type="radio" name="houveAssentamento" value="Não" checked onclick="toggleAssentamentoSection(false)" class="mr-1"> Não</label>
+                                </div>
+                            </div>
 
-        const div = document.createElement('div');
-        div.className = 'p-5 rounded-xl bg-slate-50 border border-slate-200 space-y-4 relative transition duration-200 hover:border-slate-300 shadow-sm';
-        div.id = `emp-box-${contadorEmpreiteiras}`;
-        div.innerHTML = `
-            <div class="flex justify-between items-center pb-2 border-b border-slate-200">
-                <span class="text-xs font-bold uppercase tracking-wider text-blue-600 flex items-center gap-2">
-                    <i class="fa-solid fa-helmet-safety"></i> Empreiteira #${contadorEmpreiteiras}
-                </span>
-                ${contadorEmpreiteiras > 1 ? `
-                    <button type="button" onclick="removerEmpreiteira(${contadorEmpreiteiras})" class="text-xs px-2.5 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold transition flex items-center gap-1 border border-rose-200">
-                        <i class="fa-solid fa-trash-can"></i> Remover
+                            <div id="divAssentamentoDetalhes" class="hidden space-y-3 pt-2 border-t border-slate-200">
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <!-- 63mm -->
+                                    <div class="bg-white p-3 rounded-lg border">
+                                        <label class="flex items-center gap-2 text-xs font-semibold mb-2">
+                                            <input type="checkbox" id="checkDiam63" onchange="toggleDiamFields(63)"> 63mm PEAD
+                                        </label>
+                                        <div id="fieldsDiam63" class="hidden space-y-2">
+                                            <input type="number" id="extensao63" placeholder="Extensão (m)" class="w-full text-xs p-2 border rounded">
+                                            <input type="text" id="estaca63" placeholder="Estaqueamento (ex: Est 10 a 15)" class="w-full text-xs p-2 border rounded">
+                                        </div>
+                                    </div>
+                                    <!-- 125mm -->
+                                    <div class="bg-white p-3 rounded-lg border">
+                                        <label class="flex items-center gap-2 text-xs font-semibold mb-2">
+                                            <input type="checkbox" id="checkDiam125" onchange="toggleDiamFields(125)"> 125mm PEAD
+                                        </label>
+                                        <div id="fieldsDiam125" class="hidden space-y-2">
+                                            <input type="number" id="extensao125" placeholder="Extensão (m)" class="w-full text-xs p-2 border rounded">
+                                            <input type="text" id="estaca125" placeholder="Estaqueamento" class="w-full text-xs p-2 border rounded">
+                                        </div>
+                                    </div>
+                                    <!-- 6 Pol -->
+                                    <div class="bg-white p-3 rounded-lg border">
+                                        <label class="flex items-center gap-2 text-xs font-semibold mb-2">
+                                            <input type="checkbox" id="checkDiam6pol" onchange="toggleDiamFields('6pol')"> 6" Aço
+                                        </label>
+                                        <div id="fieldsDiam6pol" class="hidden space-y-2">
+                                            <input type="number" id="extensao6pol" placeholder="Extensão (m)" class="w-full text-xs p-2 border rounded">
+                                            <input type="text" id="estaca6pol" placeholder="Estaqueamento" class="w-full text-xs p-2 border rounded">
+                                        </div>
+                                    </div>
+                                    <!-- 8 Pol -->
+                                    <div class="bg-white p-3 rounded-lg border">
+                                        <label class="flex items-center gap-2 text-xs font-semibold mb-2">
+                                            <input type="checkbox" id="checkDiam8pol" onchange="toggleDiamFields('8pol')"> 8" Aço
+                                        </label>
+                                        <div id="fieldsDiam8pol" class="hidden space-y-2">
+                                            <input type="number" id="extensao8pol" placeholder="Extensão (m)" class="w-full text-xs p-2 border rounded">
+                                            <input type="text" id="estaca8pol" placeholder="Estaqueamento" class="w-full text-xs p-2 border rounded">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Efetivo & Equipamentos -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Efetivo -->
+                        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3">
+                            <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-users text-gas-500"></i> Efetivo de Equipe
+                            </h2>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div><span class="block text-slate-500">Encarregado</span><input type="number" min="0" value="1" id="efetivoEncarregado" class="w-full p-1.5 font-bold border rounded"></div>
+                                <div><span class="block text-slate-500">Navegador</span><input type="number" min="0" value="1" id="efetivoNavegador" class="w-full p-1.5 font-bold border rounded"></div>
+                                <div><span class="block text-slate-500">Operador</span><input type="number" min="0" value="1" id="efetivoOperador" class="w-full p-1.5 font-bold border rounded"></div>
+                                <div><span class="block text-slate-500">Inspetor</span><input type="number" min="0" value="1" id="efetivoInspetor" class="w-full p-1.5 font-bold border rounded"></div>
+                                <div><span class="block text-slate-500">Motorista</span><input type="number" min="0" value="1" id="efetivoMotorista" class="w-full p-1.5 font-bold border rounded"></div>
+                                <div><span class="block text-slate-500">Pedreiro</span><input type="number" min="0" value="2" id="efetivoPedreiro" class="w-full p-1.5 font-bold border rounded"></div>
+                                <div><span class="block text-slate-500">Soldador</span><input type="number" min="0" value="1" id="efetivoSoldador" class="w-full p-1.5 font-bold border rounded"></div>
+                                <div><span class="block text-slate-500">Ajudante</span><input type="number" min="0" value="4" id="efetivoAjudante" class="w-full p-1.5 font-bold border rounded"></div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Justificativa Divergência Efetivo:</label>
+                                <input type="text" id="justificativaEfetivo" placeholder="Nenhuma" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2 outline-none">
+                            </div>
+                        </div>
+
+                        <!-- Equipamentos -->
+                        <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3">
+                            <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-truck-monster text-gas-500"></i> Equipamentos em Campo
+                            </h2>
+                            <div class="grid grid-cols-2 gap-2 text-xs">
+                                <div><span class="block text-slate-500">Máquina Furo</span><input type="number" min="0" value="1" id="eqpMaquinaFuro" class="w-full p-1.5 font-bold border rounded"></div>
+                                <div><span class="block text-slate-500">Retroescavadeira</span><input type="number" min="0" value="1" id="eqpRetro" class="w-full p-1.5 font-bold border rounded"></div>
+                                <div><span class="block text-slate-500">Munck</span><input type="number" min="0" value="0" id="eqpMunck" class="w-full p-1.5 font-bold border rounded"></div>
+                                <div><span class="block text-slate-500">Caminhão Prancha</span><input type="number" min="0" value="1" id="eqpPrancha" class="w-full p-1.5 font-bold border rounded"></div>
+                                <div><span class="block text-slate-500">Caminhão Pipa</span><input type="number" min="0" value="0" id="eqpPipa" class="w-full p-1.5 font-bold border rounded"></div>
+                                <div><span class="block text-slate-500">Caminhão Sugador</span><input type="number" min="0" value="1" id="eqpSugador" class="w-full p-1.5 font-bold border rounded"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Horários Encerramento & Considerações -->
+                    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
+                        <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-flag-checkered text-gas-500"></i> Fechamento & Considerações
+                        </h2>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Horário Previsto Encerramento:</label>
+                                <input type="time" id="horarioPrevistoEncerramento" value="17:00" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Horário Real Encerramento:</label>
+                                <input type="time" id="horarioRealEncerramento" value="17:00" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Justificativa Variação Encerramento:</label>
+                            <input type="text" id="justificativaHorarioEncerramento" placeholder="Nenhuma" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Comentários Adicionais:</label>
+                            <textarea id="comentariosAdicionais" rows="2" placeholder="Observações..." class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-3 outline-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BARRAS DE BOTÕES DE AÇÃO (SEM WHATSAPP, COM CSV E PDF) -->
+                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-wrap gap-3 justify-between items-center no-print">
+                    <button type="button" onclick="resetForm()" class="px-4 py-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-semibold text-xs transition flex items-center gap-2">
+                        <i class="fa-solid fa-rotate-left"></i> Limpar Formulário
                     </button>
-                ` : ''}
-            </div>
 
-            <div class="space-y-2">
-                <label class="block text-xs font-semibold text-slate-700">Empresas Cadastradas <span class="text-rose-500">*</span></label>
-                <select class="emp-nome glass-input w-full px-4 py-2.5 rounded-xl text-sm" required>
-                    <option value="">Selecione uma empreiteira...</option>
-                    ${optionsEmpresas}
-                </select>
-            </div>
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" onclick="exportCSV()" class="px-4 py-2.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-xl font-semibold text-xs transition flex items-center gap-2">
+                            <i class="fa-solid fa-file-csv text-base"></i> Exportar CSV
+                        </button>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-semibold text-slate-700">Horário Chegada</label>
-                    <input type="time" class="emp-chegada glass-input w-full px-3 py-2 rounded-xl text-sm">
+                        <button type="button" onclick="exportPDFCurrent()" class="px-4 py-2.5 text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-300 rounded-xl font-semibold text-xs transition flex items-center gap-2">
+                            <i class="fa-solid fa-file-pdf text-base"></i> Salvar PDF
+                        </button>
+
+                        <button type="submit" class="px-6 py-2.5 text-white bg-gas-orange hover:bg-orange-600 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk text-base"></i> Salvar RDO no Histórico
+                        </button>
+                    </div>
                 </div>
-                <div class="space-y-1.5">
-                    <label class="block text-xs font-semibold text-slate-700">Início das Atividades</label>
-                    <input type="time" class="emp-inicio glass-input w-full px-3 py-2 rounded-xl text-sm">
+
+            </form>
+        </div>
+
+        <!-- ABA DE HISTÓRICO DE RELATÓRIOS -->
+        <div id="historyTab" class="hidden space-y-4">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-3">
+                <div>
+                    <h2 class="font-bold text-slate-800 text-base">Histórico de Relatórios Registrados</h2>
+                    <p class="text-xs text-slate-500">Relatórios salvos localmente neste dispositivo</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="exportAllHistoryCSV()" class="px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg transition flex items-center gap-1">
+                        <i class="fa-solid fa-file-csv"></i> Exportar Todos (CSV)
+                    </button>
+                    <button onclick="clearAllHistory()" class="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition">
+                        <i class="fa-solid fa-trash-can mr-1"></i> Limpar Histórico
+                    </button>
                 </div>
             </div>
 
-            <div class="space-y-1.5">
-                <label class="block text-xs font-semibold text-slate-700">Equipe Mobilizada (Supervisores, Oficiais, Ajudantes)</label>
-                <textarea class="emp-equipe glass-input w-full px-4 py-2.5 rounded-xl text-sm leading-relaxed placeholder-slate-400" rows="2" placeholder="Ex:&#10;• Supervisor: Erivelton Cão&#10;• Oficiais Líderes: Jair, Júlio&#10;• Ajudantes: Davi, Alexsander"></textarea>
+            <div id="historyList" class="space-y-3">
+                <!-- Injetado via JS -->
+            </div>
+        </div>
+
+    </main>
+
+    <!-- MODAL DE VISUALIZAÇÃO -->
+    <div id="viewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200">
+            <div class="p-4 border-b flex justify-between items-center bg-slate-50 rounded-t-2xl no-print">
+                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-file-contract text-gas-500"></i> Visualização do Relatório RDO
+                </h3>
+                <div class="flex items-center gap-2">
+                    <button id="modalBtnPDF" onclick="exportPDFModal()" class="px-3 py-1.5 text-xs font-semibold bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition flex items-center gap-1">
+                        <i class="fa-solid fa-file-pdf"></i> Salvar PDF
+                    </button>
+                    <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1 text-lg">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
             </div>
 
-            <div class="space-y-1.5">
-                <label class="block text-xs font-semibold text-slate-700">Programação das Atividades</label>
-                <textarea class="emp-atividades glass-input w-full px-4 py-2.5 rounded-xl text-sm leading-relaxed placeholder-slate-400" rows="2" placeholder="Ex: Iniciar instalação dos pavês e rejunte da base."></textarea>
+            <div id="modalBody" class="p-6 overflow-y-auto space-y-4 text-xs text-slate-700 custom-scrollbar">
+                <!-- Conteúdo -->
             </div>
-        `;
+        </div>
+    </div>
 
-        container.appendChild(div);
-    }
+    <!-- SCRIPT DE LÓGICA -->
+    <script>
+        let currentReportType = 'inicial';
+        let savedReports = JSON.parse(localStorage.getItem('esgas_rdos') || '[]');
+        let activeModalReport = null;
 
-    function removerEmpreiteira(id) {
-        const box = document.getElementById(`emp-box-${id}`);
-        if (box) box.remove();
-    }
+        document.addEventListener('DOMContentLoaded', () => {
+            updateLiveClock();
+            setInterval(updateLiveClock, 1000);
+            setDefaultDateTime();
+            renderHistory();
+        });
 
-    function validarFormulario() {
-        const form = document.getElementById('rdoForm');
-        if (!form.checkValidity()) {
-            form.reportValidity();
-            return false;
+        function updateLiveClock() {
+            const now = new Date();
+            document.getElementById('liveClock').textContent = now.toLocaleTimeString('pt-BR');
         }
-        return true;
-    }
 
-    function gerarETbaixarTXT() {
-        if (!validarFormulario()) return;
+        function setDefaultDateTime() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
 
-        const obra = document.getElementById('obra').value;
-        const os = document.getElementById('os').value;
-        const dataInput = document.getElementById('data').value;
-        
-        const climaManha = document.getElementById('clima-manha').value;
-        const climaTarde = document.getElementById('clima-tarde').value;
-        const climaNoite = document.getElementById('clima-noite').value;
+            document.getElementById('inputData').value = `${year}-${month}-${day}`;
+            document.getElementById('inputHorario').value = `${hours}:${minutes}`;
+        }
 
-        const partesData = dataInput.split('-');
-        const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+        function switchTab(tab) {
+            const formTab = document.getElementById('formTab');
+            const historyTab = document.getElementById('historyTab');
+            const btnForm = document.getElementById('btnTabForm');
+            const btnHistory = document.getElementById('btnTabHistory');
 
-        let txt = `==================================================\n`;
-        txt += `            REPORT DIÁRIO DE ATIVIDADES (RDO)\n`;
-        txt += `==================================================\n\n`;
-        txt += `Obra: ${obra}\n`;
-        txt += `OS/N° do projeto: ${os}\n`;
-        txt += `Data: ${dataFormatada}\n`;
-        txt += `Condições Climáticas: Manhã: ${climaManha} | Tarde: ${climaTarde} | Noite: ${climaNoite}\n`;
-        txt += `--------------------------------------------------\n\n`;
+            if (tab === 'formTab') {
+                formTab.classList.remove('hidden');
+                historyTab.classList.add('hidden');
+                btnForm.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/25 hover:bg-white/30 transition flex items-center gap-1.5';
+                btnHistory.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 transition flex items-center gap-1.5';
+            } else {
+                formTab.classList.add('hidden');
+                historyTab.classList.remove('hidden');
+                btnForm.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 transition flex items-center gap-1.5';
+                btnHistory.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/25 hover:bg-white/30 transition flex items-center gap-1.5';
+                renderHistory();
+            }
+        }
 
-        const caixasEmpreiteiras = document.querySelectorAll('#container-empreiteiras > div');
+        function setReportType(type) {
+            currentReportType = type;
+            const btnInicial = document.getElementById('btnReportInicial');
+            const btnEncerramento = document.getElementById('btnReportEncerramento');
+            const secInicial = document.getElementById('sectionInicial');
+            const secEncerramento = document.getElementById('sectionEncerramento');
+            const typeText = document.getElementById('typeIndicatorText');
+            const typeIcon = document.getElementById('typeIndicatorIcon');
 
-        caixasEmpreiteiras.forEach((box, idx) => {
-            const nome = box.querySelector('.emp-nome').value;
-            const chegada = box.querySelector('.emp-chegada').value || 'Não informado';
-            const inicio = box.querySelector('.emp-inicio').value || 'Não informado';
-            const equipe = box.querySelector('.emp-equipe').value;
-            const atividades = box.querySelector('.emp-atividades').value;
+            if (type === 'inicial') {
+                btnInicial.className = "flex flex-col items-center justify-center p-3.5 rounded-xl border-2 transition-all duration-200 border-gas-500 bg-gas-50 text-gas-900 shadow-sm";
+                btnEncerramento.className = "flex flex-col items-center justify-center p-3.5 rounded-xl border-2 border-slate-200 hover:border-slate-300 text-slate-600 transition-all duration-200";
+                secInicial.classList.remove('hidden');
+                secEncerramento.classList.add('hidden');
+                typeText.textContent = "Relatório Inicial (Abertura de Turno)";
+                typeIcon.className = "fa-solid fa-sun text-gas-yellow text-lg";
+            } else {
+                btnEncerramento.className = "flex flex-col items-center justify-center p-3.5 rounded-xl border-2 transition-all duration-200 border-indigo-600 bg-indigo-50 text-indigo-900 shadow-sm";
+                btnInicial.className = "flex flex-col items-center justify-center p-3.5 rounded-xl border-2 border-slate-200 hover:border-slate-300 text-slate-600 transition-all duration-200";
+                secInicial.classList.add('hidden');
+                secEncerramento.classList.remove('hidden');
+                typeText.textContent = "Relatório de Encerramento (Produção e Fechamento)";
+                typeIcon.className = "fa-solid fa-moon text-indigo-400 text-lg";
+            }
+        }
 
-            txt += `[EMPREITEIRA #${idx + 1}: ${nome}]\n`;
-            txt += `• Chegada: ${chegada} | Início Atividades: ${inicio}\n\n`;
-            txt += `Equipe Mobilizada:\n${equipe ? equipe : 'Não informada'}\n\n`;
-            txt += `Programação das Atividades:\n${atividades ? atividades : 'Não informada'}\n`;
-            txt += `--------------------------------------------------\n\n`;
-        });
+        function checkCustomOption(selectEl, customInputId) {
+            const customInput = document.getElementById(customInputId);
+            if (selectEl.value === 'CUSTOM') {
+                customInput.classList.remove('hidden');
+                customInput.required = true;
+            } else {
+                customInput.classList.add('hidden');
+                customInput.required = false;
+            }
+        }
 
-        const blob = new Blob([txt], { type: 'text/plain;charset=utf-8' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `Report_${obra.replace(/\s+/g, '_')}_${dataInput}.txt`;
-        link.click();
-    }
+        function toggleSinalizacaoDesc(show) {
+            const div = document.getElementById('divSinalizacaoDesc');
+            if (show) div.classList.remove('hidden');
+            else div.classList.add('hidden');
+        }
 
-    function gerarETbaixarPDF() {
-        if (!validarFormulario()) return;
+        function toggleAssentamentoSection(show) {
+            const div = document.getElementById('divAssentamentoDetalhes');
+            if (show) div.classList.remove('hidden');
+            else div.classList.add('hidden');
+        }
 
-        const obra = document.getElementById('obra').value;
-        const os = document.getElementById('os').value;
-        const dataInput = document.getElementById('data').value;
-        
-        const climaManha = document.getElementById('clima-manha').value;
-        const climaTarde = document.getElementById('clima-tarde').value;
-        const climaNoite = document.getElementById('clima-noite').value;
+        function toggleDiamFields(diam) {
+            const chk = document.getElementById(`checkDiam${diam}`);
+            const fields = document.getElementById(`fieldsDiam${diam}`);
+            if (chk.checked) fields.classList.remove('hidden');
+            else fields.classList.add('hidden');
+        }
 
-        const partesData = dataInput.split('-');
-        const dataFormatada = `${partesData[2]}/${partesData[1]}/${partesData[0]}`;
+        function getSelectValue(selectId, customInputId) {
+            const select = document.getElementById(selectId);
+            if (select.value === 'CUSTOM') {
+                return document.getElementById(customInputId).value;
+            }
+            return select.value;
+        }
 
-        document.getElementById('pdf-obra').innerText = obra;
-        document.getElementById('pdf-os').innerText = os;
-        document.getElementById('pdf-data-tag').innerText = dataFormatada;
-        document.getElementById('pdf-clima').innerText = `Manhã: ${climaManha} | Tarde: ${climaTarde} | Noite: ${climaNoite}`;
+        function collectFormData() {
+            const data = {
+                id: Date.now(),
+                tipo: currentReportType,
+                projeto: getSelectValue('selectProjeto', 'customProjeto'),
+                tecnico: getSelectValue('selectTecnico', 'customTecnico'),
+                engenheiro: getSelectValue('selectEngenheiro', 'customEngenheiro'),
+                tipoObra: document.getElementById('selectTipoObra').value,
+                data: document.getElementById('inputData').value,
+                horario: document.getElementById('inputHorario').value,
+            };
 
-        const listContainer = document.getElementById('pdf-empreiteiras-list');
-        listContainer.innerHTML = '';
+            if (currentReportType === 'inicial') {
+                data.condicoesTrabalho = document.querySelector('input[name="condicoesTrabalho"]:checked')?.value;
+                data.caminhaoOrganizado = document.querySelector('input[name="caminhaoOrganizado"]:checked')?.value;
+                data.sinalizacaoAdequada = document.querySelector('input[name="sinalizacaoAdequada"]:checked')?.value;
+                data.descSinalizacao = document.getElementById('descSinalizacao').value;
+                data.horarioPrevistoTecnico = document.getElementById('horarioPrevistoTecnico').value;
+                data.horarioRealTecnico = document.getElementById('horarioRealTecnico').value;
+                data.justificativaAtrasoTecnico = document.getElementById('justificativaAtrasoTecnico').value;
+                data.empreiteira = document.getElementById('nomeEmpreiteira').value;
+                data.horarioPrevistoEmpreiteira = document.getElementById('horarioPrevistoEmpreiteira').value;
+                data.atividadesPrevistas = document.getElementById('atividadesPrevistas').value;
+            } else {
+                data.horarioRealChegadaEmpreiteira = document.getElementById('horarioRealChegadaEmpreiteira').value;
+                data.horarioInicioAtividades = document.getElementById('horarioInicioAtividades').value;
+                data.justificativaAtrasoInicio = document.getElementById('justificativaAtrasoInicio').value;
+                data.atividadesRealizadas = document.getElementById('atividadesRealizadas').value;
 
-        const caixasEmpreiteiras = document.querySelectorAll('#container-empreiteiras > div');
+                data.houveAssentamento = document.querySelector('input[name="houveAssentamento"]:checked')?.value;
+                data.assentamentos = [];
 
-        caixasEmpreiteiras.forEach((box) => {
-            const nome = box.querySelector('.emp-nome').value;
-            const chegada = box.querySelector('.emp-chegada').value || 'Não informado';
-            const inicio = box.querySelector('.emp-inicio').value || 'Não informado';
-            const equipe = box.querySelector('.emp-equipe').value;
-            const atividades = box.querySelector('.emp-atividades').value;
+                if (data.houveAssentamento === 'Sim') {
+                    if (document.getElementById('checkDiam63').checked) {
+                        data.assentamentos.push({ diam: '63mm PEAD', ext: document.getElementById('extensao63').value, estaca: document.getElementById('estaca63').value });
+                    }
+                    if (document.getElementById('checkDiam125').checked) {
+                        data.assentamentos.push({ diam: '125mm PEAD', ext: document.getElementById('extensao125').value, estaca: document.getElementById('estaca125').value });
+                    }
+                    if (document.getElementById('checkDiam6pol').checked) {
+                        data.assentamentos.push({ diam: '6" Aço', ext: document.getElementById('extensao6pol').value, estaca: document.getElementById('estaca6pol').value });
+                    }
+                    if (document.getElementById('checkDiam8pol').checked) {
+                        data.assentamentos.push({ diam: '8" Aço', ext: document.getElementById('extensao8pol').value, estaca: document.getElementById('estaca8pol').value });
+                    }
+                }
 
-            const card = document.createElement('div');
-            card.className = "border border-slate-300 rounded-lg p-4 bg-white space-y-2 text-xs";
-            card.innerHTML = `
-                <div class="flex justify-between items-center border-b border-slate-200 pb-2">
-                    <span class="font-bold text-sm text-blue-700 uppercase">${nome}</span>
-                    <span class="text-slate-500 font-medium">Chegada: <strong>${chegada}</strong> | Início: <strong>${inicio}</strong></span>
+                data.efetivo = {
+                    encarregado: document.getElementById('efetivoEncarregado').value,
+                    navegador: document.getElementById('efetivoNavegador').value,
+                    operador: document.getElementById('efetivoOperador').value,
+                    inspetor: document.getElementById('efetivoInspetor').value,
+                    motorista: document.getElementById('efetivoMotorista').value,
+                    pedreiro: document.getElementById('efetivoPedreiro').value,
+                    soldador: document.getElementById('efetivoSoldador').value,
+                    ajudante: document.getElementById('efetivoAjudante').value,
+                };
+                data.justificativaEfetivo = document.getElementById('justificativaEfetivo').value;
+
+                data.equipamentos = {
+                    furo: document.getElementById('eqpMaquinaFuro').value,
+                    retro: document.getElementById('eqpRetro').value,
+                    munck: document.getElementById('eqpMunck').value,
+                    prancha: document.getElementById('eqpPrancha').value,
+                    pipa: document.getElementById('eqpPipa').value,
+                    sugador: document.getElementById('eqpSugador').value,
+                };
+
+                data.horarioPrevistoEncerramento = document.getElementById('horarioPrevistoEncerramento').value;
+                data.horarioRealEncerramento = document.getElementById('horarioRealEncerramento').value;
+                data.justificativaHorarioEncerramento = document.getElementById('justificativaHorarioEncerramento').value;
+                data.comentariosAdicionais = document.getElementById('comentariosAdicionais').value;
+            }
+
+            return data;
+        }
+
+        function handleFormSubmit(e) {
+            e.preventDefault();
+            const rdoData = collectFormData();
+            savedReports.unshift(rdoData);
+            localStorage.setItem('esgas_rdos', JSON.stringify(savedReports));
+
+            alert('Relatório Diário de Obra salvo com sucesso no Histórico!');
+            openModalWithData(rdoData);
+            updateHistoryBadge();
+        }
+
+        // ==================== EXPORTAÇÃO CSV ====================
+        function exportCSV() {
+            const data = collectFormData();
+            generateCSVFromData([data], `rdo_${data.tipo}_${data.data}.csv`);
+        }
+
+        function exportAllHistoryCSV() {
+            if (savedReports.length === 0) {
+                alert('Não há relatórios salvos no histórico.');
+                return;
+            }
+            generateCSVFromData(savedReports, `historico_rdo_esgas.csv`);
+        }
+
+        function generateCSVFromData(reportsArray, filename) {
+            let csvContent = "data:text/csv;charset=utf-8,";
+            csvContent += "ID,Tipo,Projeto,Tecnico,Engenheiro,TipoObra,Data,Horario,AtividadesOuInfo\r\n";
+
+            reportsArray.forEach(rep => {
+                let info = rep.tipo === 'inicial' ? (rep.atividadesPrevistas || '') : (rep.atividadesRealizadas || '');
+                info = info.replace(/[\r\n]+/g, " ");
+
+                const row = [
+                    rep.id,
+                    rep.tipo,
+                    `"${rep.projeto || ''}"`,
+                    `"${rep.tecnico || ''}"`,
+                    `"${rep.engenheiro || ''}"`,
+                    `"${rep.tipoObra || ''}"`,
+                    rep.data,
+                    rep.horario,
+                    `"${info}"`
+                ];
+                csvContent += row.join(",") + "\r\n";
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", filename);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // ==================== EXPORTAÇÃO PDF (jsPDF) ====================
+        function exportPDFCurrent() {
+            const data = collectFormData();
+            generatePDF(data);
+        }
+
+        function exportPDFModal() {
+            if (activeModalReport) {
+                generatePDF(activeModalReport);
+            }
+        }
+
+        function generatePDF(data) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            doc.setFillColor(12, 74, 110);
+            doc.rect(0, 0, 210, 25, 'F');
+
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(14);
+            doc.setFont("helvetica", "bold");
+            doc.text("RELATÓRIO DIÁRIO DE OBRA (RDO) - ESGÁS", 14, 16);
+
+            doc.setTextColor(50, 50, 50);
+            doc.setFontSize(10);
+            doc.setFont("helvetica", "normal");
+
+            let y = 35;
+            doc.setFont("helvetica", "bold");
+            doc.text("Informações Gerais:", 14, y);
+            y += 6;
+            doc.setFont("helvetica", "normal");
+            doc.text(`Tipo de Relatório: ${data.tipo === 'inicial' ? 'Relatório Inicial (Abertura)' : 'Encerramento de Turno'}`, 14, y);
+            y += 6;
+            doc.text(`Projeto: ${data.projeto}`, 14, y);
+            y += 6;
+            doc.text(`Tipo de Obra: ${data.tipoObra} | Data: ${data.data} às ${data.horario}`, 14, y);
+            y += 6;
+            doc.text(`Técnico: ${data.tecnico} | Engenheiro: ${data.engenheiro}`, 14, y);
+
+            y += 10;
+            doc.setDrawColor(200, 200, 200);
+            doc.line(14, y, 196, y);
+            y += 8;
+
+            if (data.tipo === 'inicial') {
+                doc.setFont("helvetica", "bold");
+                doc.text("Segurança e Canteiro:", 14, y);
+                y += 6;
+                doc.setFont("helvetica", "normal");
+                doc.text(`- Condições de trabalho adequadas: ${data.condicoesTrabalho}`, 14, y);
+                y += 6;
+                doc.text(`- Caminhão/ferramental organizado: ${data.caminhaoOrganizado}`, 14, y);
+                y += 6;
+                doc.text(`- Sinalização adequada: ${data.sinalizacaoAdequada}`, 14, y);
+                if (data.sinalizacaoAdequada === 'Não') {
+                    y += 6;
+                    doc.text(`  Justificativa: ${data.descSinalizacao}`, 14, y);
+                }
+
+                y += 10;
+                doc.setFont("helvetica", "bold");
+                doc.text("Atividades Previstas:", 14, y);
+                y += 6;
+                doc.setFont("helvetica", "normal");
+                const splitAtividades = doc.splitTextToSize(data.atividadesPrevistas || 'Nenhuma atividade descrita.', 180);
+                doc.text(splitAtividades, 14, y);
+            } else {
+                doc.setFont("helvetica", "bold");
+                doc.text("Atividades Realizadas:", 14, y);
+                y += 6;
+                doc.setFont("helvetica", "normal");
+                const splitRealizadas = doc.splitTextToSize(data.atividadesRealizadas || 'Nenhuma atividade descrita.', 180);
+                doc.text(splitRealizadas, 14, y);
+                y += (splitRealizadas.length * 6) + 4;
+
+                doc.setFont("helvetica", "bold");
+                doc.text("Assentamento de Tubos:", 14, y);
+                y += 6;
+                doc.setFont("helvetica", "normal");
+                if (data.houveAssentamento === 'Sim' && data.assentamentos && data.assentamentos.length > 0) {
+                    data.assentamentos.forEach(a => {
+                        doc.text(`- ${a.diam}: ${a.ext || 0}m (Estaca: ${a.estaca || 'N/A'})`, 14, y);
+                        y += 6;
+                    });
+                } else {
+                    doc.text("Nenhum assentamento registrado.", 14, y);
+                    y += 6;
+                }
+
+                y += 4;
+                doc.setFont("helvetica", "bold");
+                doc.text("Efetivo de Equipe:", 14, y);
+                y += 6;
+                doc.setFont("helvetica", "normal");
+                const ef = data.efetivo;
+                doc.text(`Enc: ${ef.encarregado} | Nav: ${ef.navegador} | Oper: ${ef.operador} | Insp: ${ef.inspetor}`, 14, y);
+                y += 6;
+                doc.text(`Mot: ${ef.motorista} | Pedr: ${ef.pedreiro} | Sold: ${ef.soldador} | Ajud: ${ef.ajudante}`, 14, y);
+            }
+
+            doc.save(`RDO_${data.tipo}_${data.data}.pdf`);
+        }
+
+        // ==================== HISTÓRICO E MODAL ====================
+        function renderHistory() {
+            const historyList = document.getElementById('historyList');
+            updateHistoryBadge();
+
+            if (savedReports.length === 0) {
+                historyList.innerHTML = `
+                    <div class="bg-white p-8 rounded-2xl text-center text-slate-400">
+                        <i class="fa-regular fa-folder-open text-4xl mb-2"></i>
+                        <p class="text-xs">Nenhum relatório salvo no histórico ainda.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            historyList.innerHTML = savedReports.map(rep => `
+                <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-3">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="px-2 py-0.5 text-[10px] font-bold rounded ${rep.tipo === 'inicial' ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-800'}">
+                                ${rep.tipo === 'inicial' ? 'INICIAL' : 'ENCERRAMENTO'}
+                            </span>
+                            <span class="text-xs font-bold text-slate-800">${rep.projeto}</span>
+                        </div>
+                        <p class="text-xs text-slate-500">Técnico: ${rep.tecnico} | Data: ${rep.data} às ${rep.horario}</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick='openModalWithData(${JSON.stringify(rep)})' class="px-3 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition">
+                            <i class="fa-solid fa-eye mr-1"></i> Ver
+                        </button>
+                        <button onclick='generatePDF(${JSON.stringify(rep)})' class="px-3 py-1.5 text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg transition">
+                            <i class="fa-solid fa-file-pdf mr-1"></i> PDF
+                        </button>
+                    </div>
                 </div>
-                <div>
-                    <span class="font-bold text-slate-700 block mb-1">Equipe Mobilizada:</span>
-                    <div class="bg-slate-50 p-2.5 rounded border border-slate-200 whitespace-pre-wrap font-mono text-[11px]">${equipe || 'Não informada'}</div>
+            `).join('');
+        }
+
+        function updateHistoryBadge() {
+            document.getElementById('historyBadge').textContent = savedReports.length;
+        }
+
+        function clearAllHistory() {
+            if (confirm('Tem certeza que deseja apagar todo o histórico local?')) {
+                savedReports = [];
+                localStorage.removeItem('esgas_rdos');
+                renderHistory();
+            }
+        }
+
+        function openModalWithData(data) {
+            activeModalReport = data;
+            const modal = document.getElementById('viewModal');
+            const body = document.getElementById('modalBody');
+
+            let detailContent = '';
+            if (data.tipo === 'inicial') {
+                detailContent = `
+                    <div class="space-y-3">
+                        <div class="bg-slate-50 p-3 rounded-lg border">
+                            <h4 class="font-bold text-slate-800 border-b pb-1 mb-2">Segurança & Canteiro</h4>
+                            <p>Condições Adequadas: <strong>${data.condicoesTrabalho}</strong></p>
+                            <p>Caminhão Organizado: <strong>${data.caminhaoOrganizado}</strong></p>
+                            <p>Sinalização Adequada: <strong>${data.sinalizacaoAdequada}</strong></p>
+                            ${data.sinalizacaoAdequada === 'Não' ? `<p class="text-red-600">Obs Sinalização: ${data.descSinalizacao}</p>` : ''}
+                        </div>
+                        <div class="bg-slate-50 p-3 rounded-lg border">
+                            <h4 class="font-bold text-slate-800 border-b pb-1 mb-2">Atividades Previstas</h4>
+                            <p class="whitespace-pre-wrap">${data.atividadesPrevistas}</p>
+                        </div>
+                    </div>
+                `;
+            } else {
+                let assentHTML = 'Nenhum assentamento registrado.';
+                if (data.houveAssentamento === 'Sim' && data.assentamentos.length > 0) {
+                    assentHTML = data.assentamentos.map(a => `<li>• <strong>${a.diam}</strong>: ${a.ext || 0}m (Estaca: ${a.estaca || 'N/A'})</li>`).join('');
+                }
+
+                detailContent = `
+                    <div class="space-y-3">
+                        <div class="bg-slate-50 p-3 rounded-lg border">
+                            <h4 class="font-bold text-slate-800 border-b pb-1 mb-2">Atividades Executadas</h4>
+                            <p class="whitespace-pre-wrap mb-2">${data.atividadesRealizadas}</p>
+                            <h5 class="font-semibold text-slate-700 mt-2">Assentamentos:</h5>
+                            <ul class="pl-2 space-y-0.5">${assentHTML}</ul>
+                        </div>
+                    </div>
+                `;
+            }
+
+            body.innerHTML = `
+                <div class="border-b pb-3 mb-3">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs font-bold text-gas-orange uppercase">Relatório ESGás - RDO</span>
+                        <span class="text-xs text-slate-500">${data.data} - ${data.horario}</span>
+                    </div>
+                    <h2 class="text-base font-bold text-slate-900 mt-1">${data.projeto}</h2>
+                    <p class="text-xs text-slate-600">Tipo: <strong>${data.tipoObra}</strong> | Técnico: <strong>${data.tecnico}</strong></p>
                 </div>
-                <div>
-                    <span class="font-bold text-slate-700 block mb-1">Programação das Atividades:</span>
-                    <div class="bg-slate-50 p-2.5 rounded border border-slate-200 whitespace-pre-wrap font-mono text-[11px]">${atividades || 'Não informada'}</div>
-                </div>
+                ${detailContent}
             `;
-            listContainer.appendChild(card);
-        });
 
-        const pdfElement = document.getElementById('pdf-template');
-        pdfElement.style.display = 'block';
+            modal.classList.remove('hidden');
+        }
 
-        const opt = {
-            margin:       10,
-            filename:     `Report_${obra.replace(/\s+/g, '_')}_${dataInput}.pdf`,
-            image:        { type: 'jpeg', quality: 0.98 },
-            html2canvas:  { scale: 2 },
-            jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+        function closeModal() {
+            document.getElementById('viewModal').classList.add('hidden');
+            activeModalReport = null;
+        }
 
-        html2pdf().set(opt).from(pdfElement).save().then(() => {
-            pdfElement.style.display = 'none';
-        });
-    }
-</script>
-
+        function resetForm() {
+            if (confirm('Deseja realmente limpar todos os campos do formulário?')) {
+                document.getElementById('rdoForm').reset();
+                setDefaultDateTime();
+            }
+        }
+    </script>
 </body>
 </html>
