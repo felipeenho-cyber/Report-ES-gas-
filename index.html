@@ -4,16 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Relatório Diário de Obra - Redes de Gás Natural</title>
-    <!-- Tailwind CSS CDN -->
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome CDN -->
+    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- jsPDF para exportação em PDF -->
+    <!-- jsPDF e Plugins -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <script>
         tailwind.config = {
@@ -38,19 +40,11 @@
         }
     </script>
     <style>
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         @media print {
             .no-print { display: none !important; }
-            .print-only { display: block !important; }
             body { background: white !important; color: black !important; }
             .shadow-lg, .shadow-md, .shadow-sm { box-shadow: none !important; }
             .border { border-color: #94a3b8 !important; }
@@ -75,13 +69,22 @@
                 </div>
             </div>
 
-            <!-- Botões de Ação Topo -->
-            <div class="flex items-center space-x-2">
+            <!-- Botões de NAVEGAÇÃO E EXPORTAÇÃO SEMPRE VISÍVEIS NO TOPO -->
+            <div class="flex items-center space-x-2 flex-wrap">
                 <button onclick="switchTab('formTab')" id="btnTabForm" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/20 hover:bg-white/30 transition flex items-center gap-1.5">
                     <i class="fa-solid fa-pen-to-square"></i> Formulário
                 </button>
                 <button onclick="switchTab('historyTab')" id="btnTabHistory" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 transition flex items-center gap-1.5">
                     <i class="fa-solid fa-list-check"></i> Histórico <span id="historyBadge" class="bg-gas-orange text-white text-[10px] px-1.5 py-0.2 rounded-full">0</span>
+                </button>
+                
+                <!-- BOTÕES DE EXPORTAÇÃO NO CABEÇALHO -->
+                <div class="h-4 w-px bg-white/30 mx-1"></div>
+                <button onclick="exportCSV()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-file-csv"></i> Exportar CSV
+                </button>
+                <button onclick="exportAllPDF()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-gas-500 hover:bg-gas-700 text-white transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-file-pdf"></i> Exportar PDF
                 </button>
             </div>
         </div>
@@ -136,7 +139,6 @@
                     </h2>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <!-- Projeto -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Projeto <span class="text-red-500">*</span></label>
                             <select id="selectProjeto" required onchange="checkCustomOption(this, 'customProjeto')" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-gas-500 focus:bg-white outline-none">
@@ -150,7 +152,6 @@
                             <input type="text" id="customProjeto" placeholder="Digite o nome do projeto..." class="hidden mt-2 w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-gas-500 outline-none">
                         </div>
 
-                        <!-- Técnico -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Técnico <span class="text-red-500">*</span></label>
                             <select id="selectTecnico" required onchange="checkCustomOption(this, 'customTecnico')" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-gas-500 focus:bg-white outline-none">
@@ -164,7 +165,6 @@
                             <input type="text" id="customTecnico" placeholder="Digite o nome do técnico..." class="hidden mt-2 w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-gas-500 outline-none">
                         </div>
 
-                        <!-- Engenheiro -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Nome do Engenheiro <span class="text-red-500">*</span></label>
                             <select id="selectEngenheiro" required onchange="checkCustomOption(this, 'customEngenheiro')" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-gas-500 focus:bg-white outline-none">
@@ -177,7 +177,6 @@
                             <input type="text" id="customEngenheiro" placeholder="Digite o nome do engenheiro..." class="hidden mt-2 w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-gas-500 outline-none">
                         </div>
 
-                        <!-- Tipo de Obra -->
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Tipo de Obra <span class="text-red-500">*</span></label>
                             <select id="selectTipoObra" required class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-gas-500 focus:bg-white outline-none">
@@ -191,7 +190,6 @@
                         </div>
                     </div>
 
-                    <!-- Data e Horário -->
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-slate-100">
                         <div>
                             <label class="block text-xs font-semibold text-slate-600 mb-1">Data do Preenchimento</label>
@@ -206,7 +204,6 @@
 
                 <!-- SEÇÃO INICIAL -->
                 <div id="sectionInicial" class="space-y-6">
-                    <!-- Checklist de Segurança -->
                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
                         <div class="flex items-center justify-between border-b pb-2">
                             <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
@@ -245,7 +242,6 @@
                         </div>
                     </div>
 
-                    <!-- Horários e Equipe Inicial -->
                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
                         <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
                             <i class="fa-solid fa-clock text-gas-500"></i> Horários & Equipe de Contrato
@@ -286,7 +282,6 @@
 
                 <!-- SEÇÃO ENCERRAMENTO -->
                 <div id="sectionEncerramento" class="space-y-6 hidden">
-                    <!-- Produção e Atividades Executadas -->
                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
                         <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
                             <i class="fa-solid fa-helmet-safety text-indigo-600"></i> Produção & Atividades Realizadas
@@ -312,7 +307,6 @@
                             <textarea id="atividadesRealizadas" rows="3" placeholder="Descreva o que foi realizado..." class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-3 outline-none"></textarea>
                         </div>
 
-                        <!-- Assentamento de Tubos -->
                         <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
                             <div class="flex justify-between items-center">
                                 <span class="text-xs font-bold text-slate-700 uppercase">Houve Assentamento de Tubos/Redes?</span>
@@ -324,7 +318,6 @@
 
                             <div id="divAssentamentoDetalhes" class="hidden space-y-3 pt-2 border-t border-slate-200">
                                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    <!-- 63mm -->
                                     <div class="bg-white p-3 rounded-lg border">
                                         <label class="flex items-center gap-2 text-xs font-semibold mb-2">
                                             <input type="checkbox" id="checkDiam63" onchange="toggleDiamFields(63)"> 63mm PEAD
@@ -334,7 +327,6 @@
                                             <input type="text" id="estaca63" placeholder="Estaqueamento (ex: Est 10 a 15)" class="w-full text-xs p-2 border rounded">
                                         </div>
                                     </div>
-                                    <!-- 125mm -->
                                     <div class="bg-white p-3 rounded-lg border">
                                         <label class="flex items-center gap-2 text-xs font-semibold mb-2">
                                             <input type="checkbox" id="checkDiam125" onchange="toggleDiamFields(125)"> 125mm PEAD
@@ -344,7 +336,6 @@
                                             <input type="text" id="estaca125" placeholder="Estaqueamento" class="w-full text-xs p-2 border rounded">
                                         </div>
                                     </div>
-                                    <!-- 6 Pol -->
                                     <div class="bg-white p-3 rounded-lg border">
                                         <label class="flex items-center gap-2 text-xs font-semibold mb-2">
                                             <input type="checkbox" id="checkDiam6pol" onchange="toggleDiamFields('6pol')"> 6" Aço
@@ -354,7 +345,6 @@
                                             <input type="text" id="estaca6pol" placeholder="Estaqueamento" class="w-full text-xs p-2 border rounded">
                                         </div>
                                     </div>
-                                    <!-- 8 Pol -->
                                     <div class="bg-white p-3 rounded-lg border">
                                         <label class="flex items-center gap-2 text-xs font-semibold mb-2">
                                             <input type="checkbox" id="checkDiam8pol" onchange="toggleDiamFields('8pol')"> 8" Aço
@@ -369,9 +359,7 @@
                         </div>
                     </div>
 
-                    <!-- Efetivo & Equipamentos -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Efetivo -->
                         <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3">
                             <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
                                 <i class="fa-solid fa-users text-gas-500"></i> Efetivo de Equipe
@@ -392,7 +380,6 @@
                             </div>
                         </div>
 
-                        <!-- Equipamentos -->
                         <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3">
                             <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
                                 <i class="fa-solid fa-truck-monster text-gas-500"></i> Equipamentos em Campo
@@ -408,190 +395,188 @@
                         </div>
                     </div>
 
-                    <!-- Horários Encerramento & Considerações -->
                     <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
                         <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                            <i class="fa-solid fa-flag-checkered text-gas-500"></i> Fechamento & Considerações
+                            <i class="fa-solid fa-flag-checkered text-gas-500"></i> Horários de Término & Considerações Finais
                         </h2>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">Horário Previsto Encerramento:</label>
-                                <input type="time" id="horarioPrevistoEncerramento" value="17:00" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none">
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Término Atividades Empreiteira:</label>
+                                <input type="time" id="horarioTerminoEmpreiteira" value="17:00" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none">
                             </div>
                             <div>
-                                <label class="block text-xs font-semibold text-slate-600 mb-1">Horário Real Encerramento:</label>
-                                <input type="time" id="horarioRealEncerramento" value="17:00" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none">
+                                <label class="block text-xs font-semibold text-slate-600 mb-1">Saída Real do Técnico do Campo:</label>
+                                <input type="time" id="horarioSaidaTecnico" value="17:30" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none">
                             </div>
                         </div>
 
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Justificativa Variação Encerramento:</label>
-                            <input type="text" id="justificativaHorarioEncerramento" placeholder="Nenhuma" class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-2.5 outline-none">
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Observações / Ocorrências Importantes:</label>
+                            <textarea id="observacoesEncerramento" rows="3" placeholder="Insira dados de interferências, clima, paralelas, paralisações..." class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-3 outline-none"></textarea>
                         </div>
+                    </div>
+                </div>
 
+                <!-- SEÇÃO DE ASSINATURA TÉCNICA -->
+                <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-3">
+                    <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-signature text-emerald-600"></i> Assinatura e Validação Técnica
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Comentários Adicionais:</label>
-                            <textarea id="comentariosAdicionais" rows="2" placeholder="Observações..." class="w-full text-sm bg-slate-50 border border-slate-300 rounded-lg p-3 outline-none"></textarea>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Assinatura Digital do Responsável (Nome / CPF / Registro) <span class="text-red-500">*</span></label>
+                            <input type="text" id="inputAssinatura" required placeholder="Ex: Carlos Eduardo Silva - CPF 000.000.000-00" class="w-full text-sm font-medium bg-slate-50 border border-slate-300 rounded-lg p-2.5 focus:ring-2 focus:ring-emerald-500 outline-none">
+                        </div>
+                        <div class="flex items-center text-xs text-slate-500 bg-slate-50 p-3 rounded-lg border">
+                            <i class="fa-solid fa-circle-info text-gas-500 text-lg mr-2.5"></i>
+                            <span>Ao salvar, este nome será registrado junto com a data, hora exata e os dados do relatório.</span>
                         </div>
                     </div>
                 </div>
 
-                <!-- BARRAS DE BOTÕES DE AÇÃO (SEM WHATSAPP, COM CSV E PDF) -->
-                <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-wrap gap-3 justify-between items-center no-print">
-                    <button type="button" onclick="resetForm()" class="px-4 py-2.5 text-slate-600 bg-slate-100 hover:bg-slate-200 rounded-xl font-semibold text-xs transition flex items-center gap-2">
-                        <i class="fa-solid fa-rotate-left"></i> Limpar Formulário
-                    </button>
-
-                    <div class="flex flex-wrap gap-2">
-                        <button type="button" onclick="exportCSV()" class="px-4 py-2.5 text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-xl font-semibold text-xs transition flex items-center gap-2">
-                            <i class="fa-solid fa-file-csv text-base"></i> Exportar CSV
+                <!-- BOTÕES DE SUBMISSÃO E EXPORTAÇÃO NO RODA PÉ -->
+                <div class="flex flex-wrap items-center justify-between gap-3 no-print pt-2 border-t">
+                    <div class="flex items-center gap-2">
+                        <button type="button" onclick="exportCSV()" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-file-csv"></i> Exportar CSV
                         </button>
-
-                        <button type="button" onclick="exportPDFCurrent()" class="px-4 py-2.5 text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-300 rounded-xl font-semibold text-xs transition flex items-center gap-2">
-                            <i class="fa-solid fa-file-pdf text-base"></i> Salvar PDF
+                        <button type="button" onclick="exportAllPDF()" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-gas-700 hover:bg-gas-900 text-white transition flex items-center gap-1.5 shadow-sm">
+                            <i class="fa-solid fa-file-pdf"></i> Exportar PDF
                         </button>
+                    </div>
 
-                        <button type="submit" class="px-6 py-2.5 text-white bg-gas-orange hover:bg-orange-600 rounded-xl font-bold text-xs shadow-md transition flex items-center gap-2">
-                            <i class="fa-solid fa-floppy-disk text-base"></i> Salvar RDO no Histórico
+                    <div class="flex items-center gap-3">
+                        <button type="button" onclick="resetForm()" class="px-5 py-2.5 rounded-xl text-xs font-bold border border-slate-300 text-slate-600 hover:bg-slate-200 transition">
+                            Limpar Formulário
+                        </button>
+                        <button type="submit" class="px-6 py-2.5 rounded-xl text-xs font-bold bg-gas-orange hover:bg-orange-600 text-white shadow-md transition flex items-center gap-2">
+                            <i class="fa-solid fa-floppy-disk"></i> Salvar Relatório Diário
                         </button>
                     </div>
                 </div>
-
             </form>
         </div>
 
-        <!-- ABA DE HISTÓRICO DE RELATÓRIOS -->
-        <div id="historyTab" class="hidden space-y-4">
-            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-3">
-                <div>
-                    <h2 class="font-bold text-slate-800 text-base">Histórico de Relatórios Registrados</h2>
-                    <p class="text-xs text-slate-500">Relatórios salvos localmente neste dispositivo</p>
+        <!-- ABA DE HISTÓRICO -->
+        <div id="historyTab" class="space-y-6 hidden">
+            <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 space-y-4">
+                <div class="flex flex-wrap justify-between items-center gap-3 border-b pb-3">
+                    <div>
+                        <h2 class="text-base font-bold text-slate-800">Histórico de Relatórios Guardados</h2>
+                        <p class="text-xs text-slate-500">Acompanhe todos os RDOs salvos no navegador local.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="clearHistory()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-red-100 hover:bg-red-200 text-red-700 transition">
+                            Limpar Histórico
+                        </button>
+                    </div>
                 </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="exportAllHistoryCSV()" class="px-3 py-1.5 text-xs font-semibold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 rounded-lg transition flex items-center gap-1">
-                        <i class="fa-solid fa-file-csv"></i> Exportar Todos (CSV)
-                    </button>
-                    <button onclick="clearAllHistory()" class="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition">
-                        <i class="fa-solid fa-trash-can mr-1"></i> Limpar Histórico
-                    </button>
-                </div>
-            </div>
 
-            <div id="historyList" class="space-y-3">
-                <!-- Injetado via JS -->
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-xs">
+                        <thead class="bg-slate-100 text-slate-600 uppercase font-bold border-b">
+                            <tr>
+                                <th class="p-3">Data/Hora</th>
+                                <th class="p-3">Tipo</th>
+                                <th class="p-3">Projeto</th>
+                                <th class="p-3">Técnico</th>
+                                <th class="p-3">Assinatura Digital</th>
+                                <th class="p-3 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTableBody" class="divide-y divide-slate-100">
+                            <!-- Preenchido dinamicamente via JS -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
 
     </main>
 
     <!-- MODAL DE VISUALIZAÇÃO -->
-    <div id="viewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl border border-slate-200">
-            <div class="p-4 border-b flex justify-between items-center bg-slate-50 rounded-t-2xl no-print">
-                <h3 class="font-bold text-slate-800 text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-file-contract text-gas-500"></i> Visualização do Relatório RDO
-                </h3>
-                <div class="flex items-center gap-2">
-                    <button id="modalBtnPDF" onclick="exportPDFModal()" class="px-3 py-1.5 text-xs font-semibold bg-rose-600 text-white rounded-lg hover:bg-rose-700 transition flex items-center gap-1">
-                        <i class="fa-solid fa-file-pdf"></i> Salvar PDF
-                    </button>
-                    <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 p-1 text-lg">
-                        <i class="fa-solid fa-xmark"></i>
-                    </button>
+    <div id="viewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4 overflow-y-auto">
+        <div class="bg-white rounded-2xl max-w-3xl w-full p-6 space-y-6 shadow-2xl my-8 max-h-[90vh] overflow-y-auto custom-scrollbar">
+            <div class="flex justify-between items-start border-b pb-4">
+                <div>
+                    <h3 class="font-bold text-lg text-slate-800" id="modalTitle">Detalhamento do Relatório</h3>
+                    <p class="text-xs text-slate-500" id="modalSubTitle"></p>
                 </div>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-slate-600 text-xl font-bold px-2">&times;</button>
             </div>
 
-            <div id="modalBody" class="p-6 overflow-y-auto space-y-4 text-xs text-slate-700 custom-scrollbar">
-                <!-- Conteúdo -->
+            <div id="modalPrintContent" class="space-y-4 text-xs text-slate-700 p-2 border rounded-xl bg-slate-50">
+                <!-- Preenchido via Javascript -->
+            </div>
+
+            <div class="flex justify-end gap-3 border-t pt-4 no-print">
+                <button onclick="closeModal()" class="px-4 py-2 rounded-xl text-xs font-semibold border text-slate-600 hover:bg-slate-100">Fechar</button>
+                <button onclick="downloadSinglePDF()" class="px-4 py-2 rounded-xl text-xs font-bold bg-gas-700 hover:bg-gas-900 text-white flex items-center gap-2">
+                    <i class="fa-solid fa-file-pdf"></i> Baixar este PDF
+                </button>
             </div>
         </div>
     </div>
 
-    <!-- SCRIPT DE LÓGICA -->
+    <!-- JAVASCRIPT COMPLETO -->
     <script>
         let currentReportType = 'inicial';
-        let savedReports = JSON.parse(localStorage.getItem('esgas_rdos') || '[]');
-        let activeModalReport = null;
+        let currentActiveRecord = null;
 
         document.addEventListener('DOMContentLoaded', () => {
-            updateLiveClock();
-            setInterval(updateLiveClock, 1000);
-            setDefaultDateTime();
-            renderHistory();
+            setCurrentDateTime();
+            startLiveClock();
+            loadHistory();
         });
 
-        function updateLiveClock() {
-            const now = new Date();
-            document.getElementById('liveClock').textContent = now.toLocaleTimeString('pt-BR');
+        function startLiveClock() {
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('liveClock').textContent = now.toLocaleTimeString('pt-BR');
+            }, 1000);
         }
 
-        function setDefaultDateTime() {
+        function setCurrentDateTime() {
             const now = new Date();
-            const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const day = String(now.getDate()).padStart(2, '0');
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-
-            document.getElementById('inputData').value = `${year}-${month}-${day}`;
-            document.getElementById('inputHorario').value = `${hours}:${minutes}`;
-        }
-
-        function switchTab(tab) {
-            const formTab = document.getElementById('formTab');
-            const historyTab = document.getElementById('historyTab');
-            const btnForm = document.getElementById('btnTabForm');
-            const btnHistory = document.getElementById('btnTabHistory');
-
-            if (tab === 'formTab') {
-                formTab.classList.remove('hidden');
-                historyTab.classList.add('hidden');
-                btnForm.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/25 hover:bg-white/30 transition flex items-center gap-1.5';
-                btnHistory.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 transition flex items-center gap-1.5';
-            } else {
-                formTab.classList.add('hidden');
-                historyTab.classList.remove('hidden');
-                btnForm.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 transition flex items-center gap-1.5';
-                btnHistory.className = 'px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/25 hover:bg-white/30 transition flex items-center gap-1.5';
-                renderHistory();
-            }
+            document.getElementById('inputData').value = now.toISOString().split('T')[0];
+            document.getElementById('inputHorario').value = now.toTimeString().substring(0, 5);
         }
 
         function setReportType(type) {
             currentReportType = type;
             const btnInicial = document.getElementById('btnReportInicial');
             const btnEncerramento = document.getElementById('btnReportEncerramento');
-            const secInicial = document.getElementById('sectionInicial');
-            const secEncerramento = document.getElementById('sectionEncerramento');
-            const typeText = document.getElementById('typeIndicatorText');
-            const typeIcon = document.getElementById('typeIndicatorIcon');
+            const sectionInicial = document.getElementById('sectionInicial');
+            const sectionEncerramento = document.getElementById('sectionEncerramento');
+            const typeIndicatorIcon = document.getElementById('typeIndicatorIcon');
+            const typeIndicatorText = document.getElementById('typeIndicatorText');
 
             if (type === 'inicial') {
                 btnInicial.className = "flex flex-col items-center justify-center p-3.5 rounded-xl border-2 transition-all duration-200 border-gas-500 bg-gas-50 text-gas-900 shadow-sm";
                 btnEncerramento.className = "flex flex-col items-center justify-center p-3.5 rounded-xl border-2 border-slate-200 hover:border-slate-300 text-slate-600 transition-all duration-200";
-                secInicial.classList.remove('hidden');
-                secEncerramento.classList.add('hidden');
-                typeText.textContent = "Relatório Inicial (Abertura de Turno)";
-                typeIcon.className = "fa-solid fa-sun text-gas-yellow text-lg";
+                sectionInicial.classList.remove('hidden');
+                sectionEncerramento.classList.add('hidden');
+                typeIndicatorIcon.className = "fa-solid fa-sun text-gas-yellow text-lg";
+                typeIndicatorText.textContent = "Relatório Inicial (Abertura de Obra)";
             } else {
                 btnEncerramento.className = "flex flex-col items-center justify-center p-3.5 rounded-xl border-2 transition-all duration-200 border-indigo-600 bg-indigo-50 text-indigo-900 shadow-sm";
                 btnInicial.className = "flex flex-col items-center justify-center p-3.5 rounded-xl border-2 border-slate-200 hover:border-slate-300 text-slate-600 transition-all duration-200";
-                secInicial.classList.add('hidden');
-                secEncerramento.classList.remove('hidden');
-                typeText.textContent = "Relatório de Encerramento (Produção e Fechamento)";
-                typeIcon.className = "fa-solid fa-moon text-indigo-400 text-lg";
+                sectionInicial.classList.add('hidden');
+                sectionEncerramento.classList.remove('hidden');
+                typeIndicatorIcon.className = "fa-solid fa-moon text-indigo-400 text-lg";
+                typeIndicatorText.textContent = "Relatório de Encerramento (Fechamento do Turno)";
             }
         }
 
-        function checkCustomOption(selectEl, customInputId) {
-            const customInput = document.getElementById(customInputId);
-            if (selectEl.value === 'CUSTOM') {
-                customInput.classList.remove('hidden');
-                customInput.required = true;
+        function checkCustomOption(selectElement, targetInputId) {
+            const input = document.getElementById(targetInputId);
+            if (selectElement.value === 'CUSTOM') {
+                input.classList.remove('hidden');
+                input.setAttribute('required', 'true');
             } else {
-                customInput.classList.add('hidden');
-                customInput.required = false;
+                input.classList.add('hidden');
+                input.removeAttribute('required');
             }
         }
 
@@ -608,374 +593,332 @@
         }
 
         function toggleDiamFields(diam) {
-            const chk = document.getElementById(`checkDiam${diam}`);
+            const check = document.getElementById(`checkDiam${diam}`);
             const fields = document.getElementById(`fieldsDiam${diam}`);
-            if (chk.checked) fields.classList.remove('hidden');
+            if (check.checked) fields.classList.remove('hidden');
             else fields.classList.add('hidden');
         }
 
-        function getSelectValue(selectId, customInputId) {
-            const select = document.getElementById(selectId);
-            if (select.value === 'CUSTOM') {
-                return document.getElementById(customInputId).value;
+        function switchTab(tabId) {
+            const formTab = document.getElementById('formTab');
+            const historyTab = document.getElementById('historyTab');
+            const btnForm = document.getElementById('btnTabForm');
+            const btnHistory = document.getElementById('btnTabHistory');
+
+            if (tabId === 'formTab') {
+                formTab.classList.remove('hidden');
+                historyTab.classList.add('hidden');
+                btnForm.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/20 hover:bg-white/30 transition flex items-center gap-1.5";
+                btnHistory.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 transition flex items-center gap-1.5";
+            } else {
+                historyTab.classList.remove('hidden');
+                formTab.classList.add('hidden');
+                btnHistory.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/20 hover:bg-white/30 transition flex items-center gap-1.5";
+                btnForm.className = "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20 transition flex items-center gap-1.5";
             }
-            return select.value;
         }
 
-        function collectFormData() {
-            const data = {
+        function handleFormSubmit(event) {
+            event.preventDefault();
+
+            const getSelectVal = (selectId, customInputId) => {
+                const sel = document.getElementById(selectId);
+                return sel.value === 'CUSTOM' ? document.getElementById(customInputId).value : sel.value;
+            };
+
+            const record = {
                 id: Date.now(),
-                tipo: currentReportType,
-                projeto: getSelectValue('selectProjeto', 'customProjeto'),
-                tecnico: getSelectValue('selectTecnico', 'customTecnico'),
-                engenheiro: getSelectValue('selectEngenheiro', 'customEngenheiro'),
-                tipoObra: document.getElementById('selectTipoObra').value,
+                tipoRegistro: currentReportType,
                 data: document.getElementById('inputData').value,
                 horario: document.getElementById('inputHorario').value,
+                projeto: getSelectVal('selectProjeto', 'customProjeto'),
+                tecnico: getSelectVal('selectTecnico', 'customTecnico'),
+                engenheiro: getSelectVal('selectEngenheiro', 'customEngenheiro'),
+                tipoObra: document.getElementById('selectTipoObra').value,
+                assinatura: document.getElementById('inputAssinatura').value,
+                dataHoraSalvamento: new Date().toLocaleString('pt-BR')
             };
 
             if (currentReportType === 'inicial') {
-                data.condicoesTrabalho = document.querySelector('input[name="condicoesTrabalho"]:checked')?.value;
-                data.caminhaoOrganizado = document.querySelector('input[name="caminhaoOrganizado"]:checked')?.value;
-                data.sinalizacaoAdequada = document.querySelector('input[name="sinalizacaoAdequada"]:checked')?.value;
-                data.descSinalizacao = document.getElementById('descSinalizacao').value;
-                data.horarioPrevistoTecnico = document.getElementById('horarioPrevistoTecnico').value;
-                data.horarioRealTecnico = document.getElementById('horarioRealTecnico').value;
-                data.justificativaAtrasoTecnico = document.getElementById('justificativaAtrasoTecnico').value;
-                data.empreiteira = document.getElementById('nomeEmpreiteira').value;
-                data.horarioPrevistoEmpreiteira = document.getElementById('horarioPrevistoEmpreiteira').value;
-                data.atividadesPrevistas = document.getElementById('atividadesPrevistas').value;
+                record.inicial = {
+                    condicoesTrabalho: document.querySelector('input[name="condicoesTrabalho"]:checked')?.value,
+                    caminhaoOrganizado: document.querySelector('input[name="caminhaoOrganizado"]:checked')?.value,
+                    sinalizacaoAdequada: document.querySelector('input[name="sinalizacaoAdequada"]:checked')?.value,
+                    descSinalizacao: document.getElementById('descSinalizacao').value,
+                    horarioPrevistoTecnico: document.getElementById('horarioPrevistoTecnico').value,
+                    horarioRealTecnico: document.getElementById('horarioRealTecnico').value,
+                    justificativaAtrasoTecnico: document.getElementById('justificativaAtrasoTecnico').value,
+                    nomeEmpreiteira: document.getElementById('nomeEmpreiteira').value,
+                    horarioPrevistoEmpreiteira: document.getElementById('horarioPrevistoEmpreiteira').value,
+                    atividadesPrevistas: document.getElementById('atividadesPrevistas').value
+                };
             } else {
-                data.horarioRealChegadaEmpreiteira = document.getElementById('horarioRealChegadaEmpreiteira').value;
-                data.horarioInicioAtividades = document.getElementById('horarioInicioAtividades').value;
-                data.justificativaAtrasoInicio = document.getElementById('justificativaAtrasoInicio').value;
-                data.atividadesRealizadas = document.getElementById('atividadesRealizadas').value;
-
-                data.houveAssentamento = document.querySelector('input[name="houveAssentamento"]:checked')?.value;
-                data.assentamentos = [];
-
-                if (data.houveAssentamento === 'Sim') {
-                    if (document.getElementById('checkDiam63').checked) {
-                        data.assentamentos.push({ diam: '63mm PEAD', ext: document.getElementById('extensao63').value, estaca: document.getElementById('estaca63').value });
-                    }
-                    if (document.getElementById('checkDiam125').checked) {
-                        data.assentamentos.push({ diam: '125mm PEAD', ext: document.getElementById('extensao125').value, estaca: document.getElementById('estaca125').value });
-                    }
-                    if (document.getElementById('checkDiam6pol').checked) {
-                        data.assentamentos.push({ diam: '6" Aço', ext: document.getElementById('extensao6pol').value, estaca: document.getElementById('estaca6pol').value });
-                    }
-                    if (document.getElementById('checkDiam8pol').checked) {
-                        data.assentamentos.push({ diam: '8" Aço', ext: document.getElementById('extensao8pol').value, estaca: document.getElementById('estaca8pol').value });
-                    }
-                }
-
-                data.efetivo = {
-                    encarregado: document.getElementById('efetivoEncarregado').value,
-                    navegador: document.getElementById('efetivoNavegador').value,
-                    operador: document.getElementById('efetivoOperador').value,
-                    inspetor: document.getElementById('efetivoInspetor').value,
-                    motorista: document.getElementById('efetivoMotorista').value,
-                    pedreiro: document.getElementById('efetivoPedreiro').value,
-                    soldador: document.getElementById('efetivoSoldador').value,
-                    ajudante: document.getElementById('efetivoAjudante').value,
+                record.encerramento = {
+                    horarioRealChegadaEmpreiteira: document.getElementById('horarioRealChegadaEmpreiteira').value,
+                    horarioInicioAtividades: document.getElementById('horarioInicioAtividades').value,
+                    justificativaAtrasoInicio: document.getElementById('justificativaAtrasoInicio').value,
+                    atividadesRealizadas: document.getElementById('atividadesRealizadas').value,
+                    houveAssentamento: document.querySelector('input[name="houveAssentamento"]:checked')?.value,
+                    assentamentos: {
+                        pead63: document.getElementById('checkDiam63').checked ? { ext: document.getElementById('extensao63').value, estaca: document.getElementById('estaca63').value } : null,
+                        pead125: document.getElementById('checkDiam125').checked ? { ext: document.getElementById('extensao125').value, estaca: document.getElementById('estaca125').value } : null,
+                        aco6pol: document.getElementById('checkDiam6pol').checked ? { ext: document.getElementById('extensao6pol').value, estaca: document.getElementById('estaca6pol').value } : null,
+                        aco8pol: document.getElementById('checkDiam8pol').checked ? { ext: document.getElementById('extensao8pol').value, estaca: document.getElementById('estaca8pol').value } : null
+                    },
+                    efetivo: {
+                        encarregado: document.getElementById('efetivoEncarregado').value,
+                        navegador: document.getElementById('efetivoNavegador').value,
+                        operador: document.getElementById('efetivoOperador').value,
+                        inspetor: document.getElementById('efetivoInspetor').value,
+                        motorista: document.getElementById('efetivoMotorista').value,
+                        pedreiro: document.getElementById('efetivoPedreiro').value,
+                        soldador: document.getElementById('efetivoSoldador').value,
+                        ajudante: document.getElementById('efetivoAjudante').value,
+                        justificativa: document.getElementById('justificativaEfetivo').value
+                    },
+                    equipamentos: {
+                        maquinaFuro: document.getElementById('eqpMaquinaFuro').value,
+                        retro: document.getElementById('eqpRetro').value,
+                        munck: document.getElementById('eqpMunck').value,
+                        prancha: document.getElementById('eqpPrancha').value,
+                        pipa: document.getElementById('eqpPipa').value,
+                        sugador: document.getElementById('eqpSugador').value
+                    },
+                    horarioTerminoEmpreiteira: document.getElementById('horarioTerminoEmpreiteira').value,
+                    horarioSaidaTecnico: document.getElementById('horarioSaidaTecnico').value,
+                    observacoes: document.getElementById('observacoesEncerramento').value
                 };
-                data.justificativaEfetivo = document.getElementById('justificativaEfetivo').value;
-
-                data.equipamentos = {
-                    furo: document.getElementById('eqpMaquinaFuro').value,
-                    retro: document.getElementById('eqpRetro').value,
-                    munck: document.getElementById('eqpMunck').value,
-                    prancha: document.getElementById('eqpPrancha').value,
-                    pipa: document.getElementById('eqpPipa').value,
-                    sugador: document.getElementById('eqpSugador').value,
-                };
-
-                data.horarioPrevistoEncerramento = document.getElementById('horarioPrevistoEncerramento').value;
-                data.horarioRealEncerramento = document.getElementById('horarioRealEncerramento').value;
-                data.justificativaHorarioEncerramento = document.getElementById('justificativaHorarioEncerramento').value;
-                data.comentariosAdicionais = document.getElementById('comentariosAdicionais').value;
             }
 
-            return data;
+            saveToStorage(record);
+            alert('Relatório gravado com sucesso!');
+            resetForm();
+            loadHistory();
+            switchTab('historyTab');
         }
 
-        function handleFormSubmit(e) {
-            e.preventDefault();
-            const rdoData = collectFormData();
-            savedReports.unshift(rdoData);
-            localStorage.setItem('esgas_rdos', JSON.stringify(savedReports));
-
-            alert('Relatório Diário de Obra salvo com sucesso no Histórico!');
-            openModalWithData(rdoData);
-            updateHistoryBadge();
+        function saveToStorage(record) {
+            const history = JSON.parse(localStorage.getItem('rdo_history') || '[]');
+            history.unshift(record);
+            localStorage.setItem('rdo_history', JSON.stringify(history));
         }
 
-        // ==================== EXPORTAÇÃO CSV ====================
-        function exportCSV() {
-            const data = collectFormData();
-            generateCSVFromData([data], `rdo_${data.tipo}_${data.data}.csv`);
-        }
+        function loadHistory() {
+            const history = JSON.parse(localStorage.getItem('rdo_history') || '[]');
+            document.getElementById('historyBadge').textContent = history.length;
 
-        function exportAllHistoryCSV() {
-            if (savedReports.length === 0) {
-                alert('Não há relatórios salvos no histórico.');
+            const tbody = document.getElementById('historyTableBody');
+            tbody.innerHTML = '';
+
+            if (history.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400">Nenhum relatório cadastrado até o momento.</td></tr>`;
                 return;
             }
-            generateCSVFromData(savedReports, `historico_rdo_esgas.csv`);
+
+            history.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 border-b";
+
+                const isInicial = item.tipoRegistro === 'inicial';
+                const typeBadge = isInicial 
+                    ? `<span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[10px] font-bold">Inicial</span>`
+                    : `<span class="bg-indigo-100 text-indigo-800 px-2 py-0.5 rounded-full text-[10px] font-bold">Encerramento</span>`;
+
+                tr.innerHTML = `
+                    <td class="p-3 font-medium">${item.data} <span class="text-slate-400">${item.horario}</span></td>
+                    <td class="p-3">${typeBadge}</td>
+                    <td class="p-3 font-semibold text-slate-700">${item.projeto}</td>
+                    <td class="p-3">${item.tecnico}</td>
+                    <td class="p-3 text-emerald-700 font-semibold"><i class="fa-solid fa-signature mr-1"></i> ${item.assinatura || 'Sem Assinatura'}</td>
+                    <td class="p-3 text-right">
+                        <button onclick="viewRecord(${item.id})" class="px-2.5 py-1 rounded bg-gas-50 hover:bg-gas-100 text-gas-700 font-bold transition mr-1">
+                            Ver / PDF
+                        </button>
+                        <button onclick="deleteRecord(${item.id})" class="px-2 py-1 rounded bg-red-50 hover:bg-red-100 text-red-600 font-bold transition">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
         }
 
-        function generateCSVFromData(reportsArray, filename) {
-            let csvContent = "data:text/csv;charset=utf-8,";
-            // Cabeçalho CSV
-            csvContent += "ID,Tipo,Projeto,Tecnico,Engenheiro,TipoObra,Data,Horario,AtividadesOuInfo\r\n";
+        function viewRecord(id) {
+            const history = JSON.parse(localStorage.getItem('rdo_history') || '[]');
+            const record = history.find(r => r.id === id);
+            if (!record) return;
 
-            reportsArray.forEach(rep => {
-                let info = rep.tipo === 'inicial' ? (rep.atividadesPrevistas || '') : (rep.atividadesRealizadas || '');
-                info = info.replace(/[\r\n]+/g, " "); // Limpa quebras de linha
+            currentActiveRecord = record;
 
-                const row = [
-                    rep.id,
-                    rep.tipo,
-                    `"${rep.projeto || ''}"`,
-                    `"${rep.tecnico || ''}"`,
-                    `"${rep.engenheiro || ''}"`,
-                    `"${rep.tipoObra || ''}"`,
-                    rep.data,
-                    rep.horario,
-                    `"${info}"`
-                ];
-                csvContent += row.join(",") + "\r\n";
+            document.getElementById('modalTitle').textContent = `Relatório Diário - ${record.projeto}`;
+            document.getElementById('modalSubTitle').textContent = `Tipo: ${record.tipoRegistro.toUpperCase()} | Data: ${record.data} | Registrado às: ${record.horario}`;
+
+            let html = `
+                <div class="grid grid-cols-2 gap-2 border-b pb-2 mb-2 font-semibold text-slate-800">
+                    <div><strong>Técnico:</strong> ${record.tecnico}</div>
+                    <div><strong>Engenheiro:</strong> ${record.engenheiro}</div>
+                    <div><strong>Tipo de Obra:</strong> ${record.tipoObra}</div>
+                    <div><strong>Data do Registro:</strong> ${record.data} ${record.horario}</div>
+                </div>
+            `;
+
+            if (record.tipoRegistro === 'inicial' && record.inicial) {
+                const init = record.inicial;
+                html += `
+                    <div class="space-y-2">
+                        <h4 class="font-bold text-slate-800 border-b pb-1">Checklist & Segurança:</h4>
+                        <p>• Condições de trabalho adequadas: <strong>${init.condicoesTrabalho}</strong></p>
+                        <p>• Veículo/Ferramental organizado: <strong>${init.caminhaoOrganizado}</strong></p>
+                        <p>• Sinalização adequada: <strong>${init.sinalizacaoAdequada}</strong> ${init.descSinalizacao ? `(${init.descSinalizacao})` : ''}</p>
+                        
+                        <h4 class="font-bold text-slate-800 border-b pb-1 pt-2">Horários & Planejamento:</h4>
+                        <p>• Técnico: Previsto ${init.horarioPrevistoTecnico} | Chegada ${init.horarioRealTecnico} ${init.justificativaAtrasoTecnico ? `| Justificativa: ${init.justificativaAtrasoTecnico}` : ''}</p>
+                        <p>• Empreiteira (${init.nomeEmpreiteira || 'Não informada'}): Previsto ${init.horarioPrevistoEmpreiteira}</p>
+                        <p>• <strong>Atividades Previstas:</strong> ${init.atividadesPrevistas || 'Nenhuma'}</p>
+                    </div>
+                `;
+            } else if (record.encerramento) {
+                const enc = record.encerramento;
+                html += `
+                    <div class="space-y-2">
+                        <h4 class="font-bold text-slate-800 border-b pb-1">Produção & Atividades:</h4>
+                        <p>• Chegada Empreiteira: ${enc.horarioRealChegadaEmpreiteira} | Início Atividades: ${enc.horarioInicioAtividades} ${enc.justificativaAtrasoInicio ? `| Justificativa: ${enc.justificativaAtrasoInicio}` : ''}</p>
+                        <p>• <strong>Atividades Executadas:</strong> ${enc.atividadesRealizadas || 'Sem registros'}</p>
+                        
+                        <h4 class="font-bold text-slate-800 border-b pb-1 pt-2">Assentamentos de Rede:</h4>
+                        <p>• Houve assentamento: <strong>${enc.houveAssentamento}</strong></p>
+                        ${enc.assentamentos.pead63 ? `<p>- PEAD 63mm: ${enc.assentamentos.pead63.ext}m (${enc.assentamentos.pead63.estaca})</p>` : ''}
+                        ${enc.assentamentos.pead125 ? `<p>- PEAD 125mm: ${enc.assentamentos.pead125.ext}m (${enc.assentamentos.pead125.estaca})</p>` : ''}
+                        ${enc.assentamentos.aco6pol ? `<p>- Aço 6": ${enc.assentamentos.aco6pol.ext}m (${enc.assentamentos.aco6pol.estaca})</p>` : ''}
+                        ${enc.assentamentos.aco8pol ? `<p>- Aço 8": ${enc.assentamentos.aco8pol.ext}m (${enc.assentamentos.aco8pol.estaca})</p>` : ''}
+
+                        <h4 class="font-bold text-slate-800 border-b pb-1 pt-2">Efetivo de Campo:</h4>
+                        <p>Encarregado: ${enc.efetivo.encarregado} | Navegador: ${enc.efetivo.navegador} | Operador: ${enc.efetivo.operador} | Inspetor: ${enc.efetivo.inspetor} | Motorista: ${enc.efetivo.motorista} | Pedreiro: ${enc.efetivo.pedreiro} | Soldador: ${enc.efetivo.soldador} | Ajudante: ${enc.efetivo.ajudante}</p>
+
+                        <h4 class="font-bold text-slate-800 border-b pb-1 pt-2">Observações / Considerações:</h4>
+                        <p>${enc.observacoes || 'Nenhuma observação registrada.'}</p>
+                    </div>
+                `;
+            }
+
+            html += `
+                <div class="mt-4 pt-3 border-t-2 border-emerald-500 bg-emerald-50/50 p-3 rounded-lg">
+                    <p class="font-bold text-emerald-900 flex items-center gap-1.5 text-xs">
+                        <i class="fa-solid fa-certificate text-emerald-600"></i> ASSINATURA E VALIDAÇÃO DIGITAL:
+                    </p>
+                    <p class="text-xs text-slate-800 font-semibold mt-1">${record.assinatura || 'Assinatura não registrada'}</p>
+                    <p class="text-[10px] text-slate-500 mt-0.5">Assinado digitalmente em: ${record.dataHoraSalvamento || record.data + ' ' + record.horario}</p>
+                </div>
+            `;
+
+            document.getElementById('modalPrintContent').innerHTML = html;
+            document.getElementById('viewModal').classList.remove('hidden');
+            document.getElementById('viewModal').classList.add('flex');
+        }
+
+        function closeModal() {
+            document.getElementById('viewModal').classList.add('hidden');
+            document.getElementById('viewModal').classList.remove('flex');
+        }
+
+        function deleteRecord(id) {
+            if (confirm('Deseja realmente remover este registro do histórico?')) {
+                let history = JSON.parse(localStorage.getItem('rdo_history') || '[]');
+                history = history.filter(r => r.id !== id);
+                localStorage.setItem('rdo_history', JSON.stringify(history));
+                loadHistory();
+            }
+        }
+
+        function clearHistory() {
+            if (confirm('Atenção: deseja excluir TODO o histórico mantido no navegador?')) {
+                localStorage.removeItem('rdo_history');
+                loadHistory();
+            }
+        }
+
+        function resetForm() {
+            document.getElementById('rdoForm').reset();
+            setCurrentDateTime();
+            document.querySelectorAll('input[type="text"]').forEach(input => {
+                if (input.id.startsWith('custom')) input.classList.add('hidden');
+            });
+        }
+
+        // FUNÇÃO DE EXPORTAR CSV
+        function exportCSV() {
+            const history = JSON.parse(localStorage.getItem('rdo_history') || '[]');
+            if (history.length === 0) {
+                alert('Não há dados salvos para exportação. Preencha e salve ao menos um relatório primeiro.');
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,ID,Tipo,Data,Horario,Projeto,Tecnico,Engenheiro,TipoObra,AssinaturaDigital,DataHoraAssinatura\n";
+            history.forEach(r => {
+                csvContent += `"${r.id}","${r.tipoRegistro}","${r.data}","${r.horario}","${r.projeto}","${r.tecnico}","${r.engenheiro}","${r.tipoObra}","${r.assinatura || ''}","${r.dataHoraSalvamento || ''}"\n`;
             });
 
             const encodedUri = encodeURI(csvContent);
             const link = document.createElement("a");
             link.setAttribute("href", encodedUri);
-            link.setAttribute("download", filename);
+            link.setAttribute("download", `rdo_export_${new Date().toISOString().split('T')[0]}.csv`);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
-        // ==================== EXPORTAÇÃO PDF (jsPDF) ====================
-        function exportPDFCurrent() {
-            const data = collectFormData();
-            generatePDF(data);
-        }
-
-        function exportPDFModal() {
-            if (activeModalReport) {
-                generatePDF(activeModalReport);
-            }
-        }
-
-        function generatePDF(data) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-
-            doc.setFillColor(12, 74, 110); // Azul escuro ESGás
-            doc.rect(0, 0, 210, 25, 'F');
-
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(14);
-            doc.setFont("helvetica", "bold");
-            doc.text("RELATÓRIO DIÁRIO DE OBRA (RDO) - ESGÁS", 14, 16);
-
-            doc.setTextColor(50, 50, 50);
-            doc.setFontSize(10);
-            doc.setFont("helvetica", "normal");
-
-            let y = 35;
-            doc.setFont("helvetica", "bold");
-            doc.text("Informações Gerais:", 14, y);
-            y += 6;
-            doc.setFont("helvetica", "normal");
-            doc.text(`Tipo de Relatório: ${data.tipo === 'inicial' ? 'Relatório Inicial (Abertura)' : 'Encerramento de Turno'}`, 14, y);
-            y += 6;
-            doc.text(`Projeto: ${data.projeto}`, 14, y);
-            y += 6;
-            doc.text(`Tipo de Obra: ${data.tipoObra} | Data: ${data.data} às ${data.horario}`, 14, y);
-            y += 6;
-            doc.text(`Técnico: ${data.tecnico} | Engenheiro: ${data.engenheiro}`, 14, y);
-
-            y += 10;
-            doc.setDrawColor(200, 200, 200);
-            doc.line(14, y, 196, y);
-            y += 8;
-
-            if (data.tipo === 'inicial') {
-                doc.setFont("helvetica", "bold");
-                doc.text("Segurança e Canteiro:", 14, y);
-                y += 6;
-                doc.setFont("helvetica", "normal");
-                doc.text(`- Condições de trabalho adequadas: ${data.condicoesTrabalho}`, 14, y);
-                y += 6;
-                doc.text(`- Caminhão/ferramental organizado: ${data.caminhaoOrganizado}`, 14, y);
-                y += 6;
-                doc.text(`- Sinalização adequada: ${data.sinalizacaoAdequada}`, 14, y);
-                if (data.sinalizacaoAdequada === 'Não') {
-                    y += 6;
-                    doc.text(`  Justificativa: ${data.descSinalizacao}`, 14, y);
-                }
-
-                y += 10;
-                doc.setFont("helvetica", "bold");
-                doc.text("Atividades Previstas:", 14, y);
-                y += 6;
-                doc.setFont("helvetica", "normal");
-                const splitAtividades = doc.splitTextToSize(data.atividadesPrevistas || 'Nenhuma atividade descrita.', 180);
-                doc.text(splitAtividades, 14, y);
-            } else {
-                doc.setFont("helvetica", "bold");
-                doc.text("Atividades Realizadas:", 14, y);
-                y += 6;
-                doc.setFont("helvetica", "normal");
-                const splitRealizadas = doc.splitTextToSize(data.atividadesRealizadas || 'Nenhuma atividade descrita.', 180);
-                doc.text(splitRealizadas, 14, y);
-                y += (splitRealizadas.length * 6) + 4;
-
-                doc.setFont("helvetica", "bold");
-                doc.text("Assentamento de Tubos:", 14, y);
-                y += 6;
-                doc.setFont("helvetica", "normal");
-                if (data.houveAssentamento === 'Sim' && data.assentamentos && data.assentamentos.length > 0) {
-                    data.assentamentos.forEach(a => {
-                        doc.text(`- ${a.diam}: ${a.ext || 0}m (Estaca: ${a.estaca || 'N/A'})`, 14, y);
-                        y += 6;
-                    });
-                } else {
-                    doc.text("Nenhum assentamento registrado.", 14, y);
-                    y += 6;
-                }
-
-                y += 4;
-                doc.setFont("helvetica", "bold");
-                doc.text("Efetivo de Equipe:", 14, y);
-                y += 6;
-                doc.setFont("helvetica", "normal");
-                const ef = data.efetivo;
-                doc.text(`Enc: ${ef.encarregado} | Nav: ${ef.navegador} | Oper: ${ef.operador} | Insp: ${ef.inspetor}`, 14, y);
-                y += 6;
-                doc.text(`Mot: ${ef.motorista} | Pedr: ${ef.pedreiro} | Sold: ${ef.soldador} | Ajud: ${ef.ajudante}`, 14, y);
-            }
-
-            doc.save(`RDO_${data.tipo}_${data.data}.pdf`);
-        }
-
-        // ==================== HISTÓRICO E MODAL ====================
-        function renderHistory() {
-            const historyList = document.getElementById('historyList');
-            updateHistoryBadge();
-
-            if (savedReports.length === 0) {
-                historyList.innerHTML = `
-                    <div class="bg-white p-8 rounded-2xl text-center text-slate-400">
-                        <i class="fa-regular fa-folder-open text-4xl mb-2"></i>
-                        <p class="text-xs">Nenhum relatório salvo no histórico ainda.</p>
-                    </div>
-                `;
+        // FUNÇÃO DE EXPORTAR PDF DA TABELA GERAL
+        function exportAllPDF() {
+            const history = JSON.parse(localStorage.getItem('rdo_history') || '[]');
+            if (history.length === 0) {
+                alert('Não há dados salvos para exportação. Preencha e salve ao menos um relatório primeiro.');
                 return;
             }
 
-            historyList.innerHTML = savedReports.map(rep => `
-                <div class="bg-white rounded-xl p-4 shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-3">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="px-2 py-0.5 text-[10px] font-bold rounded ${rep.tipo === 'inicial' ? 'bg-amber-100 text-amber-800' : 'bg-indigo-100 text-indigo-800'}">
-                                ${rep.tipo === 'inicial' ? 'INICIAL' : 'ENCERRAMENTO'}
-                            </span>
-                            <span class="text-xs font-bold text-slate-800">${rep.projeto}</span>
-                        </div>
-                        <p class="text-xs text-slate-500">Técnico: ${rep.tecnico} | Data: ${rep.data} às ${rep.horario}</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick='openModalWithData(${JSON.stringify(rep)})' class="px-3 py-1.5 text-xs font-semibold bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg transition">
-                            <i class="fa-solid fa-eye mr-1"></i> Ver
-                        </button>
-                        <button onclick='generatePDF(${JSON.stringify(rep)})' class="px-3 py-1.5 text-xs font-semibold bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded-lg transition">
-                            <i class="fa-solid fa-file-pdf mr-1"></i> PDF
-                        </button>
-                    </div>
-                </div>
-            `).join('');
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const headers = [["Data/Hora", "Tipo", "Projeto", "Técnico", "Assinatura Digital"]];
+            const rows = history.map(r => [
+                `${r.data} ${r.horario}`,
+                r.tipoRegistro.toUpperCase(),
+                r.projeto,
+                r.tecnico,
+                r.assinatura || 'N/A'
+            ]);
+
+            doc.setFontSize(14);
+            doc.text("Relatório Geral de Obras - ESGás", 14, 15);
+
+            doc.autoTable({
+                head: headers,
+                body: rows,
+                startY: 22,
+                theme: 'grid',
+                headStyles: { fillColor: [2, 132, 199] }
+            });
+
+            doc.save(`rdo_relatorio_geral_${new Date().toISOString().split('T')[0]}.pdf`);
         }
 
-        function updateHistoryBadge() {
-            document.getElementById('historyBadge').textContent = savedReports.length;
-        }
+        // FUNÇÃO DE DOWNLOAD PDF DO RELATÓRIO INDIVIDUAL ATIVO
+        async function downloadSinglePDF() {
+            if (!currentActiveRecord) return;
+            const { jsPDF } = window.jspdf;
+            const element = document.getElementById('modalPrintContent');
 
-        function clearAllHistory() {
-            if (confirm('Tem certeza que deseja apagar todo o histórico local?')) {
-                savedReports = [];
-                localStorage.removeItem('esgas_rdos');
-                renderHistory();
-            }
-        }
+            const canvas = await html2canvas(element, { scale: 2 });
+            const imgData = canvas.toDataURL('image/png');
 
-        function openModalWithData(data) {
-            activeModalReport = data;
-            const modal = document.getElementById('viewModal');
-            const body = document.getElementById('modalBody');
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const imgProps = pdf.getImageProperties(imgData);
+            const pdfWidth = pdf.internal.pageSize.getWidth() - 20;
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
 
-            let detailContent = '';
-            if (data.tipo === 'inicial') {
-                detailContent = `
-                    <div class="space-y-3">
-                        <div class="bg-slate-50 p-3 rounded-lg border">
-                            <h4 class="font-bold text-slate-800 border-b pb-1 mb-2">Segurança & Canteiro</h4>
-                            <p>Condições Adequadas: <strong>${data.condicoesTrabalho}</strong></p>
-                            <p>Caminhão Organizado: <strong>${data.caminhaoOrganizado}</strong></p>
-                            <p>Sinalização Adequada: <strong>${data.sinalizacaoAdequada}</strong></p>
-                            ${data.sinalizacaoAdequada === 'Não' ? `<p class="text-red-600">Obs Sinalização: ${data.descSinalizacao}</p>` : ''}
-                        </div>
-                        <div class="bg-slate-50 p-3 rounded-lg border">
-                            <h4 class="font-bold text-slate-800 border-b pb-1 mb-2">Atividades Previstas</h4>
-                            <p class="whitespace-pre-wrap">${data.atividadesPrevistas}</p>
-                        </div>
-                    </div>
-                `;
-            } else {
-                let assentHTML = 'Nenhum assentamento registrado.';
-                if (data.houveAssentamento === 'Sim' && data.assentamentos.length > 0) {
-                    assentHTML = data.assentamentos.map(a => `<li>• <strong>${a.diam}</strong>: ${a.ext || 0}m (Estaca: ${a.estaca || 'N/A'})</li>`).join('');
-                }
-
-                detailContent = `
-                    <div class="space-y-3">
-                        <div class="bg-slate-50 p-3 rounded-lg border">
-                            <h4 class="font-bold text-slate-800 border-b pb-1 mb-2">Atividades Executadas</h4>
-                            <p class="whitespace-pre-wrap mb-2">${data.atividadesRealizadas}</p>
-                            <h5 class="font-semibold text-slate-700 mt-2">Assentamentos:</h5>
-                            <ul class="pl-2 space-y-0.5">${assentHTML}</ul>
-                        </div>
-                    </div>
-                `;
-            }
-
-            body.innerHTML = `
-                <div class="border-b pb-3 mb-3">
-                    <div class="flex justify-between items-center">
-                        <span class="text-xs font-bold text-gas-orange uppercase">Relatório ESGás - RDO</span>
-                        <span class="text-xs text-slate-500">${data.data} - ${data.horario}</span>
-                    </div>
-                    <h2 class="text-base font-bold text-slate-900 mt-1">${data.projeto}</h2>
-                    <p class="text-xs text-slate-600">Tipo: <strong>${data.tipoObra}</strong> | Técnico: <strong>${data.tecnico}</strong></p>
-                </div>
-                ${detailContent}
-            `;
-
-            modal.classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('viewModal').classList.add('hidden');
-            activeModalReport = null;
-        }
-
-        function resetForm() {
-            if (confirm('Deseja realmente limpar todos os campos do formulário?')) {
-                document.getElementById('rdoForm').reset();
-                setDefaultDateTime();
-            }
+            pdf.setFontSize(14);
+            pdf.text("Relatório Diário de Obra - ESGás", 10, 15);
+            pdf.addImage(imgData, 'PNG', 10, 25, pdfWidth, pdfHeight);
+            pdf.save(`RDO_${currentActiveRecord.projeto}_${currentActiveRecord.data}.pdf`);
         }
     </script>
 </body>
