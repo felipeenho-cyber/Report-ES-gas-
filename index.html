@@ -41,6 +41,8 @@
         * { box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; }
         .image-preview-card img { width: 100%; height: 120px; object-fit: cover; display: block; border-radius: 0.375rem; }
+        .dynamic-row { display: grid; grid-template-columns: minmax(0, 1fr) 90px 34px; gap: .5rem; align-items: center; }
+        @media (max-width: 480px) { .dynamic-row { grid-template-columns: 1fr 80px 34px; } }
         
         @media print { 
             .no-print { display: none !important; } 
@@ -95,7 +97,7 @@
             </button>
             <button type="button" id="btnTabHistory" onclick="switchTab('historyTab')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20">
                 <i class="fa-solid fa-database"></i> Histórico
-                <span id="historyBadge" class="bg-gas-orange text-white text-[10px] px-1.5 py-0.2 rounded-full">0</span>
+                <span id="historyBadge" class="bg-gas-orange text-white text-[10px] px-1.5 py-0.5 rounded-full">0</span>
             </button>
         </div>
     </div>
@@ -238,6 +240,35 @@
                     </div>
                 </div>
 
+                <!-- LISTAS DINÂMICAS DE EFETIVO E EQUIPAMENTOS -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 mt-4">
+                    <div class="bg-slate-50 p-3.5 rounded-xl border">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold text-slate-700">
+                                <i class="fa-solid fa-user-group text-gas-500 mr-1"></i> Efetivo da Equipe
+                            </span>
+                            <button type="button" onclick="addEfetivoRow()" class="px-2.5 py-1.5 bg-gas-500 hover:bg-gas-700 text-white rounded-lg text-[11px] font-bold">
+                                <i class="fa-solid fa-plus mr-1"></i> Adicionar
+                            </button>
+                        </div>
+                        <div id="efetivosContainer" class="space-y-2"></div>
+                        <p id="efetivosEmpty" class="text-[10px] text-slate-400 text-center py-2">Nenhuma função adicionada.</p>
+                    </div>
+
+                    <div class="bg-slate-50 p-3.5 rounded-xl border">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold text-slate-700">
+                                <i class="fa-solid fa-helmet-safety text-gas-500 mr-1"></i> Equipamentos
+                            </span>
+                            <button type="button" onclick="addEquipamentoRow()" class="px-2.5 py-1.5 bg-gas-500 hover:bg-gas-700 text-white rounded-lg text-[11px] font-bold">
+                                <i class="fa-solid fa-plus mr-1"></i> Adicionar
+                            </button>
+                        </div>
+                        <div id="equipamentosContainer" class="space-y-2"></div>
+                        <p id="equipamentosEmpty" class="text-[10px] text-slate-400 text-center py-2">Nenhum equipamento adicionado.</p>
+                    </div>
+                </div>
+
                 <div class="mt-4 pt-4 border-t">
                     <label class="block text-xs font-semibold mb-1">
                         <i class="fa-solid fa-camera text-gas-500 mr-1"></i> Enviar foto do canteiro (Time Stamp ESGas)
@@ -369,7 +400,7 @@
                         <label class="flex items-center gap-2 text-xs font-bold cursor-pointer">
                             <input type="checkbox" id="checkPEAD63" onchange="togglePEAD('fieldsPEAD63', this.checked)"> PEAD 63 mm
                         </label>
-                        <div id="fieldsPEAD63" class="mt-3 space-y-2">
+                        <div id="fieldsPEAD63" class="mt-3 space-y-2 hidden">
                             <input type="number" id="extensao63" min="0.01" step="0.01" placeholder="Metragem (m)" class="w-full text-xs p-2 border rounded">
                             <input type="text" id="estaca63" placeholder="Estaqueamento / Trecho" class="w-full text-xs p-2 border rounded">
                         </div>
@@ -380,7 +411,7 @@
                         <label class="flex items-center gap-2 text-xs font-bold cursor-pointer">
                             <input type="checkbox" id="checkPEAD125" onchange="togglePEAD('fieldsPEAD125', this.checked)"> PEAD 125 mm
                         </label>
-                        <div id="fieldsPEAD125" class="mt-3 space-y-2">
+                        <div id="fieldsPEAD125" class="mt-3 space-y-2 hidden">
                             <input type="number" id="extensao125" min="0.01" step="0.01" placeholder="Metragem (m)" class="w-full text-xs p-2 border rounded">
                             <input type="text" id="estaca125" placeholder="Estaqueamento / Trecho" class="w-full text-xs p-2 border rounded">
                         </div>
@@ -458,6 +489,9 @@
     let currentBase64Seg1 = '';
     let currentBase64Seg2 = '';
     let currentBase64Seg3 = '';
+    let efetivos = [];
+    let equipamentos = [];
+    let isLoadingRecord = false;
 
     function getVal(id) {
         const el = document.getElementById(id);
@@ -469,13 +503,30 @@
         if (el) el.value = val || '';
     }
 
+    function setRadioVal(name, val) {
+        const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
+        if (el) el.checked = true;
+    }
+
+    function renderBase64Preview(containerId, base64Str) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        if (base64Str) {
+            container.classList.remove('hidden');
+            container.innerHTML = `<div class="image-preview-card border rounded p-1 bg-white shadow-sm mt-1"><img src="${base64Str}"><p class="text-[9px] text-slate-500 mt-1 text-center font-semibold">Foto Anexada</p></div>`;
+        } else {
+            container.classList.add('hidden');
+            container.innerHTML = '';
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         updateHistoryBadge();
         renderHistory(rdoHistory);
-        
-        // Inicializar exibição do PEAD de acordo com o estado do checkbox
         togglePEAD('fieldsPEAD63', document.getElementById('checkPEAD63').checked);
         togglePEAD('fieldsPEAD125', document.getElementById('checkPEAD125').checked);
+        renderEfetivos();
+        renderEquipamentos();
     });
 
     function switchTab(tabName) {
@@ -517,11 +568,129 @@
     function togglePEAD(id, isChecked) {
         const field = document.getElementById(id);
         if (field) {
-            if (isChecked) {
-                field.classList.remove('hidden');
-            } else {
-                field.classList.add('hidden');
-            }
+            field.classList.toggle('hidden', !isChecked);
+        }
+    }
+
+    function escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function updateDynamicEmptyStates() {
+        const e = document.getElementById('efetivosEmpty');
+        const q = document.getElementById('equipamentosEmpty');
+        if (e) e.classList.toggle('hidden', efetivos.length > 0);
+        if (q) q.classList.toggle('hidden', equipamentos.length > 0);
+    }
+
+    function renderEfetivos() {
+        const container = document.getElementById('efetivosContainer');
+        if (!container) return;
+        container.innerHTML = efetivos.map((item, index) => `
+            <div class="dynamic-row">
+                <input type="text" value="${escapeHtml(item.funcao)}"
+                    oninput="updateEfetivo(${index}, 'funcao', this.value)"
+                    placeholder="Função / profissional"
+                    class="w-full text-xs bg-white border border-slate-300 rounded-lg p-2">
+                <input type="number" min="1" step="1" value="${escapeHtml(item.quantidade || 1)}"
+                    oninput="updateEfetivo(${index}, 'quantidade', this.value)"
+                    placeholder="Qtd."
+                    class="w-full text-xs bg-white border border-slate-300 rounded-lg p-2">
+                <button type="button" onclick="removeEfetivo(${index})"
+                    class="h-9 rounded-lg bg-red-50 hover:bg-red-100 text-red-600">
+                    <i class="fa-solid fa-trash text-xs"></i>
+                </button>
+            </div>
+        `).join('');
+        updateDynamicEmptyStates();
+    }
+
+    function renderEquipamentos() {
+        const container = document.getElementById('equipamentosContainer');
+        if (!container) return;
+        container.innerHTML = equipamentos.map((item, index) => `
+            <div class="dynamic-row">
+                <input type="text" value="${escapeHtml(item.equipamento)}"
+                    oninput="updateEquipamento(${index}, 'equipamento', this.value)"
+                    placeholder="Equipamento"
+                    class="w-full text-xs bg-white border border-slate-300 rounded-lg p-2">
+                <input type="number" min="1" step="1" value="${escapeHtml(item.quantidade || 1)}"
+                    oninput="updateEquipamento(${index}, 'quantidade', this.value)"
+                    placeholder="Qtd."
+                    class="w-full text-xs bg-white border border-slate-300 rounded-lg p-2">
+                <button type="button" onclick="removeEquipamento(${index})"
+                    class="h-9 rounded-lg bg-red-50 hover:bg-red-100 text-red-600">
+                    <i class="fa-solid fa-trash text-xs"></i>
+                </button>
+            </div>
+        `).join('');
+        updateDynamicEmptyStates();
+    }
+
+    function addEfetivoRow(data = {}) {
+        efetivos.push({ funcao: data.funcao || '', quantidade: data.quantidade || 1 });
+        renderEfetivos();
+        const inputs = document.querySelectorAll('#efetivosContainer input[type="text"]');
+        inputs[inputs.length - 1]?.focus();
+    }
+
+    function updateEfetivo(index, field, value) {
+        if (!efetivos[index]) return;
+        efetivos[index][field] = field === 'quantidade' ? Math.max(1, Number(value) || 1) : value;
+    }
+
+    function removeEfetivo(index) {
+        efetivos.splice(index, 1);
+        renderEfetivos();
+    }
+
+    function addEquipamentoRow(data = {}) {
+        equipamentos.push({ equipamento: data.equipamento || '', quantidade: data.quantidade || 1 });
+        renderEquipamentos();
+        const inputs = document.querySelectorAll('#equipamentosContainer input[type="text"]');
+        inputs[inputs.length - 1]?.focus();
+    }
+
+    function updateEquipamento(index, field, value) {
+        if (!equipamentos[index]) return;
+        equipamentos[index][field] = field === 'quantidade' ? Math.max(1, Number(value) || 1) : value;
+    }
+
+    function removeEquipamento(index) {
+        equipamentos.splice(index, 1);
+        renderEquipamentos();
+    }
+
+    function validateDynamicLists() {
+        const invalidEfetivo = efetivos.some(x => !String(x.funcao || '').trim() || Number(x.quantidade) < 1);
+        const invalidEquipamento = equipamentos.some(x => !String(x.equipamento || '').trim() || Number(x.quantidade) < 1);
+        if (invalidEfetivo) {
+            alert('Preencha a função e a quantidade de todos os itens de efetivo.');
+            return false;
+        }
+        if (invalidEquipamento) {
+            alert('Preencha o equipamento e a quantidade de todos os itens.');
+            return false;
+        }
+        return true;
+    }
+
+    function setRequiredForVisibleNC(id, required) {
+        const field = document.getElementById(id);
+        if (!field) return;
+        field.required = required;
+    }
+
+    function toggleNC(id, show) {
+        const field = document.getElementById(id);
+        if (field) {
+            field.classList.toggle('hidden', !show);
+            field.required = show;
         }
     }
 
@@ -537,8 +706,7 @@
                 if (key === 'seg2') currentBase64Seg2 = e.target.result;
                 if (key === 'seg3') currentBase64Seg3 = e.target.result;
 
-                container.classList.remove('hidden');
-                container.innerHTML = `<div class="image-preview-card border rounded p-1 bg-white shadow-sm mt-1"><img src="${e.target.result}"><p class="text-[9px] text-slate-500 mt-1 text-center font-semibold">Foto Anexada</p></div>`;
+                renderBase64Preview(previewId, e.target.result);
             }
             reader.readAsDataURL(input.files[0]);
         }
@@ -554,10 +722,12 @@
     function handleFormSubmit(e) {
         e.preventDefault();
 
+        if (!validateDynamicLists()) return;
+
         const editingId = getVal('editingRecordId');
         const isEdit = !!editingId;
-
         const recordId = isEdit ? editingId : 'RDO-' + Date.now();
+        const existingRecord = isEdit ? rdoHistory.find(item => String(item.id) === String(editingId)) : null;
 
         const radioVal = (name) => {
             const el = document.querySelector(`input[name="${name}"]:checked`);
@@ -566,7 +736,7 @@
 
         const recordData = {
             id: recordId,
-            data: new Date().toISOString().split('T')[0],
+            data: existingRecord ? existingRecord.data : new Date().toISOString().split('T')[0],
             dataHora: new Date().toLocaleString('pt-BR'),
             tipo: currentReportType === 'encerramento' ? 'encerramento' : 'inicial',
             projeto: getVal('selectProjeto'),
@@ -581,11 +751,18 @@
                 houve: radioVal('faltaEquipamento'),
                 descricao: getVal('descFaltaEquipamento')
             },
+            efetivos: efetivos.map(x => ({ funcao: String(x.funcao || '').trim(), quantidade: Number(x.quantidade) || 1 })),
+            equipamentos: equipamentos.map(x => ({ equipamento: String(x.equipamento || '').trim(), quantidade: Number(x.quantidade) || 1 })),
+            seguranca: {
+                condicoesTrabalho: { houve: radioVal('condicoesTrabalho'), descricao: getVal('descCondicoes') },
+                caminhaoOrganizado: { houve: radioVal('caminhaoOrganizado'), descricao: getVal('descCaminhao') },
+                sinalizacaoAdequada: { houve: radioVal('sinalizacaoAdequada'), descricao: getVal('descSinalizacao') }
+            },
             fotos: {
-                canteiro: currentBase64Canteiro,
-                seguranca1: currentBase64Seg1,
-                seguranca2: currentBase64Seg2,
-                seguranca3: currentBase64Seg3
+                canteiro: currentBase64Canteiro || existingRecord?.fotos?.canteiro || '',
+                seguranca1: currentBase64Seg1 || existingRecord?.fotos?.seguranca1 || '',
+                seguranca2: currentBase64Seg2 || existingRecord?.fotos?.seguranca2 || '',
+                seguranca3: currentBase64Seg3 || existingRecord?.fotos?.seguranca3 || ''
             },
             horarios: {
                 empreiteira: getVal('nomeEmpreiteira'),
@@ -601,12 +778,12 @@
             atividadesRealizadas: getVal('atividadesRealizadas'),
             producao: {
                 pead63: {
-                    ativo: document.getElementById('checkPEAD63') ? document.getElementById('checkPEAD63').checked : false,
+                    ativo: document.getElementById('checkPEAD63')?.checked || false,
                     extensao: getVal('extensao63'),
                     estaca: getVal('estaca63')
                 },
                 pead125: {
-                    ativo: document.getElementById('checkPEAD125') ? document.getElementById('checkPEAD125').checked : false,
+                    ativo: document.getElementById('checkPEAD125')?.checked || false,
                     extensao: getVal('extensao125'),
                     estaca: getVal('estaca125')
                 }
@@ -622,27 +799,47 @@
             rdoHistory.unshift(recordData);
         }
 
-        localStorage.setItem('rdo_history_data', JSON.stringify(rdoHistory));
-
-        updateHistoryBadge();
-        renderHistory(rdoHistory);
-
-        alert('Relatório salvo com sucesso!');
-        resetForm();
-        switchTab('historyTab');
+        try {
+            localStorage.setItem('rdo_history_data', JSON.stringify(rdoHistory));
+            updateHistoryBadge();
+            renderHistory(rdoHistory);
+            alert('Relatório salvo com sucesso!');
+            resetForm();
+            switchTab('historyTab');
+        } catch (err) {
+            console.error('Erro ao salvar no LocalStorage:', err);
+            alert('Atenção: Espaço de armazenamento do navegador esgotado. Tente remover imagens pesadas ou relatórios antigos antes de salvar novamente.');
+        }
     }
 
     function resetForm() {
         document.getElementById('rdoForm').reset();
         document.getElementById('editingRecordId').value = '';
+        
         ['previewCanteiro', 'previewSeg1', 'previewSeg2', 'previewSeg3'].forEach(id => {
             const el = document.getElementById(id);
-            if (el) el.classList.add('hidden');
+            if (el) {
+                el.classList.add('hidden');
+                el.innerHTML = '';
+            }
         });
+
         currentBase64Canteiro = '';
         currentBase64Seg1 = '';
         currentBase64Seg2 = '';
         currentBase64Seg3 = '';
+
+        efetivos = [];
+        equipamentos = [];
+        renderEfetivos();
+        renderEquipamentos();
+
+        toggleNC('descFaltaEfetivo', false);
+        toggleNC('descFaltaEquipamento', false);
+        toggleNC('descCondicoes', false);
+        toggleNC('descCaminhao', false);
+        toggleNC('descSinalizacao', false);
+
         togglePEAD('fieldsPEAD63', false);
         togglePEAD('fieldsPEAD125', false);
         setReportType('inicial');
@@ -652,6 +849,8 @@
         const item = rdoHistory.find(r => String(r.id) === String(id));
         if (!item) return;
 
+        resetForm();
+
         document.getElementById('editingRecordId').value = item.id;
         setVal('selectProjeto', item.projeto);
         setVal('selectTecnico', item.tecnico);
@@ -660,19 +859,82 @@
         setVal('horarioPrevistoEmpreiteira', item.horarios?.previstoEmpreiteira);
         setVal('atividadesPrevistas', item.atividadesPrevistas);
 
-        if (item.faltaEfetivo?.houve === 'Sim') {
-            const el = document.querySelector('input[name="faltaEfetivo"][value="Sim"]');
-            if (el) el.checked = true;
-            toggleNC('descFaltaEfetivo', true);
+        efetivos = Array.isArray(item.efetivos) ? item.efetivos.map(x => ({
+            funcao: x.funcao || '',
+            quantidade: Number(x.quantidade) || 1
+        })) : [];
+        equipamentos = Array.isArray(item.equipamentos) ? item.equipamentos.map(x => ({
+            equipamento: x.equipamento || '',
+            quantidade: Number(x.quantidade) || 1
+        })) : [];
+        renderEfetivos();
+        renderEquipamentos();
+
+        // Falta Efetivo / Equipamento
+        if (item.faltaEfetivo?.houve) {
+            setRadioVal('faltaEfetivo', item.faltaEfetivo.houve);
+            toggleNC('descFaltaEfetivo', item.faltaEfetivo.houve === 'Sim');
             setVal('descFaltaEfetivo', item.faltaEfetivo.descricao);
         }
-
-        if (item.faltaEquipamento?.houve === 'Sim') {
-            const el = document.querySelector('input[name="faltaEquipamento"][value="Sim"]');
-            if (el) el.checked = true;
-            toggleNC('descFaltaEquipamento', true);
+        if (item.faltaEquipamento?.houve) {
+            setRadioVal('faltaEquipamento', item.faltaEquipamento.houve);
+            toggleNC('descFaltaEquipamento', item.faltaEquipamento.houve === 'Sim');
             setVal('descFaltaEquipamento', item.faltaEquipamento.descricao);
         }
+
+        // Segurança do trabalho
+        if (item.seguranca?.condicoesTrabalho?.houve) {
+            setRadioVal('condicoesTrabalho', item.seguranca.condicoesTrabalho.houve);
+            toggleNC('descCondicoes', item.seguranca.condicoesTrabalho.houve === 'Não');
+            setVal('descCondicoes', item.seguranca.condicoesTrabalho.descricao);
+        }
+        if (item.seguranca?.caminhaoOrganizado?.houve) {
+            setRadioVal('caminhaoOrganizado', item.seguranca.caminhaoOrganizado.houve);
+            toggleNC('descCaminhao', item.seguranca.caminhaoOrganizado.houve === 'Não');
+            setVal('descCaminhao', item.seguranca.caminhaoOrganizado.descricao);
+        }
+        if (item.seguranca?.sinalizacaoAdequada?.houve) {
+            setRadioVal('sinalizacaoAdequada', item.seguranca.sinalizacaoAdequada.houve);
+            toggleNC('descSinalizacao', item.seguranca.sinalizacaoAdequada.houve === 'Não');
+            setVal('descSinalizacao', item.seguranca.sinalizacaoAdequada.descricao);
+        }
+
+        // Fotos
+        currentBase64Canteiro = item.fotos?.canteiro || '';
+        currentBase64Seg1 = item.fotos?.seguranca1 || '';
+        currentBase64Seg2 = item.fotos?.seguranca2 || '';
+        currentBase64Seg3 = item.fotos?.seguranca3 || '';
+
+        renderBase64Preview('previewCanteiro', currentBase64Canteiro);
+        renderBase64Preview('previewSeg1', currentBase64Seg1);
+        renderBase64Preview('previewSeg2', currentBase64Seg2);
+        renderBase64Preview('previewSeg3', currentBase64Seg3);
+
+        // Produção PEAD
+        if (item.producao?.pead63) {
+            const chk = document.getElementById('checkPEAD63');
+            if (chk) chk.checked = !!item.producao.pead63.ativo;
+            togglePEAD('fieldsPEAD63', !!item.producao.pead63.ativo);
+            setVal('extensao63', item.producao.pead63.extensao);
+            setVal('estaca63', item.producao.pead63.estaca);
+        }
+
+        if (item.producao?.pead125) {
+            const chk = document.getElementById('checkPEAD125');
+            if (chk) chk.checked = !!item.producao.pead125.ativo;
+            togglePEAD('fieldsPEAD125', !!item.producao.pead125.ativo);
+            setVal('extensao125', item.producao.pead125.extensao);
+            setVal('estaca125', item.producao.pead125.estaca);
+        }
+
+        // Dados de Encerramento (se houver)
+        setVal('horarioRealChegadaEmpreiteira', item.horarios?.realEmpreiteira);
+        setVal('horarioInicioAtividades', item.horarios?.inicioAtividades);
+        setVal('justificativaAtrasoInicio', item.horarios?.justAtrasoInicio);
+        setVal('horarioPrevistoEncerramento', item.horarios?.previstoEncerrar);
+        setVal('horarioRealEncerramento', item.horarios?.realEncerrar);
+        setVal('justificativaEncerramentoAntecipado', item.horarios?.justEncerrarAntes);
+        setVal('atividadesRealizadas', item.atividadesRealizadas);
 
         setReportType('encerramento');
         switchTab('formTab');
@@ -696,25 +958,25 @@
         container.innerHTML = data.map(item => `
             <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
                 <div class="flex items-center gap-3">
-                    <input type="checkbox" class="history-checkbox rounded cursor-pointer" value="${item.id}">
+                    <input type="checkbox" class="history-checkbox rounded cursor-pointer" value="${escapeHtml(item.id)}">
                     <div>
                         <div class="flex items-center gap-2 mb-1">
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.tipo === 'inicial' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
                                 ${item.tipo === 'inicial' ? 'Aberto / Em Andamento' : 'Encerrado'}
                             </span>
-                            <span class="text-xs font-bold text-slate-800">${item.projeto}</span>
+                            <span class="text-xs font-bold text-slate-800">${escapeHtml(item.projeto)}</span>
                         </div>
-                        <p class="text-xs text-slate-600"><i class="fa-solid fa-user text-slate-400 mr-1"></i> Técnico: ${item.tecnico}</p>
+                        <p class="text-xs text-slate-600"><i class="fa-solid fa-user text-slate-400 mr-1"></i> Técnico: ${escapeHtml(item.tecnico)}</p>
                         <p class="text-[11px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i> ${item.dataHora}</p>
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
                     ${item.tipo === 'inicial' ? `
-                        <button onclick="continueReport('${item.id}')" class="px-3 py-1.5 bg-gas-50 hover:bg-gas-100 text-gas-700 rounded-lg text-xs font-bold transition">
+                        <button onclick="continueReport('${escapeHtml(item.id)}')" class="px-3 py-1.5 bg-gas-50 hover:bg-gas-100 text-gas-700 rounded-lg text-xs font-bold transition">
                             <i class="fa-solid fa-play mr-1"></i> Continuar / Encerrar RDO
                         </button>
                     ` : ''}
-                    <button onclick="deleteRecord('${item.id}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
+                    <button onclick="deleteRecord('${escapeHtml(item.id)}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
                         <i class="fa-solid fa-trash"></i> Excluir
                     </button>
                 </div>
@@ -761,7 +1023,9 @@
     function deleteRecord(id) {
         if (confirm('Deseja realmente excluir este registro?')) {
             rdoHistory = rdoHistory.filter(item => String(item.id) !== String(id));
-            localStorage.setItem('rdo_history_data', JSON.stringify(rdoHistory));
+            try {
+                localStorage.setItem('rdo_history_data', JSON.stringify(rdoHistory));
+            } catch(e) {}
             updateHistoryBadge();
             applyHistoryFilter();
         }
@@ -774,24 +1038,41 @@
             return;
         }
 
-        let csv = 'sep=;\nID;Data/Hora;Status;Projeto;Tecnico;Engenheiro;Empreiteira;Falta Efetivo;Falta Equipamento;Atividades Previstas;Atividades Realizadas\n';
+        let csv = 'sep=;\nID;Data/Hora;Status;Projeto;Tecnico;Engenheiro;Empreiteira;Efetivos;Equipamentos;Falta Efetivo;Falta Equipamento;Cond. Trabalho;Caminhao Org.;Sinalizacao;PEAD 63mm (m);PEAD 125mm (m);Atividades Previstas;Atividades Realizadas\n';
 
         recordsToExport.forEach(item => {
             const faltaEf = item.faltaEfetivo?.houve === 'Sim' ? item.faltaEfetivo.descricao : 'Nao';
             const faltaEq = item.faltaEquipamento?.houve === 'Sim' ? item.faltaEquipamento.descricao : 'Nao';
+            const condTrab = item.seguranca?.condicoesTrabalho?.houve === 'Não' ? item.seguranca.condicoesTrabalho.descricao : 'Sim';
+            const camOrg = item.seguranca?.caminhaoOrganizado?.houve === 'Não' ? item.seguranca.caminhaoOrganizado.descricao : 'Sim';
+            const sinAdeq = item.seguranca?.sinalizacaoAdequada?.houve === 'Não' ? item.seguranca.sinalizacaoAdequada.descricao : 'Sim';
+            
+            const pead63Val = item.producao?.pead63?.ativo ? (item.producao.pead63.extensao || '0') : '0';
+            const pead125Val = item.producao?.pead125?.ativo ? (item.producao.pead125.extensao || '0') : '0';
+            const efetivosVal = (item.efetivos || []).map(x => `${x.funcao} (${x.quantidade})`).join(' | ');
+            const equipamentosVal = (item.equipamentos || []).map(x => `${x.equipamento} (${x.quantidade})`).join(' | ');
+
+            const csvSafe = (value) => `"${String(value ?? '').replace(/"/g, '""').replace(/\r?\n/g, ' ')}"`;
 
             const row = [
-                `"${item.id}"`,
-                `"${item.dataHora || ''}"`,
-                `"${item.tipo === 'encerramento' ? 'Encerrado' : 'Aberto'}"`,
-                `"${item.projeto || ''}"`,
-                `"${item.tecnico || ''}"`,
-                `"${item.engenheiro || ''}"`,
-                `"${item.horarios?.empreiteira || ''}"`,
-                `"${faltaEf.replace(/"/g, '""')}"`,
-                `"${faltaEq.replace(/"/g, '""')}"`,
-                `"${(item.atividadesPrevistas || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
-                `"${(item.atividadesRealizadas || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`
+                csvSafe(item.id),
+                csvSafe(item.dataHora),
+                csvSafe(item.tipo === 'encerramento' ? 'Encerrado' : 'Aberto'),
+                csvSafe(item.projeto),
+                csvSafe(item.tecnico),
+                csvSafe(item.engenheiro),
+                csvSafe(item.horarios?.empreiteira),
+                csvSafe(efetivosVal),
+                csvSafe(equipamentosVal),
+                csvSafe(faltaEf),
+                csvSafe(faltaEq),
+                csvSafe(condTrab),
+                csvSafe(camOrg),
+                csvSafe(sinAdeq),
+                csvSafe(pead63Val),
+                csvSafe(pead125Val),
+                csvSafe(item.atividadesPrevistas),
+                csvSafe(item.atividadesRealizadas)
             ];
             csv += row.join(';') + '\n';
         });
@@ -809,13 +1090,37 @@
 
         if (recordsToExport.length === 1) {
             continueReport(recordsToExport[0].id);
+            setTimeout(() => { window.print(); }, 300);
         } else {
-            switchTab('formTab');
-        }
+            const printContainer = document.createElement('div');
+            printContainer.id = 'batchPrintContainer';
+            printContainer.className = 'space-y-6';
 
-        setTimeout(() => {
+            recordsToExport.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-6 rounded-xl border border-slate-300 print-card mb-4';
+                card.innerHTML = `
+                    <h2 class="font-bold text-sm border-b pb-2 mb-3">RDO: ${item.id} - ${item.projeto}</h2>
+                    <p class="text-xs"><strong>Técnico:</strong> ${item.tecnico} | <strong>Data:</strong> ${item.dataHora}</p>
+                    <p class="text-xs"><strong>Status:</strong> ${item.tipo === 'encerramento' ? 'Encerrado' : 'Em Aberto'}</p>
+                    <p class="text-xs mt-2"><strong>Atividades Previstas:</strong> ${item.atividadesPrevistas || 'N/A'}</p>
+                    <p class="text-xs"><strong>Atividades Realizadas:</strong> ${item.atividadesRealizadas || 'N/A'}</p>
+                    <p class="text-xs mt-2"><strong>Produção PEAD 63mm:</strong> ${item.producao?.pead63?.ativo ? item.producao.pead63.extensao + 'm' : 'N/A'}</p>
+                    <p class="text-xs"><strong>Produção PEAD 125mm:</strong> ${item.producao?.pead125?.ativo ? item.producao.pead125.extensao + 'm' : 'N/A'}</p>
+                `;
+                printContainer.appendChild(card);
+            });
+
+            const main = document.querySelector('main');
+            const formTab = document.getElementById('formTab');
+            formTab.classList.add('hidden');
+            main.appendChild(printContainer);
+
             window.print();
-        }, 300);
+
+            if (printContainer.parentNode) main.removeChild(printContainer);
+            formTab.classList.remove('hidden');
+        }
     }
 </script>
 
