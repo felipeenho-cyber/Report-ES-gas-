@@ -394,6 +394,9 @@
                 <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
                     <i class="fa-solid fa-ruler-combined text-indigo-600 mr-1"></i> Produção / Assentamento PEAD
                 </h2>
+                <p class="text-[10px] text-slate-500 mb-3">
+                    Informe o trecho executado no formato <strong>Estaca X até Estaca Y</strong> e a metragem executada.
+                </p>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <!-- PEAD 63 mm -->
                     <div class="bg-slate-50 p-4 rounded-xl border">
@@ -401,8 +404,11 @@
                             <input type="checkbox" id="checkPEAD63" onchange="togglePEAD('fieldsPEAD63', this.checked)"> PEAD 63 mm
                         </label>
                         <div id="fieldsPEAD63" class="mt-3 space-y-2 hidden">
-                            <input type="number" id="extensao63" min="0.01" step="0.01" placeholder="Metragem (m)" class="w-full text-xs p-2 border rounded">
-                            <input type="text" id="estaca63" placeholder="Estaqueamento / Trecho" class="w-full text-xs p-2 border rounded">
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" id="estacaInicial63" placeholder="Estaca inicial (X)" class="w-full text-xs p-2 border rounded">
+                                <input type="text" id="estacaFinal63" placeholder="Estaca final (Y)" class="w-full text-xs p-2 border rounded">
+                            </div>
+                            <input type="number" id="extensao63" min="0.01" step="0.01" placeholder="Metragem executada (m)" class="w-full text-xs p-2 border rounded">
                         </div>
                     </div>
 
@@ -412,8 +418,11 @@
                             <input type="checkbox" id="checkPEAD125" onchange="togglePEAD('fieldsPEAD125', this.checked)"> PEAD 125 mm
                         </label>
                         <div id="fieldsPEAD125" class="mt-3 space-y-2 hidden">
-                            <input type="number" id="extensao125" min="0.01" step="0.01" placeholder="Metragem (m)" class="w-full text-xs p-2 border rounded">
-                            <input type="text" id="estaca125" placeholder="Estaqueamento / Trecho" class="w-full text-xs p-2 border rounded">
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="text" id="estacaInicial125" placeholder="Estaca inicial (X)" class="w-full text-xs p-2 border rounded">
+                                <input type="text" id="estacaFinal125" placeholder="Estaca final (Y)" class="w-full text-xs p-2 border rounded">
+                            </div>
+                            <input type="number" id="extensao125" min="0.01" step="0.01" placeholder="Metragem executada (m)" class="w-full text-xs p-2 border rounded">
                         </div>
                     </div>
                 </div>
@@ -779,13 +788,15 @@
             producao: {
                 pead63: {
                     ativo: document.getElementById('checkPEAD63')?.checked || false,
-                    extensao: getVal('extensao63'),
-                    estaca: getVal('estaca63')
+                    estacaInicial: getVal('estacaInicial63'),
+                    estacaFinal: getVal('estacaFinal63'),
+                    extensao: getVal('extensao63')
                 },
                 pead125: {
                     ativo: document.getElementById('checkPEAD125')?.checked || false,
-                    extensao: getVal('extensao125'),
-                    estaca: getVal('estaca125')
+                    estacaInicial: getVal('estacaInicial125'),
+                    estacaFinal: getVal('estacaFinal125'),
+                    extensao: getVal('extensao125')
                 }
             }
         };
@@ -915,16 +926,18 @@
             const chk = document.getElementById('checkPEAD63');
             if (chk) chk.checked = !!item.producao.pead63.ativo;
             togglePEAD('fieldsPEAD63', !!item.producao.pead63.ativo);
+            setVal('estacaInicial63', item.producao.pead63.estacaInicial || item.producao.pead63.estaca || '');
+            setVal('estacaFinal63', item.producao.pead63.estacaFinal || '');
             setVal('extensao63', item.producao.pead63.extensao);
-            setVal('estaca63', item.producao.pead63.estaca);
         }
 
         if (item.producao?.pead125) {
             const chk = document.getElementById('checkPEAD125');
             if (chk) chk.checked = !!item.producao.pead125.ativo;
             togglePEAD('fieldsPEAD125', !!item.producao.pead125.ativo);
+            setVal('estacaInicial125', item.producao.pead125.estacaInicial || item.producao.pead125.estaca || '');
+            setVal('estacaFinal125', item.producao.pead125.estacaFinal || '');
             setVal('extensao125', item.producao.pead125.extensao);
-            setVal('estaca125', item.producao.pead125.estaca);
         }
 
         // Dados de Encerramento (se houver)
@@ -1038,7 +1051,7 @@
             return;
         }
 
-        let csv = 'sep=;\nID;Data/Hora;Status;Projeto;Tecnico;Engenheiro;Empreiteira;Efetivos;Equipamentos;Falta Efetivo;Falta Equipamento;Cond. Trabalho;Caminhao Org.;Sinalizacao;PEAD 63mm (m);PEAD 125mm (m);Atividades Previstas;Atividades Realizadas\n';
+        let csv = 'sep=;\nID;Data/Hora;Status;Projeto;Tecnico;Engenheiro;Empreiteira;Efetivos;Equipamentos;Falta Efetivo;Falta Equipamento;Cond. Trabalho;Caminhao Org.;Sinalizacao;PEAD 63mm - Estaca Inicial;PEAD 63mm - Estaca Final;PEAD 63mm - Metragem (m);PEAD 125mm - Estaca Inicial;PEAD 125mm - Estaca Final;PEAD 125mm - Metragem (m);Atividades Previstas;Atividades Realizadas\n';
 
         recordsToExport.forEach(item => {
             const faltaEf = item.faltaEfetivo?.houve === 'Sim' ? item.faltaEfetivo.descricao : 'Nao';
@@ -1047,8 +1060,16 @@
             const camOrg = item.seguranca?.caminhaoOrganizado?.houve === 'Não' ? item.seguranca.caminhaoOrganizado.descricao : 'Sim';
             const sinAdeq = item.seguranca?.sinalizacaoAdequada?.houve === 'Não' ? item.seguranca.sinalizacaoAdequada.descricao : 'Sim';
             
-            const pead63Val = item.producao?.pead63?.ativo ? (item.producao.pead63.extensao || '0') : '0';
-            const pead125Val = item.producao?.pead125?.ativo ? (item.producao.pead125.extensao || '0') : '0';
+            const pead63 = item.producao?.pead63;
+            const pead125 = item.producao?.pead125;
+
+            const pead63EstacaInicial = pead63?.ativo ? (pead63.estacaInicial || pead63.estaca || '') : '';
+            const pead63EstacaFinal = pead63?.ativo ? (pead63.estacaFinal || '') : '';
+            const pead63Val = pead63?.ativo ? (pead63.extensao || '0') : '0';
+
+            const pead125EstacaInicial = pead125?.ativo ? (pead125.estacaInicial || pead125.estaca || '') : '';
+            const pead125EstacaFinal = pead125?.ativo ? (pead125.estacaFinal || '') : '';
+            const pead125Val = pead125?.ativo ? (pead125.extensao || '0') : '0';
             const efetivosVal = (item.efetivos || []).map(x => `${x.funcao} (${x.quantidade})`).join(' | ');
             const equipamentosVal = (item.equipamentos || []).map(x => `${x.equipamento} (${x.quantidade})`).join(' | ');
 
@@ -1069,7 +1090,11 @@
                 csvSafe(condTrab),
                 csvSafe(camOrg),
                 csvSafe(sinAdeq),
+                csvSafe(pead63EstacaInicial),
+                csvSafe(pead63EstacaFinal),
                 csvSafe(pead63Val),
+                csvSafe(pead125EstacaInicial),
+                csvSafe(pead125EstacaFinal),
                 csvSafe(pead125Val),
                 csvSafe(item.atividadesPrevistas),
                 csvSafe(item.atividadesRealizadas)
@@ -1105,8 +1130,8 @@
                     <p class="text-xs"><strong>Status:</strong> ${item.tipo === 'encerramento' ? 'Encerrado' : 'Em Aberto'}</p>
                     <p class="text-xs mt-2"><strong>Atividades Previstas:</strong> ${item.atividadesPrevistas || 'N/A'}</p>
                     <p class="text-xs"><strong>Atividades Realizadas:</strong> ${item.atividadesRealizadas || 'N/A'}</p>
-                    <p class="text-xs mt-2"><strong>Produção PEAD 63mm:</strong> ${item.producao?.pead63?.ativo ? item.producao.pead63.extensao + 'm' : 'N/A'}</p>
-                    <p class="text-xs"><strong>Produção PEAD 125mm:</strong> ${item.producao?.pead125?.ativo ? item.producao.pead125.extensao + 'm' : 'N/A'}</p>
+                    <p class="text-xs mt-2"><strong>PEAD 63mm:</strong> ${item.producao?.pead63?.ativo ? `Estaca ${item.producao.pead63.estacaInicial || item.producao.pead63.estaca || 'N/I'} até ${item.producao.pead63.estacaFinal || 'N/I'} — ${item.producao.pead63.extensao || '0'} m` : 'N/A'}</p>
+                    <p class="text-xs"><strong>PEAD 125mm:</strong> ${item.producao?.pead125?.ativo ? `Estaca ${item.producao.pead125.estacaInicial || item.producao.pead125.estaca || 'N/I'} até ${item.producao.pead125.estacaFinal || 'N/I'} — ${item.producao.pead125.extensao || '0'} m` : 'N/A'}</p>
                 `;
                 printContainer.appendChild(card);
             });
