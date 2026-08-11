@@ -293,22 +293,49 @@
                     <i class="fa-solid fa-ruler-combined text-indigo-600 mr-1"></i> Produção / Assentamento PEAD
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- PEAD 63mm -->
                     <div class="bg-slate-50 p-4 rounded-xl border">
                         <label class="flex items-center gap-2 text-xs font-bold">
                             <input type="checkbox" id="checkPEAD63" onchange="togglePEAD('fieldsPEAD63')"> PEAD 63 mm
                         </label>
                         <div id="fieldsPEAD63" class="hidden mt-3 space-y-2">
-                            <input type="number" id="extensao63" min="0.01" step="0.01" placeholder="Metragem (m)" class="w-full text-xs p-2 border rounded">
-                            <input type="text" id="estaca63" placeholder="Estaqueamento / Trecho" class="w-full text-xs p-2 border rounded">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">Estaca Inicial (Ex: 0+10,50)</label>
+                                    <input type="text" id="estacaInicial63" oninput="calcularEstaca('63')" placeholder="0+00,00" class="w-full text-xs p-2 border rounded bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">Estaca Final (Ex: 1+05,00)</label>
+                                    <input type="text" id="estacaFinal63" oninput="calcularEstaca('63')" placeholder="0+00,00" class="w-full text-xs p-2 border rounded bg-white">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">Extensão Calculada (m)</label>
+                                <input type="number" id="extensao63" step="0.01" readonly placeholder="0.00" class="w-full text-xs p-2 border rounded bg-slate-100 font-bold text-gas-700">
+                            </div>
                         </div>
                     </div>
+
+                    <!-- PEAD 125mm -->
                     <div class="bg-slate-50 p-4 rounded-xl border">
                         <label class="flex items-center gap-2 text-xs font-bold">
                             <input type="checkbox" id="checkPEAD125" onchange="togglePEAD('fieldsPEAD125')"> PEAD 125 mm
                         </label>
                         <div id="fieldsPEAD125" class="hidden mt-3 space-y-2">
-                            <input type="number" id="extensao125" min="0.01" step="0.01" placeholder="Metragem (m)" class="w-full text-xs p-2 border rounded">
-                            <input type="text" id="estaca125" placeholder="Estaqueamento / Trecho" class="w-full text-xs p-2 border rounded">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">Estaca Inicial (Ex: 0+10,50)</label>
+                                    <input type="text" id="estacaInicial125" oninput="calcularEstaca('125')" placeholder="0+00,00" class="w-full text-xs p-2 border rounded bg-white">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">Estaca Final (Ex: 1+05,00)</label>
+                                    <input type="text" id="estacaFinal125" oninput="calcularEstaca('125')" placeholder="0+00,00" class="w-full text-xs p-2 border rounded bg-white">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-500 font-semibold mb-0.5">Extensão Calculada (m)</label>
+                                <input type="number" id="extensao125" step="0.01" readonly placeholder="0.00" class="w-full text-xs p-2 border rounded bg-slate-100 font-bold text-gas-700">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -370,6 +397,38 @@
     function getVal(id) {
         const el = document.getElementById(id);
         return el ? el.value : '';
+    }
+
+    // Função para converter formato de estaca (ex: "1+05,00" ou "1+5") em metros numéricos
+    function parseEstacaToMeters(value) {
+        if (!value) return null;
+        let str = value.toString().trim().replace(/\s+/g, '').replace(',', '.');
+        if (!str.includes('+')) {
+            let num = parseFloat(str);
+            return isNaN(num) ? null : num;
+        }
+        let parts = str.split('+');
+        let estaca = parseFloat(parts[0]) || 0;
+        let metros = parseFloat(parts[1]) || 0;
+        return (estaca * 20) + metros;
+    }
+
+    // Função de cálculo de estaca
+    function calcularEstaca(type) {
+        const inicialVal = getVal('estacaInicial' + type);
+        const finalVal = getVal('estacaFinal' + type);
+
+        const mInicial = parseEstacaToMeters(inicialVal);
+        const mFinal = parseEstacaToMeters(finalVal);
+
+        const campoExtensao = document.getElementById('extensao' + type);
+
+        if (mInicial !== null && mFinal !== null) {
+            const diff = Math.abs(mFinal - mInicial);
+            if (campoExtensao) campoExtensao.value = diff.toFixed(2);
+        } else {
+            if (campoExtensao) campoExtensao.value = '';
+        }
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -474,12 +533,14 @@
                 pead63: {
                     ativo: document.getElementById('checkPEAD63') ? document.getElementById('checkPEAD63').checked : false,
                     extensao: getVal('extensao63'),
-                    estaca: getVal('estaca63')
+                    estacaInicial: getVal('estacaInicial63'),
+                    estacaFinal: getVal('estacaFinal63')
                 },
                 pead125: {
                     ativo: document.getElementById('checkPEAD125') ? document.getElementById('checkPEAD125').checked : false,
                     extensao: getVal('extensao125'),
-                    estaca: getVal('estaca125')
+                    estacaInicial: getVal('estacaInicial125'),
+                    estacaFinal: getVal('estacaFinal125')
                 }
             }
         };
