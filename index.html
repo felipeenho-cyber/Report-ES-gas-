@@ -1,591 +1,686 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Relatório Diário de Obra - RDO PEAD</title>
-    <!-- Tailwind CSS -->
+    <title>Relatório Diário de Obra - RDO</title>
+
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
+
     <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Fonte -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        gas: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0284c7',
+                            700: '#0369a1',
+                            900: '#0c4a6e',
+                            orange: '#f97316'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
     <style>
+        * { box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; }
-        @media print {
-            .no-print { display: none !important; }
-            .print-only { display: block !important; }
-            body { background: white !important; }
-            .card-print { border: none !important; box-shadow: none !important; }
+        .image-preview-card img { width: 100%; height: 120px; object-fit: cover; display: block; border-radius: 0.375rem; }
+        
+        /* CSS ESPECÍFICO PARA TESTE E GERADOR DE PDF/IMPRESSÃO */
+        @media print { 
+            .no-print { display: none !important; } 
+            body { background: white !important; color: black !important; }
+            main { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+            #formTab { display: block !important; }
+            #historyTab { display: none !important; }
+            
+            /* Forçar exibição das seções no PDF */
+            #sectionInicial, #sectionEncerramento { display: block !important; }
+            
+            .print-card { 
+                border: 1px solid #cbd5e1 !important; 
+                box-shadow: none !important; 
+                page-break-inside: avoid;
+                margin-bottom: 1rem !important;
+            }
+
+            input, select, textarea {
+                border: none !important;
+                background: transparent !important;
+                appearance: none !important;
+                padding: 0 !important;
+                font-weight: 600 !important;
+            }
+
+            input[type="file"] { display: none !important; }
+            .image-preview-card img { height: 160px !important; object-fit: contain !important; }
         }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800">
 
-    <!-- Header / Navbar -->
-    <header class="bg-[#004e7c] text-white shadow-md sticky top-0 z-50 no-print">
-        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
-            <div class="flex items-center space-x-3">
-                <div class="bg-orange-500 p-2 rounded-lg text-white">
-                    <i class="fa-solid fa-fire text-xl"></i>
-                </div>
-                <div>
-                    <h1 class="font-bold text-lg leading-tight">Relatório Diário de Obra - RDO <span class="bg-orange-500 text-xs px-1.5 py-0.5 rounded text-white font-semibold">PEAD</span></h1>
-                    <p class="text-xs text-slate-300">Acompanhamento e Gestão de Campo</p>
-                </div>
+<body class="bg-slate-100 text-slate-800 min-h-screen">
+
+<!-- HEADER -->
+<header class="bg-gradient-to-r from-gas-900 via-gas-700 to-slate-900 text-white shadow-md sticky top-0 z-50 no-print">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+        <div class="flex items-center gap-3">
+            <div class="bg-gas-orange p-2.5 rounded-xl text-xl flex items-center justify-center">
+                <i class="fa-solid fa-fire-flame-curved"></i>
             </div>
-            <div class="flex space-x-2">
-                <button id="btn-tab-form" onclick="switchTab('form')" class="px-4 py-2 rounded-lg text-sm font-semibold transition bg-white/20 text-white flex items-center gap-2">
-                    <i class="fa-solid fa-pen-to-square"></i> Formulário
-                </button>
-                <button id="btn-tab-history" onclick="switchTab('history')" class="px-4 py-2 rounded-lg text-sm font-semibold transition bg-white/10 hover:bg-white/20 text-white flex items-center gap-2">
-                    <i class="fa-solid fa-database"></i> Histórico <span id="history-badge" class="bg-orange-500 text-white text-xs px-1.5 py-0.5 rounded-full font-bold">0</span>
-                </button>
+            <div>
+                <h1 class="font-bold text-lg leading-tight">
+                    Relatório Diário de Obra - RDO
+                    <span class="bg-gas-orange text-[10px] px-2 py-0.5 rounded-full">PEAD</span>
+                </h1>
+                <p class="text-xs text-slate-300">Acompanhamento e Gestão de Campo</p>
             </div>
         </div>
-    </header>
 
-    <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 py-6">
+        <div class="flex gap-2">
+            <button type="button" id="btnTabForm" onclick="switchTab('formTab')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/30 hover:bg-white/40">
+                <i class="fa-solid fa-pen-to-square"></i> Formulário
+            </button>
+            <button type="button" id="btnTabHistory" onclick="switchTab('historyTab')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20">
+                <i class="fa-solid fa-database"></i> Histórico
+                <span id="historyBadge" class="bg-gas-orange text-white text-[10px] px-1.5 py-0.2 rounded-full">0</span>
+            </button>
+        </div>
+    </div>
+</header>
 
-        <!-- ABA FORMULÁRIO -->
-        <div id="tab-form" class="space-y-6">
-            
-            <!-- Seleção Tipo de RDO -->
-            <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap items-center justify-between gap-4">
-                <span class="text-sm font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
-                    <i class="fa-solid fa-list-check text-blue-600"></i> Tipo de RDO
-                </span>
-                <div class="flex space-x-3">
-                    <button type="button" onclick="setReportType('Inicial')" id="btn-type-inicial" class="px-5 py-2 rounded-lg text-sm font-semibold bg-blue-100 text-blue-700 border border-blue-200">
-                        Inicial / Acompanhamento
-                    </button>
-                    <button type="button" onclick="setReportType('Encerramento')" id="btn-type-encerramento" class="px-5 py-2 rounded-lg text-sm font-semibold border border-slate-300 hover:bg-slate-50 transition">
-                        Encerramento
-                    </button>
-                </div>
-            </div>
+<main class="max-w-6xl mx-auto px-4 py-6">
 
-            <!-- Identificação (Comum às duas páginas) -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-id-card text-blue-600"></i> Identificação da Obra
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Projeto / Obra</label>
-                        <select id="select-projeto" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="">Selecione o Projeto...</option>
-                            <option value="PRJ-GAS-01 - Redes Vitória">PRJ-GAS-01 - Redes Vitória</option>
-                            <option value="PRJ-GAS-02 - Expansão Vila Velha">PRJ-GAS-02 - Expansão Vila Velha</option>
-                            <option value="PRJ-GAS-03 - Ramal Serra">PRJ-GAS-03 - Ramal Serra</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Técnico Responsável</label>
-                        <select id="select-tecnico" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="">Selecione o Técnico...</option>
-                            <option value="Alice Gomes Tirelli">Alice Gomes Tirelli</option>
-                            <option value="Bruno Silva">Bruno Silva</option>
-                            <option value="Carlos Eduardo">Carlos Eduardo</option>
-                            <option value="Daniela Rocha">Daniela Rocha</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Engenheiro Responsável</label>
-                        <select id="select-engenheiro" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="">Selecione o Engenheiro...</option>
-                            <option value="Eng. Roberto Alves">Eng. Roberto Alves</option>
-                            <option value="Eng. Fernanda Lima">Eng. Fernanda Lima</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
+<!-- FORMULÁRIO -->
+<div id="formTab">
 
-            <!-- PÁGINA 1: DADOS INICIAIS (Apenas no RDO Inicial) -->
-            <div id="section-inicial" class="space-y-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                    <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-clock text-blue-600"></i> Informações Iniciais
-                    </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Horário Previsto Empreiteira</label>
-                            <input type="time" id="hora-prevista" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Foto Canteiro / Início</label>
-                            <input type="file" id="foto-inicio" accept="image/*" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                        </div>
-                    </div>
-                    
-                    <div class="pt-2">
-                        <label class="block text-xs font-semibold text-slate-600 mb-2">Checklist Segurança do Trabalho (SST)</label>
-                        <div class="flex flex-wrap gap-4 text-sm">
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" id="sst-epi" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
-                                EPIs Conformes
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" id="sst-sinalizacao" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
-                                Sinalização da Área
-                            </label>
-                            <label class="flex items-center gap-2 cursor-pointer">
-                                <input type="checkbox" id="sst-dds" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
-                                DDS Realizado
-                            </label>
-                        </div>
-                    </div>
+    <!-- MODO ETAPA -->
+    <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 mb-6 no-print">
+        <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 text-center">
+            <i class="fa-solid fa-sliders text-gas-500 mr-1"></i> Selecione a Etapa
+        </label>
+        <div class="grid grid-cols-2 gap-3 max-w-xl mx-auto">
+            <button type="button" id="btnReportInicial" onclick="setReportType('inicial')" class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gas-500 bg-gas-50 text-gas-900">
+                <i class="fa-solid fa-play text-emerald-500 text-xl mb-1"></i>
+                <span class="font-bold text-xs">Abrir / Editar RDO</span>
+                <span class="text-[10px] text-slate-500">Iniciar ou continuar</span>
+            </button>
+            <button type="button" id="btnReportEncerramento" onclick="setReportType('encerramento')" class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200">
+                <i class="fa-solid fa-stop text-red-500 text-xl mb-1"></i>
+                <span class="font-bold text-xs">Encerrar RDO</span>
+                <span class="text-[10px] text-slate-500">Finalizar o serviço</span>
+            </button>
+        </div>
+    </section>
 
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Planejamento do Dia</label>
-                        <textarea id="planejamento-dia" rows="3" placeholder="Descreva as atividades planejadas para o dia..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                    </div>
-                </div>
-            </div>
+    <!-- INDICADOR DE TEMPO -->
+    <section class="flex items-center justify-between bg-gas-900 text-white px-5 py-3 rounded-xl shadow-sm mb-6 no-print">
+        <div class="flex items-center gap-2">
+            <i id="typeIndicatorIcon" class="fa-solid fa-play text-emerald-400 text-lg"></i>
+            <span id="typeIndicatorText" class="font-bold text-sm">Abertura de RDO</span>
+        </div>
+        <div class="text-xs text-slate-300 font-mono">
+            <i class="fa-regular fa-clock mr-1"></i>
+            <span id="autoDateTime">--/--/---- --:--</span>
+        </div>
+    </section>
 
-            <!-- Efetivo de Equipe (Comum) -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-users text-blue-600"></i> Efetivo de Equipe
-                </h2>
+    <!-- FORM -->
+    <form id="rdoForm" onsubmit="handleFormSubmit(event)" class="space-y-6">
+
+        <!-- IDENTIFICAÇÃO DA OBRA -->
+        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 mb-4">
+                <i class="fa-solid fa-id-card text-gas-500 mr-1"></i> Identificação da Obra
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                    <label class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-slate-700">
-                        <input type="checkbox" id="chk-falta-efetivo" onchange="toggleField('chk-falta-efetivo', 'box-falta-efetivo')" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
-                        Houve falta de efetivo?
-                    </label>
-                    <div id="box-falta-efetivo" class="mt-3 hidden">
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Descreva a falta de efetivo:</label>
-                        <textarea id="detalhe-falta-efetivo" rows="2" placeholder="Informe quais cargos ou colaboradores faltaram..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                    </div>
+                    <label class="block text-xs font-semibold mb-1">Projeto <span class="text-red-500">*</span></label>
+                    <select id="selectProjeto" required class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                        <option value="">Selecione...</option>
+                        <option value="PRJ-GAS-01 - Redes Vitória">PRJ-GAS-01 - Redes Vitória</option>
+                        <option value="PRJ-GAS-02 - Expansão PEAD Serra">PRJ-GAS-02 - Expansão PEAD Serra</option>
+                        <option value="PRJ-GAS-03 - Vila Velha PEAD">PRJ-GAS-03 - Vila Velha PEAD</option>
+                    </select>
                 </div>
-            </div>
-
-            <!-- Equipamentos em Campo (Comum) -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-truck-monster text-blue-600"></i> Equipamentos em Campo
-                </h2>
                 <div>
-                    <label class="flex items-center gap-2 cursor-pointer text-sm font-semibold text-slate-700">
-                        <input type="checkbox" id="chk-falta-equipamentos" onchange="toggleField('chk-falta-equipamentos', 'box-falta-equipamentos')" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
-                        Houve falta de equipamentos?
-                    </label>
-                    <div id="box-falta-equipamentos" class="mt-3 hidden">
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Descreva a falta de equipamentos:</label>
-                        <textarea id="detalhe-falta-equipamentos" rows="2" placeholder="Informe quais equipamentos faltaram ou apresentaram defeito..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                    </div>
+                    <label class="block text-xs font-semibold mb-1">Técnico <span class="text-red-500">*</span></label>
+                    <select id="selectTecnico" required class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                        <option value="">Selecione...</option>
+                        <option>Akilah Daher Alves Fernandes Pires</option>
+                        <option>Alice Gomes Tirelli</option>
+                        <option>Antônio Marcos Santos de Barros</option>
+                        <option>Ivana Natana Evangelista</option>
+                        <option>Felipe Wanisangk Marinho</option>
+                        <option>Jonatas Rocha Pereira</option>
+                        <option>Juan Carlos Pereira Ridolf</option>
+                        <option>Kelly Regina Pereira</option>
+                        <option>Lorhanna Luduvig Ferreira Costa</option>
+                        <option>Maielly Regina Gonçalves Ribeiro Lima</option>
+                        <option>Marcelayne Vitorino Cantao de Souza</option>
+                        <option>Marcos Soares de Sousa</option>
+                        <option>Marcus Vinicius da Silva Panetto</option>
+                        <option>Wanderson de Carvalho Malaquias</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Engenheiro <span class="text-red-500">*</span></label>
+                    <select id="selectEngenheiro" required class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                        <option value="">Selecione...</option>
+                        <option>Rodolfo Messias Maciel</option>
+                        <option>Juliano Menezes dos Santos</option>
+                        <option>Magno Antonio Colombo Foppa</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Tipo de Obra</label>
+                    <input id="selectTipoObra" value="Rede de PEAD" readonly class="w-full text-xs bg-slate-100 border border-slate-300 rounded-lg p-2.5 font-bold text-gas-700">
                 </div>
             </div>
+        </section>
 
-            <!-- Calculador de Estacas PEAD (Comum) -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-ruler-combined text-blue-600"></i> Estaqueamento e Extensão PEAD
-                </h2>
+        <!-- SEÇÃO: RELATÓRIO INICIAL -->
+        <section id="sectionInicial" class="space-y-6">
 
-                <!-- Caixa PEAD 63mm -->
-                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3">
-                    <h3 class="text-xs font-bold text-slate-700 uppercase flex items-center gap-2">
-                        <i class="fa-solid fa-circle text-orange-500 text-[10px]"></i> Tubulação PEAD 63mm
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div>
-                            <label class="block text-xs text-slate-600 mb-1">Estaca Inicial (ex: 10+5,0)</label>
-                            <input type="text" id="pead63-est-ini" oninput="calcularEstaca('63')" placeholder="0+0,0" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-slate-600 mb-1">Estaca Final (ex: 15+0,0)</label>
-                            <input type="text" id="pead63-est-fim" oninput="calcularEstaca('63')" placeholder="0+0,0" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-slate-600 mb-1">Extensão Calculada (m)</label>
-                            <input type="text" id="pead63-extensao" readonly placeholder="0.00" class="w-full bg-slate-100 font-bold text-slate-700 border border-slate-300 rounded-lg p-2 text-sm outline-none">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Caixa PEAD 125mm -->
-                <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3">
-                    <h3 class="text-xs font-bold text-slate-700 uppercase flex items-center gap-2">
-                        <i class="fa-solid fa-circle text-orange-500 text-[10px]"></i> Tubulação PEAD 125mm
-                    </h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                        <div>
-                            <label class="block text-xs text-slate-600 mb-1">Estaca Inicial (ex: 0+0,0)</label>
-                            <input type="text" id="pead125-est-ini" oninput="calcularEstaca('125')" placeholder="0+0,0" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-slate-600 mb-1">Estaca Final (ex: 5+10,0)</label>
-                            <input type="text" id="pead125-est-fim" oninput="calcularEstaca('125')" placeholder="0+0,0" class="w-full bg-white border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs text-slate-600 mb-1">Extensão Calculada (m)</label>
-                            <input type="text" id="pead125-extensao" readonly placeholder="0.00" class="w-full bg-slate-100 font-bold text-slate-700 border border-slate-300 rounded-lg p-2 text-sm outline-none">
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PÁGINA 2: DETALHES DE ENCERRAMENTO (Apenas no RDO Encerramento) -->
-            <div id="section-encerramento" class="hidden space-y-6">
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                    <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                        <i class="fa-solid fa-flag-checkered text-red-600"></i> Detalhes de Encerramento
-                    </h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Horário Real Chegada Empreiteira</label>
-                            <input type="time" id="hora-real" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                        </div>
-                        <div>
-                            <label class="block text-xs font-semibold text-slate-600 mb-1">Justificativa de Atraso (se houver)</label>
-                            <input type="text" id="justificativa-atraso" placeholder="Motivo do atraso..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Atividades Realizadas no Dia</label>
-                        <textarea id="atividades-realizadas" rows="3" placeholder="Descreva detalhadamente o serviço executado..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Assinatura (Comum) -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-file-signature text-blue-600"></i> Assinatura do Responsável
+            <!-- INFORMAÇÕES DA EMPREITEIRA -->
+            <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+                <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4 text-slate-700">
+                    <i class="fa-solid fa-clock text-gas-500 mr-1"></i> Horários e Empreiteira (Inicial)
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Nome Completo para Assinatura</label>
-                        <input type="text" id="nome-assinatura" placeholder="Digite seu nome completo..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        <label class="block text-xs font-semibold mb-1">Empreiteira</label>
+                        <input type="text" id="nomeEmpreiteira" placeholder="Nome da empreiteira" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
                     </div>
                     <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Rubrica Digital / Cargo</label>
-                        <input type="text" id="cargo-assinatura" placeholder="Ex: Técnico de Campo" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        <label class="block text-xs font-semibold mb-1">Horário Previsto Chegada Equipe Empreiteira</label>
+                        <input type="time" id="horarioPrevistoEmpreiteira" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
                     </div>
                 </div>
-            </div>
 
-            <!-- Botões Ação Formulário -->
-            <div class="flex justify-end gap-3 pt-2">
-                <button type="button" onclick="salvarRDO()" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 py-2.5 rounded-lg text-sm shadow-sm transition flex items-center gap-2">
-                    <i class="fa-solid fa-floppy-disk"></i> Salvar RDO
+                <div class="mt-4 pt-4 border-t">
+                    <label class="block text-xs font-semibold mb-1">
+                        <i class="fa-solid fa-camera text-gas-500 mr-1"></i> Enviar foto do canteiro (Time Stamp ESGas)
+                    </label>
+                    <input type="file" id="fotoCanteiro" accept="image/*" onchange="previewImage(this, 'previewCanteiro', 'canteiro')" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2">
+                    <div id="previewCanteiro" class="mt-2 hidden max-w-xs"></div>
+                </div>
+            </section>
+
+            <!-- SEGURANÇA DO TRABALHO (3 OPCÕES COM FOTO INDIVIDUAL) -->
+            <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+                <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
+                    <i class="fa-solid fa-shield-halved text-emerald-600 mr-1"></i> Segurança do Trabalho
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    
+                    <!-- OPÇÃO 1 -->
+                    <div class="bg-slate-50 p-3.5 rounded-xl border flex flex-col justify-between">
+                        <div>
+                            <span class="text-xs font-medium block mb-2">1. Condições de trabalho adequadas?</span>
+                            <div class="flex gap-4 mb-2">
+                                <label class="text-xs font-semibold"><input type="radio" name="condicoesTrabalho" value="Sim" checked onchange="toggleNC('descCondicoes', false)"> Sim</label>
+                                <label class="text-xs font-semibold"><input type="radio" name="condicoesTrabalho" value="Não" onchange="toggleNC('descCondicoes', true)"> Não</label>
+                            </div>
+                            <input type="text" id="descCondicoes" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mb-2">
+                        </div>
+                        <div class="pt-2 border-t mt-2">
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">
+                                <i class="fa-solid fa-camera text-emerald-600 mr-1"></i> Foto de Evidência 1
+                            </label>
+                            <input type="file" id="fotoSeg1" accept="image/*" onchange="previewImage(this, 'previewSeg1', 'seg1')" class="w-full text-[11px] bg-white border border-slate-300 rounded p-1">
+                            <div id="previewSeg1" class="mt-2 hidden"></div>
+                        </div>
+                    </div>
+
+                    <!-- OPÇÃO 2 -->
+                    <div class="bg-slate-50 p-3.5 rounded-xl border flex flex-col justify-between">
+                        <div>
+                            <span class="text-xs font-medium block mb-2">2. Ferramental / caminhão adequado?</span>
+                            <div class="flex gap-4 mb-2">
+                                <label class="text-xs font-semibold"><input type="radio" name="caminhaoOrganizado" value="Sim" checked onchange="toggleNC('descCaminhao', false)"> Sim</label>
+                                <label class="text-xs font-semibold"><input type="radio" name="caminhaoOrganizado" value="Não" onchange="toggleNC('descCaminhao', true)"> Não</label>
+                            </div>
+                            <input type="text" id="descCaminhao" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mb-2">
+                        </div>
+                        <div class="pt-2 border-t mt-2">
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">
+                                <i class="fa-solid fa-camera text-emerald-600 mr-1"></i> Foto de Evidência 2
+                            </label>
+                            <input type="file" id="fotoSeg2" accept="image/*" onchange="previewImage(this, 'previewSeg2', 'seg2')" class="w-full text-[11px] bg-white border border-slate-300 rounded p-1">
+                            <div id="previewSeg2" class="mt-2 hidden"></div>
+                        </div>
+                    </div>
+
+                    <!-- OPÇÃO 3 -->
+                    <div class="bg-slate-50 p-3.5 rounded-xl border flex flex-col justify-between">
+                        <div>
+                            <span class="text-xs font-medium block mb-2">3. Sinalização de via adequada?</span>
+                            <div class="flex gap-4 mb-2">
+                                <label class="text-xs font-semibold"><input type="radio" name="sinalizacaoAdequada" value="Sim" checked onchange="toggleNC('descSinalizacao', false)"> Sim</label>
+                                <label class="text-xs font-semibold"><input type="radio" name="sinalizacaoAdequada" value="Não" onchange="toggleNC('descSinalizacao', true)"> Não</label>
+                            </div>
+                            <input type="text" id="descSinalizacao" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mb-2">
+                        </div>
+                        <div class="pt-2 border-t mt-2">
+                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">
+                                <i class="fa-solid fa-camera text-emerald-600 mr-1"></i> Foto de Evidência 3
+                            </label>
+                            <input type="file" id="fotoSeg3" accept="image/*" onchange="previewImage(this, 'previewSeg3', 'seg3')" class="w-full text-[11px] bg-white border border-slate-300 rounded p-1">
+                            <div id="previewSeg3" class="mt-2 hidden"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </section>
+
+            <!-- PLANEJAMENTO -->
+            <section class="bg-white rounded-2xl p-5 shadow-sm border print-card">
+                <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
+                    <i class="fa-solid fa-list-check text-gas-500 mr-1"></i> Planejamento do Dia
+                </h2>
+                <textarea id="atividadesPrevistas" rows="4" placeholder="Descreva o planejamento do serviço..." class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-3"></textarea>
+            </section>
+        </section>
+
+        <!-- SEÇÃO: RELATÓRIO DE ENCERRAMENTO -->
+        <section id="sectionEncerramento" class="hidden space-y-6">
+            <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+                <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4 text-slate-700">
+                    <i class="fa-solid fa-stopwatch text-red-500 mr-1"></i> Controle de Horários (Encerramento)
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Horário Real Chegada Empreiteira</label>
+                        <input type="time" id="horarioRealChegadaEmpreiteira" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Horário de Início das Atividades</label>
+                        <input type="time" id="horarioInicioAtividades" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Se Houve Atraso no Início, Justifique</label>
+                        <input type="text" id="justificativaAtrasoInicio" placeholder="Ex: Chuva, falta de material" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Horário Previsto de Encerramento</label>
+                        <input type="time" id="horarioPrevistoEncerramento" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Horário Real de Encerramento</label>
+                        <input type="time" id="horarioRealEncerramento" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Se Encerrou Antes do Previsto, Justifique</label>
+                        <input type="text" id="justificativaEncerramentoAntecipado" placeholder="Ex: Meta cumprida" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                    </div>
+                </div>
+            </section>
+
+            <section class="bg-white rounded-2xl p-5 shadow-sm border print-card">
+                <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
+                    <i class="fa-solid fa-clipboard-check text-indigo-600 mr-1"></i> Atividades Realizadas
+                </h2>
+                <textarea id="atividadesRealizadas" rows="5" placeholder="Descreva detalhadamente o que foi realizado..." class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-3"></textarea>
+            </section>
+
+            <section class="bg-white rounded-2xl p-5 shadow-sm border print-card">
+                <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
+                    <i class="fa-solid fa-ruler-combined text-indigo-600 mr-1"></i> Produção / Assentamento PEAD
+                </h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-slate-50 p-4 rounded-xl border">
+                        <label class="flex items-center gap-2 text-xs font-bold">
+                            <input type="checkbox" id="checkPEAD63" onchange="togglePEAD('fieldsPEAD63')"> PEAD 63 mm
+                        </label>
+                        <div id="fieldsPEAD63" class="hidden mt-3 space-y-2">
+                            <input type="number" id="extensao63" min="0.01" step="0.01" placeholder="Metragem (m)" class="w-full text-xs p-2 border rounded">
+                            <input type="text" id="estaca63" placeholder="Estaqueamento / Trecho" class="w-full text-xs p-2 border rounded">
+                        </div>
+                    </div>
+                    <div class="bg-slate-50 p-4 rounded-xl border">
+                        <label class="flex items-center gap-2 text-xs font-bold">
+                            <input type="checkbox" id="checkPEAD125" onchange="togglePEAD('fieldsPEAD125')"> PEAD 125 mm
+                        </label>
+                        <div id="fieldsPEAD125" class="hidden mt-3 space-y-2">
+                            <input type="number" id="extensao125" min="0.01" step="0.01" placeholder="Metragem (m)" class="w-full text-xs p-2 border rounded">
+                            <input type="text" id="estaca125" placeholder="Estaqueamento / Trecho" class="w-full text-xs p-2 border rounded">
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+
+        <!-- BOTÃO SALVAR -->
+        <div class="flex justify-end gap-3 pt-4 border-t no-print">
+            <button type="submit" class="px-6 py-2.5 bg-gas-orange hover:bg-orange-600 text-white rounded-xl font-bold text-xs shadow-md">
+                <i class="fa-solid fa-floppy-disk mr-2"></i> Salvar Relatório
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- ABA HISTÓRICO -->
+<div id="historyTab" class="hidden space-y-4">
+    <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+        <div class="flex flex-wrap justify-between items-center gap-3 border-b pb-3 mb-3">
+            <h2 class="text-xs font-bold uppercase text-slate-700">
+                <i class="fa-solid fa-filter text-gas-500 mr-1"></i> Filtrar Histórico
+            </h2>
+            <div class="flex gap-2">
+                <button type="button" onclick="exportToCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition">
+                    <i class="fa-solid fa-file-excel mr-1"></i> Exportar CSV
+                </button>
+                <button type="button" onclick="exportToPDF()" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow-sm transition">
+                    <i class="fa-solid fa-file-pdf mr-1"></i> Imprimir / PDF
                 </button>
             </div>
         </div>
 
-        <!-- ABA HISTÓRICO -->
-        <div id="tab-history" class="space-y-6 hidden">
-            
-            <!-- Filtros -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                <div class="flex items-center justify-between border-b pb-2 flex-wrap gap-2">
-                    <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide flex items-center gap-2">
-                        <i class="fa-solid fa-filter text-blue-600"></i> Filtrar Histórico
-                    </h2>
-                    <div class="flex items-center gap-2">
-                        <button onclick="exportarSelecionadosCSV()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-file-excel"></i> Exportar Selecionados (CSV)
-                        </button>
-                        <button onclick="exportarCSVGeral()" class="bg-slate-700 hover:bg-slate-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-download"></i> Exportar Todos (CSV)
-                        </button>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Buscar por texto</label>
-                        <input type="text" id="filter-text" oninput="renderHistory()" placeholder="Projeto, Técnico..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Data</label>
-                        <input type="date" id="filter-date" onchange="renderHistory()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Tipo de RDO</label>
-                        <select id="filter-type" onchange="renderHistory()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                            <option value="">Todos</option>
-                            <option value="Inicial">Inicial</option>
-                            <option value="Encerramento">Encerramento</option>
-                        </select>
-                    </div>
-                    <div class="flex items-end">
-                        <button onclick="limparFiltros()" class="w-full bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold p-2.5 rounded-lg text-sm transition flex items-center justify-center gap-2">
-                            <i class="fa-solid fa-rotate"></i> Limpar Filtros
-                        </button>
-                    </div>
-                </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div>
+                <label class="block text-[11px] font-medium text-slate-500 mb-1">Buscar por texto</label>
+                <input type="text" id="filterSearch" oninput="applyHistoryFilter()" placeholder="Projeto, Técnico..." class="w-full text-xs p-2 border border-slate-300 rounded-lg">
             </div>
-
-            <!-- Selecionar Todos -->
-            <div class="flex items-center justify-between px-1">
-                <label class="flex items-center gap-2 text-xs font-bold text-slate-600 cursor-pointer">
-                    <input type="checkbox" id="chk-select-all" onchange="toggleSelectAll(this)" class="rounded text-blue-600 h-4 w-4">
-                    Selecionar Todos exibidos
-                </label>
+            <div>
+                <label class="block text-[11px] font-medium text-slate-500 mb-1">Data</label>
+                <input type="date" id="filterDate" onchange="applyHistoryFilter()" class="w-full text-xs p-2 border border-slate-300 rounded-lg">
             </div>
-
-            <!-- Lista de Registros -->
-            <div id="history-list" class="space-y-4">
-                <!-- Cards serão inseridos aqui via JS -->
+            <div>
+                <label class="block text-[11px] font-medium text-slate-500 mb-1">Tipo de RDO</label>
+                <select id="filterType" onchange="applyHistoryFilter()" class="w-full text-xs p-2 border border-slate-300 rounded-lg">
+                    <option value="">Todos</option>
+                    <option value="inicial">Inicial / Em Andamento</option>
+                    <option value="encerramento">Encerrado</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button type="button" onclick="clearHistoryFilters()" class="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-lg">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Limpar Filtros
+                </button>
             </div>
         </div>
+    </section>
 
-    </main>
+    <div id="historyContainer" class="space-y-3"></div>
+</div>
 
-    <!-- Script de Lógica e Ações -->
-    <script>
-        let currentReportType = 'Inicial';
-        let reports = JSON.parse(localStorage.getItem('rdo_pead_reports') || '[]');
+</main>
 
-        document.addEventListener('DOMContentLoaded', () => {
-            setReportType('Inicial');
-            updateHistoryBadge();
-            renderHistory();
-        });
+<script>
+    let currentReportType = 'inicial';
+    let rdoHistory = JSON.parse(localStorage.getItem('rdo_history_data') || '[]');
+    
+    let currentBase64Canteiro = '';
+    let currentBase64Seg1 = '';
+    let currentBase64Seg2 = '';
+    let currentBase64Seg3 = '';
 
-        function toggleField(chkId, boxId) {
-            const chk = document.getElementById(chkId);
-            const box = document.getElementById(boxId);
-            if (chk.checked) {
-                box.classList.remove('hidden');
-            } else {
-                box.classList.add('hidden');
+    function getVal(id) {
+        const el = document.getElementById(id);
+        return el ? el.value : '';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        updateHistoryBadge();
+        renderHistory(rdoHistory);
+    });
+
+    function switchTab(tabName) {
+        document.getElementById('formTab').classList.toggle('hidden', tabName !== 'formTab');
+        document.getElementById('historyTab').classList.toggle('hidden', tabName !== 'historyTab');
+        
+        document.getElementById('btnTabForm').className = tabName === 'formTab' ? 
+            "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/30 hover:bg-white/40" : 
+            "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20";
+            
+        document.getElementById('btnTabHistory').className = tabName === 'historyTab' ? 
+            "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/30 hover:bg-white/40" : 
+            "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20";
+    }
+
+    function setReportType(type) {
+        currentReportType = type;
+        const isInicial = type === 'inicial';
+        document.getElementById('sectionInicial').classList.toggle('hidden', !isInicial);
+        document.getElementById('sectionEncerramento').classList.toggle('hidden', isInicial);
+
+        document.getElementById('btnReportInicial').className = isInicial ? 
+            "flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gas-500 bg-gas-50 text-gas-900" : 
+            "flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200";
+
+        document.getElementById('btnReportEncerramento').className = !isInicial ? 
+            "flex flex-col items-center justify-center p-3 rounded-xl border-2 border-red-500 bg-red-50 text-red-900" : 
+            "flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200";
+
+        document.getElementById('typeIndicatorText').innerText = isInicial ? "Abertura / Edição de RDO" : "Encerramento de RDO";
+        document.getElementById('typeIndicatorIcon').className = isInicial ? "fa-solid fa-play text-emerald-400 text-lg" : "fa-solid fa-stop text-red-400 text-lg";
+    }
+
+    function toggleNC(id, show) {
+        const field = document.getElementById(id);
+        if (field) field.classList.toggle('hidden', !show);
+    }
+
+    function togglePEAD(id) {
+        const field = document.getElementById(id);
+        if (field) field.classList.toggle('hidden');
+    }
+
+    function previewImage(input, previewId, key) {
+        const container = document.getElementById(previewId);
+        container.innerHTML = '';
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (key === 'canteiro') currentBase64Canteiro = e.target.result;
+                if (key === 'seg1') currentBase64Seg1 = e.target.result;
+                if (key === 'seg2') currentBase64Seg2 = e.target.result;
+                if (key === 'seg3') currentBase64Seg3 = e.target.result;
+
+                container.classList.remove('hidden');
+                container.innerHTML = `<div class="image-preview-card border rounded p-1 bg-white shadow-sm mt-1"><img src="${e.target.result}"><p class="text-[9px] text-slate-500 mt-1 text-center font-semibold">Foto Anexada</p></div>`;
             }
+            reader.readAsDataURL(input.files[0]);
         }
+    }
 
-        function switchTab(tab) {
-            const formTab = document.getElementById('tab-form');
-            const historyTab = document.getElementById('tab-history');
-            const btnForm = document.getElementById('btn-tab-form');
-            const btnHistory = document.getElementById('btn-tab-history');
+    function updateTime() {
+        const now = new Date();
+        document.getElementById('autoDateTime').innerText = now.toLocaleString('pt-BR');
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
 
-            if (tab === 'form') {
-                formTab.classList.remove('hidden');
-                historyTab.classList.add('hidden');
-                btnForm.classList.add('bg-white/20');
-                btnHistory.classList.remove('bg-white/20');
-            } else {
-                formTab.classList.add('hidden');
-                historyTab.classList.remove('hidden');
-                btnHistory.classList.add('bg-white/20');
-                btnForm.classList.remove('bg-white/20');
-                renderHistory();
-            }
-        }
+    function handleFormSubmit(e) {
+        e.preventDefault();
 
-        function setReportType(type) {
-            currentReportType = type;
-            const btnIni = document.getElementById('btn-type-inicial');
-            const btnEnc = document.getElementById('btn-type-encerramento');
-            const secIni = document.getElementById('section-inicial');
-            const secEnc = document.getElementById('section-encerramento');
-
-            if (type === 'Inicial') {
-                btnIni.className = 'px-5 py-2 rounded-lg text-sm font-semibold bg-blue-100 text-blue-700 border border-blue-200';
-                btnEnc.className = 'px-5 py-2 rounded-lg text-sm font-semibold border border-slate-300 hover:bg-slate-50 transition';
-                secIni.classList.remove('hidden');
-                secEnc.classList.add('hidden');
-            } else {
-                btnEnc.className = 'px-5 py-2 rounded-lg text-sm font-semibold bg-red-100 text-red-700 border border-red-200';
-                btnIni.className = 'px-5 py-2 rounded-lg text-sm font-semibold border border-slate-300 hover:bg-slate-50 transition';
-                secIni.classList.add('hidden');
-                secEnc.classList.remove('hidden');
-            }
-        }
-
-        function parseEstacaToMeters(estacaStr) {
-            if (!estacaStr) return 0;
-            const clean = estacaStr.trim().replace(',', '.');
-            const parts = clean.split('+');
-            if (parts.length === 2) {
-                const estacaNum = parseFloat(parts[0]) || 0;
-                const metroNum = parseFloat(parts[1]) || 0;
-                return (estacaNum * 20) + metroNum;
-            } else if (parts.length === 1) {
-                return parseFloat(parts[0]) || 0;
-            }
-            return 0;
-        }
-
-        function calcularEstaca(tipo) {
-            const ini = document.getElementById(`pead${tipo}-est-ini`).value;
-            const fim = document.getElementById(`pead${tipo}-est-fim`).value;
-            const extInput = document.getElementById(`pead${tipo}-extensao`);
-
-            const mIni = parseEstacaToMeters(ini);
-            const mFim = parseEstacaToMeters(fim);
-
-            if (mFim >= mIni) {
-                const diff = mFim - mIni;
-                extInput.value = diff.toFixed(2);
-            } else {
-                extInput.value = '0.00';
-            }
-        }
-
-        function salvarRDO() {
-            const projeto = document.getElementById('select-projeto').value;
-            const tecnico = document.getElementById('select-tecnico').value;
-            const engenheiro = document.getElementById('select-engenheiro').value;
-
-            if (!projeto || !tecnico) {
-                alert('Por favor, preencha pelo menos o Projeto e o Técnico Responsável.');
-                return;
-            }
-
-            const now = new Date();
-            const report = {
-                id: Date.now(),
-                tipo: currentReportType,
-                projeto: projeto,
-                tecnico: tecnico,
-                engenheiro: engenheiro,
-                horaPrevista: document.getElementById('hora-prevista').value,
-                sst: {
-                    epi: document.getElementById('sst-epi').checked,
-                    sinalizacao: document.getElementById('sst-sinalizacao').checked,
-                    dds: document.getElementById('sst-dds').checked,
-                },
-                faltaEfetivo: document.getElementById('chk-falta-efetivo').checked,
-                detalheFaltaEfetivo: document.getElementById('detalhe-falta-efetivo').value,
-                faltaEquipamentos: document.getElementById('chk-falta-equipamentos').checked,
-                detalheFaltaEquipamentos: document.getElementById('detalhe-falta-equipamentos').value,
-                planejamento: document.getElementById('planejamento-dia').value,
+        const newRecord = {
+            id: Date.now(),
+            data: new Date().toISOString().split('T')[0],
+            dataHora: new Date().toLocaleString('pt-BR'),
+            tipo: currentReportType,
+            projeto: getVal('selectProjeto'),
+            tecnico: getVal('selectTecnico'),
+            engenheiro: getVal('selectEngenheiro'),
+            tipoObra: getVal('selectTipoObra'),
+            fotos: {
+                canteiro: currentBase64Canteiro,
+                seguranca1: currentBase64Seg1,
+                seguranca2: currentBase64Seg2,
+                seguranca3: currentBase64Seg3
+            },
+            horarios: {
+                empreiteira: getVal('nomeEmpreiteira'),
+                previstoEmpreiteira: getVal('horarioPrevistoEmpreiteira'),
+                realEmpreiteira: getVal('horarioRealChegadaEmpreiteira'),
+                inicioAtividades: getVal('horarioInicioAtividades'),
+                justAtrasoInicio: getVal('justificativaAtrasoInicio'),
+                previstoEncerrar: getVal('horarioPrevistoEncerramento'),
+                realEncerrar: getVal('horarioRealEncerramento'),
+                justEncerrarAntes: getVal('justificativaEncerramentoAntecipado')
+            },
+            atividadesPrevistas: getVal('atividadesPrevistas'),
+            atividadesRealizadas: getVal('atividadesRealizadas'),
+            producao: {
                 pead63: {
-                    ini: document.getElementById('pead63-est-ini').value,
-                    fim: document.getElementById('pead63-est-fim').value,
-                    ext: document.getElementById('pead63-extensao').value
+                    ativo: document.getElementById('checkPEAD63') ? document.getElementById('checkPEAD63').checked : false,
+                    extensao: getVal('extensao63'),
+                    estaca: getVal('estaca63')
                 },
                 pead125: {
-                    ini: document.getElementById('pead125-est-ini').value,
-                    fim: document.getElementById('pead125-est-fim').value,
-                    ext: document.getElementById('pead125-extensao').value
-                },
-                horaReal: document.getElementById('hora-real').value,
-                justificativa: document.getElementById('justificativa-atraso').value,
-                atividades: document.getElementById('atividades-realizadas').value,
-                assinatura: {
-                    nome: document.getElementById('nome-assinatura').value,
-                    cargo: document.getElementById('cargo-assinatura').value
-                },
-                dataISO: now.toISOString(),
-                dataFormatada: now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR')
-            };
-
-            reports.unshift(report);
-            localStorage.setItem('rdo_pead_reports', JSON.stringify(reports));
-            
-            updateHistoryBadge();
-            alert('Relatório salvo com sucesso!');
-            switchTab('history');
-        }
-
-        function updateHistoryBadge() {
-            document.getElementById('history-badge').textContent = reports.length;
-        }
-
-        function renderHistory() {
-            const listContainer = document.getElementById('history-list');
-            const filterText = document.getElementById('filter-text').value.toLowerCase();
-            const filterDate = document.getElementById('filter-date').value;
-            const filterType = document.getElementById('filter-type').value;
-
-            const filtered = reports.filter(r => {
-                const matchText = r.projeto.toLowerCase().includes(filterText) || r.tecnico.toLowerCase().includes(filterText);
-                const matchType = !filterType || r.tipo === filterType;
-                let matchDate = true;
-                if (filterDate) {
-                    const rDate = r.dataISO.split('T')[0];
-                    matchDate = (rDate === filterDate);
+                    ativo: document.getElementById('checkPEAD125') ? document.getElementById('checkPEAD125').checked : false,
+                    extensao: getVal('extensao125'),
+                    estaca: getVal('estaca125')
                 }
-                return matchText && matchType && matchDate;
-            });
-
-            if (filtered.length === 0) {
-                listContainer.innerHTML = `<div class="bg-white p-8 text-center rounded-xl text-slate-500 border border-slate-200">Nenhum relatório encontrado.</div>`;
-                return;
             }
+        };
 
-            listContainer.innerHTML = filtered.map(r => `
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                    <div class="flex items-start gap-3">
-                        <input type="checkbox" class="chk-report-item rounded text-blue-600 h-5 w-5 mt-1" value="${r.id}">
-                        <div class="space-y-1">
-                            <div class="flex items-center gap-2">
-                                <span class="text-xs px-2 py-0.5 rounded font-bold ${r.tipo === 'Encerramento' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'}">${r.tipo}</span>
-                                <h3 class="font-bold text-slate-800 text-base">${r.projeto}</h3>
-                            </div>
-                            <p class="text-xs text-slate-500 flex items-center gap-2">
-                                <i class="fa-solid fa-user"></i> Técnico: ${r.tecnico}
-                            </p>
-                            <p class="text-xs text-slate-400 flex items-center gap-2">
-                                <i class="fa-solid fa-clock"></i> ${r.dataFormatada}
-                            </p>
-                        </div>
+        rdoHistory.unshift(newRecord);
+        localStorage.setItem('rdo_history_data', JSON.stringify(rdoHistory));
+
+        updateHistoryBadge();
+        renderHistory(rdoHistory);
+
+        alert('Relatório salvo com sucesso!');
+        document.getElementById('rdoForm').reset();
+        
+        ['previewCanteiro', 'previewSeg1', 'previewSeg2', 'previewSeg3'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.classList.add('hidden');
+        });
+        currentBase64Canteiro = '';
+        currentBase64Seg1 = '';
+        currentBase64Seg2 = '';
+        currentBase64Seg3 = '';
+
+        switchTab('historyTab');
+    }
+
+    function updateHistoryBadge() {
+        document.getElementById('historyBadge').innerText = rdoHistory.length;
+    }
+
+    function renderHistory(data) {
+        const container = document.getElementById('historyContainer');
+        if (data.length === 0) {
+            container.innerHTML = `
+                <div class="bg-white rounded-2xl p-8 text-center text-slate-400 border border-slate-200">
+                    <i class="fa-solid fa-folder-open text-3xl mb-2"></i>
+                    <p class="text-xs">Nenhum registro encontrado.</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = data.map(item => `
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
+                <div>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.tipo === 'inicial' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
+                            ${item.tipo === 'inicial' ? 'Abertura' : 'Encerramento'}
+                        </span>
+                        <span class="text-xs font-bold text-slate-800">${item.projeto}</span>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button onclick="excluirRDO(${r.id})" class="text-red-500 hover:bg-red-50 p-2 rounded-lg text-sm transition" title="Excluir">
-                            <i class="fa-solid fa-trash"></i>
-                        </button>
-                    </div>
+                    <p class="text-xs text-slate-600"><i class="fa-solid fa-user text-slate-400 mr-1"></i> Técnico: ${item.tecnico}</p>
+                    <p class="text-[11px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i> ${item.dataHora}</p>
                 </div>
-            `).join('');
+                <div class="flex items-center gap-2">
+                    <button onclick="deleteRecord(${item.id})" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
+                        <i class="fa-solid fa-trash"></i> Excluir
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function applyHistoryFilter() {
+        const search = getVal('filterSearch').toLowerCase();
+        const date = getVal('filterDate');
+        const type = getVal('filterType');
+
+        const filtered = rdoHistory.filter(item => {
+            const matchesSearch = !search || 
+                item.projeto.toLowerCase().includes(search) || 
+                item.tecnico.toLowerCase().includes(search);
+            const matchesDate = !date || item.data === date;
+            const matchesType = !type || item.tipo === type;
+
+            return matchesSearch && matchesDate && matchesType;
+        });
+
+        renderHistory(filtered);
+    }
+
+    function clearHistoryFilters() {
+        document.getElementById('filterSearch').value = '';
+        document.getElementById('filterDate').value = '';
+        document.getElementById('filterType').value = '';
+        renderHistory(rdoHistory);
+    }
+
+    function deleteRecord(id) {
+        if (confirm('Deseja realmente excluir este registro?')) {
+            rdoHistory = rdoHistory.filter(item => item.id !== id);
+            localStorage.setItem('rdo_history_data', JSON.stringify(rdoHistory));
+            updateHistoryBadge();
+            applyHistoryFilter();
+        }
+    }
+
+    function exportToCSV() {
+        if (rdoHistory.length === 0) {
+            alert('Não há dados salvos no histórico para exportar.');
+            return;
         }
 
-        function toggleSelectAll(master) {
-            const checkboxes = document.querySelectorAll('.chk-report-item');
-            checkboxes.forEach(cb => cb.checked = master.checked);
-        }
+        let csv = 'ID;Data/Hora;Tipo;Projeto;Tecnico;Engenheiro;Tipo Obra;Empreiteira;Atividades Previstas;Atividades Realizadas\n';
 
-        function limparFiltros() {
-            document.getElementById('filter-text').value = '';
-            document.getElementById('filter-date').value = '';
-            document.getElementById('filter-type').value = '';
-            renderHistory();
-        }
+        rdoHistory.forEach(item => {
+            const row = [
+                item.id,
+                `"${item.dataHora || ''}"`,
+                `"${item.tipo || ''}"`,
+                `"${item.projeto || ''}"`,
+                `"${item.tecnico || ''}"`,
+                `"${item.engenheiro || ''}"`,
+                `"${item.tipoObra || ''}"`,
+                `"${item.horarios.empreiteira || ''}"`,
+                `"${(item.atividadesPrevistas || '').replace(/\n/g, ' ')}"`,
+                `"${(item.atividadesRealizadas || '').replace(/\n/g, ' ')}"`
+            ];
+            csv += row.join(';') + '\n';
+        });
 
-        function excluirRDO(id) {
-            if (confirm('Tem certeza que deseja excluir este relatório?')) {
-                reports = reports.filter(r => r.id !== id);
-                localStorage.setItem('rdo_pead_reports', JSON.stringify(reports));
-                updateHistoryBadge();
-                renderHistory();
-            }
-        }
+        const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Relatorios_RDO_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+    }
 
-        function exportarCSVGeral() {
-            if (reports.length === 0) {
-                alert('Não há relatórios para exportar.');
-                return;
-            }
-            gerarCSV(reports);
-        }
+    function exportToPDF() {
+        switchTab('formTab');
+        setTimeout(() => {
+            window.print();
+        }, 300);
+    }
+</script>
 
-        function exportarSelecionadosCSV() {
-            const selecionadosIds = Array.from(document.querySelectorAll('.chk-report-item:checked')).map(cb => Number(cb.value));
-            if (selecionadosIds.length === 0) {
-                alert('Selecione pelo menos um relatório na lista.');
-                return;
-            }
-            const selecionados = reports.filter(r => selecionadosIds.includes(r.id));
-            gerarCSV(selecionados);
-        }
-
-        function gerarCSV(dados) {
-            let csv = 'ID;Tipo;Data;Projeto;Tecnico;Engenheiro;Falta Efetivo;Falta Equipamentos;Ext PEAD 63;Ext PEAD 125;Assinatura\n';
-            dados.forEach(r => {
-                csv += `${r.id};${r.tipo};"${r.dataFormatada}";"${r.projeto}";"${r.tecnico}";"${r.engenheiro}";"${r.faltaEfetivo ? 'Sim' : 'Não'}";"${r.faltaEquipamentos ? 'Sim' : 'Não'}";"${r.pead63.ext}";"${r.pead125.ext}";"${r.assinatura ? r.assinatura.nome : ''}"\n`;
-            });
-            const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = `Relatorio_RDO_PEAD_${Date.now()}.csv`;
-            link.click();
-        }
-    </script>
 </body>
 </html>
