@@ -218,11 +218,11 @@
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-bold text-slate-700">Houve falta de efetivo?</span>
                             <div class="flex gap-3">
-                                <label class="text-xs font-semibold"><input type="radio" name="faltaEfetivo" value="Não" checked onchange="toggleNC('descFaltaEfetivo', false)"> Não</label>
-                                <label class="text-xs font-semibold"><input type="radio" name="faltaEfetivo" value="Sim" onchange="toggleNC('descFaltaEfetivo', true)"> Sim</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="faltaEfetivo" value="Não" checked onchange="toggleNC('descFaltaEfetivo', false)"> Não</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="faltaEfetivo" value="Sim" onchange="toggleNC('descFaltaEfetivo', true)"> Sim</label>
                             </div>
                         </div>
-                        <input type="text" id="descFaltaEfetivo" placeholder="Descreva quais profissionais faltaram..." class="hidden w-full text-xs bg-red-50 border border-red-300 rounded-lg p-2">
+                        <input type="text" id="descFaltaEfetivo" placeholder="Descreva quais profissionais faltaram..." class="hidden w-full text-xs bg-red-50 border border-red-300 rounded-lg p-2 mt-2">
                     </div>
 
                     <!-- FALTA DE EQUIPAMENTO -->
@@ -230,11 +230,11 @@
                         <div class="flex items-center justify-between mb-2">
                             <span class="text-xs font-bold text-slate-700">Houve falta de equipamento?</span>
                             <div class="flex gap-3">
-                                <label class="text-xs font-semibold"><input type="radio" name="faltaEquipamento" value="Não" checked onchange="toggleNC('descFaltaEquipamento', false)"> Não</label>
-                                <label class="text-xs font-semibold"><input type="radio" name="faltaEquipamento" value="Sim" onchange="toggleNC('descFaltaEquipamento', true)"> Sim</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="faltaEquipamento" value="Não" checked onchange="toggleNC('descFaltaEquipamento', false)"> Não</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="faltaEquipamento" value="Sim" onchange="toggleNC('descFaltaEquipamento', true)"> Sim</label>
                             </div>
                         </div>
-                        <input type="text" id="descFaltaEquipamento" placeholder="Descreva quais equipamentos faltaram..." class="hidden w-full text-xs bg-red-50 border border-red-300 rounded-lg p-2">
+                        <input type="text" id="descFaltaEquipamento" placeholder="Descreva quais equipamentos faltaram..." class="hidden w-full text-xs bg-red-50 border border-red-300 rounded-lg p-2 mt-2">
                     </div>
                 </div>
 
@@ -257,8 +257,8 @@
                         <div>
                             <span class="text-xs font-medium block mb-2">1. Condições de trabalho adequadas?</span>
                             <div class="flex gap-4 mb-2">
-                                <label class="text-xs font-semibold"><input type="radio" name="condicoesTrabalho" value="Sim" checked onchange="toggleNC('descCondicoes', false)"> Sim</label>
-                                <label class="text-xs font-semibold"><input type="radio" name="condicoesTrabalho" value="Não" onchange="toggleNC('descCondicoes', true)"> Não</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="condicoesTrabalho" value="Sim" checked onchange="toggleNC('descCondicoes', false)"> Sim</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="condicoesTrabalho" value="Não" onchange="toggleNC('descCondicoes', true)"> Não</label>
                             </div>
                             <input type="text" id="descCondicoes" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mb-2">
                         </div>
@@ -275,8 +275,8 @@
                         <div>
                             <span class="text-xs font-medium block mb-2">2. Ferramental / caminhão adequado?</span>
                             <div class="flex gap-4 mb-2">
-                                <label class="text-xs font-semibold"><input type="radio" name="caminhaoOrganizado" value="Sim" checked onchange="toggleNC('descCaminhao', false)"> Sim</label>
-                                <label class="text-xs font-semibold"><input type="radio" name="caminhaoOrganizado" value="Não" onchange="toggleNC('descCaminhao', true)"> Não</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="caminhaoOrganizado" value="Sim" checked onchange="toggleNC('descCaminhao', false)"> Sim</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="caminhaoOrganizado" value="Não" onchange="toggleNC('descCaminhao', true)"> Não</label>
                             </div>
                             <input type="text" id="descCaminhao" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mb-2">
                         </div>
@@ -293,8 +293,8 @@
                         <div>
                             <span class="text-xs font-medium block mb-2">3. Sinalização de via adequada?</span>
                             <div class="flex gap-4 mb-2">
-                                <label class="text-xs font-semibold"><input type="radio" name="sinalizacaoAdequada" value="Sim" checked onchange="toggleNC('descSinalizacao', false)"> Sim</label>
-                                <label class="text-xs font-semibold"><input type="radio" name="sinalizacaoAdequada" value="Não" onchange="toggleNC('descSinalizacao', true)"> Não</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="sinalizacaoAdequada" value="Sim" checked onchange="toggleNC('descSinalizacao', false)"> Sim</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="sinalizacaoAdequada" value="Não" onchange="toggleNC('descSinalizacao', true)"> Não</label>
                             </div>
                             <input type="text" id="descSinalizacao" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mb-2">
                         </div>
@@ -364,20 +364,23 @@
                     <i class="fa-solid fa-ruler-combined text-indigo-600 mr-1"></i> Produção / Assentamento PEAD
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- PEAD 63 mm -->
                     <div class="bg-slate-50 p-4 rounded-xl border">
-                        <label class="flex items-center gap-2 text-xs font-bold">
-                            <input type="checkbox" id="checkPEAD63" onchange="togglePEAD('fieldsPEAD63')"> PEAD 63 mm
+                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer">
+                            <input type="checkbox" id="checkPEAD63" onchange="togglePEAD('fieldsPEAD63', this.checked)"> PEAD 63 mm
                         </label>
-                        <div id="fieldsPEAD63" class="hidden mt-3 space-y-2">
+                        <div id="fieldsPEAD63" class="mt-3 space-y-2">
                             <input type="number" id="extensao63" min="0.01" step="0.01" placeholder="Metragem (m)" class="w-full text-xs p-2 border rounded">
                             <input type="text" id="estaca63" placeholder="Estaqueamento / Trecho" class="w-full text-xs p-2 border rounded">
                         </div>
                     </div>
+
+                    <!-- PEAD 125 mm -->
                     <div class="bg-slate-50 p-4 rounded-xl border">
-                        <label class="flex items-center gap-2 text-xs font-bold">
-                            <input type="checkbox" id="checkPEAD125" onchange="togglePEAD('fieldsPEAD125')"> PEAD 125 mm
+                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer">
+                            <input type="checkbox" id="checkPEAD125" onchange="togglePEAD('fieldsPEAD125', this.checked)"> PEAD 125 mm
                         </label>
-                        <div id="fieldsPEAD125" class="hidden mt-3 space-y-2">
+                        <div id="fieldsPEAD125" class="mt-3 space-y-2">
                             <input type="number" id="extensao125" min="0.01" step="0.01" placeholder="Metragem (m)" class="w-full text-xs p-2 border rounded">
                             <input type="text" id="estaca125" placeholder="Estaqueamento / Trecho" class="w-full text-xs p-2 border rounded">
                         </div>
@@ -469,6 +472,10 @@
     document.addEventListener('DOMContentLoaded', () => {
         updateHistoryBadge();
         renderHistory(rdoHistory);
+        
+        // Inicializar exibição do PEAD de acordo com o estado do checkbox
+        togglePEAD('fieldsPEAD63', document.getElementById('checkPEAD63').checked);
+        togglePEAD('fieldsPEAD125', document.getElementById('checkPEAD125').checked);
     });
 
     function switchTab(tabName) {
@@ -507,9 +514,15 @@
         if (field) field.classList.toggle('hidden', !show);
     }
 
-    function togglePEAD(id) {
+    function togglePEAD(id, isChecked) {
         const field = document.getElementById(id);
-        if (field) field.classList.toggle('hidden');
+        if (field) {
+            if (isChecked) {
+                field.classList.remove('hidden');
+            } else {
+                field.classList.add('hidden');
+            }
+        }
     }
 
     function previewImage(input, previewId, key) {
@@ -544,7 +557,7 @@
         const editingId = getVal('editingRecordId');
         const isEdit = !!editingId;
 
-        const recordId = isEdit ? Number(editingId) : Date.now();
+        const recordId = isEdit ? editingId : 'RDO-' + Date.now();
 
         const radioVal = (name) => {
             const el = document.querySelector(`input[name="${name}"]:checked`);
@@ -601,7 +614,7 @@
         };
 
         if (isEdit) {
-            const index = rdoHistory.findIndex(item => item.id === recordId);
+            const index = rdoHistory.findIndex(item => String(item.id) === String(recordId));
             if (index !== -1) {
                 rdoHistory[index] = { ...rdoHistory[index], ...recordData };
             }
@@ -630,11 +643,13 @@
         currentBase64Seg1 = '';
         currentBase64Seg2 = '';
         currentBase64Seg3 = '';
+        togglePEAD('fieldsPEAD63', false);
+        togglePEAD('fieldsPEAD125', false);
         setReportType('inicial');
     }
 
     function continueReport(id) {
-        const item = rdoHistory.find(r => r.id === id);
+        const item = rdoHistory.find(r => String(r.id) === String(id));
         if (!item) return;
 
         document.getElementById('editingRecordId').value = item.id;
@@ -646,13 +661,15 @@
         setVal('atividadesPrevistas', item.atividadesPrevistas);
 
         if (item.faltaEfetivo?.houve === 'Sim') {
-            document.querySelector('input[name="faltaEfetivo"][value="Sim"]').checked = true;
+            const el = document.querySelector('input[name="faltaEfetivo"][value="Sim"]');
+            if (el) el.checked = true;
             toggleNC('descFaltaEfetivo', true);
             setVal('descFaltaEfetivo', item.faltaEfetivo.descricao);
         }
 
         if (item.faltaEquipamento?.houve === 'Sim') {
-            document.querySelector('input[name="faltaEquipamento"][value="Sim"]').checked = true;
+            const el = document.querySelector('input[name="faltaEquipamento"][value="Sim"]');
+            if (el) el.checked = true;
             toggleNC('descFaltaEquipamento', true);
             setVal('descFaltaEquipamento', item.faltaEquipamento.descricao);
         }
@@ -693,11 +710,11 @@
                 </div>
                 <div class="flex items-center gap-2">
                     ${item.tipo === 'inicial' ? `
-                        <button onclick="continueReport(${item.id})" class="px-3 py-1.5 bg-gas-50 hover:bg-gas-100 text-gas-700 rounded-lg text-xs font-bold transition">
+                        <button onclick="continueReport('${item.id}')" class="px-3 py-1.5 bg-gas-50 hover:bg-gas-100 text-gas-700 rounded-lg text-xs font-bold transition">
                             <i class="fa-solid fa-play mr-1"></i> Continuar / Encerrar RDO
                         </button>
                     ` : ''}
-                    <button onclick="deleteRecord(${item.id})" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
+                    <button onclick="deleteRecord('${item.id}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
                         <i class="fa-solid fa-trash"></i> Excluir
                     </button>
                 </div>
@@ -711,9 +728,9 @@
     }
 
     function getSelectedRecords() {
-        const selectedIds = Array.from(document.querySelectorAll('.history-checkbox:checked')).map(cb => Number(cb.value));
+        const selectedIds = Array.from(document.querySelectorAll('.history-checkbox:checked')).map(cb => String(cb.value));
         if (selectedIds.length === 0) return rdoHistory;
-        return rdoHistory.filter(item => selectedIds.includes(item.id));
+        return rdoHistory.filter(item => selectedIds.includes(String(item.id)));
     }
 
     function applyHistoryFilter() {
@@ -743,7 +760,7 @@
 
     function deleteRecord(id) {
         if (confirm('Deseja realmente excluir este registro?')) {
-            rdoHistory = rdoHistory.filter(item => item.id !== id);
+            rdoHistory = rdoHistory.filter(item => String(item.id) !== String(id));
             localStorage.setItem('rdo_history_data', JSON.stringify(rdoHistory));
             updateHistoryBadge();
             applyHistoryFilter();
@@ -760,16 +777,19 @@
         let csv = 'sep=;\nID;Data/Hora;Status;Projeto;Tecnico;Engenheiro;Empreiteira;Falta Efetivo;Falta Equipamento;Atividades Previstas;Atividades Realizadas\n';
 
         recordsToExport.forEach(item => {
+            const faltaEf = item.faltaEfetivo?.houve === 'Sim' ? item.faltaEfetivo.descricao : 'Nao';
+            const faltaEq = item.faltaEquipamento?.houve === 'Sim' ? item.faltaEquipamento.descricao : 'Nao';
+
             const row = [
-                item.id,
+                `"${item.id}"`,
                 `"${item.dataHora || ''}"`,
                 `"${item.tipo === 'encerramento' ? 'Encerrado' : 'Aberto'}"`,
                 `"${item.projeto || ''}"`,
                 `"${item.tecnico || ''}"`,
                 `"${item.engenheiro || ''}"`,
                 `"${item.horarios?.empreiteira || ''}"`,
-                `"${item.faltaEfetivo?.houve === 'Sim' ? item.faltaEfetivo.descricao : 'Não'}"`,
-                `"${item.faltaEquipamento?.houve === 'Sim' ? item.faltaEquipamento.descricao : 'Não'}"`,
+                `"${faltaEf.replace(/"/g, '""')}"`,
+                `"${faltaEq.replace(/"/g, '""')}"`,
                 `"${(item.atividadesPrevistas || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
                 `"${(item.atividadesRealizadas || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`
             ];
