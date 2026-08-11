@@ -1,6 +1,4 @@
-# Let's generate a full complete HTML file with the requested improvements and provide it as a file download, while also showing the code in the response.
-
-html_code = """<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -35,37 +33,6 @@ html_code = """<!DOCTYPE html>
         textarea { resize: vertical; min-height: 80px; }
         input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); }
         input[readonly] { background-color: #f1f5f9; cursor: not-allowed; font-weight: bold; }
-
-        /* Estilo para campos de estaca com '+' fixo */
-        .estaca-input-group {
-            display: flex;
-            align-items: center;
-            border: 1px solid var(--border);
-            border-radius: 4px;
-            background: #fff;
-            overflow: hidden;
-        }
-        .estaca-input-group:focus-within {
-            outline: 2px solid var(--primary);
-        }
-        .estaca-input-group input {
-            border: none;
-            outline: none !important;
-            padding: 8px;
-            text-align: center;
-        }
-        .estaca-input-group input:focus {
-            outline: none;
-        }
-        .estaca-input-group .plus-symbol {
-            font-weight: bold;
-            color: #475569;
-            background-color: #f1f5f9;
-            padding: 8px 10px;
-            user-select: none;
-            border-left: 1px solid var(--border);
-            border-right: 1px solid var(--border);
-        }
 
         .dynamic-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
         .dynamic-row input { flex: 1; }
@@ -192,36 +159,19 @@ html_code = """<!DOCTYPE html>
         <div class="card">
             <h2>3. Localização, Atividades e Segurança</h2>
             
-            <h3 style="margin-top: 5px;">Produção / Assentamento (Trecho Executado)</h3>
-            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">Informe o trecho inicial e final nas caixas abaixo (cada estaca = 20 metros):</p>
-            
-            <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 16px;">
-                <!-- Estaca Inicial -->
+            <h3 style="margin-top: 5px;">Localização / Estaqueamento</h3>
+            <div class="grid">
                 <div class="form-group">
-                    <label>Estaca Inicial</label>
-                    <div class="estaca-input-group">
-                        <input type="number" id="estacaIni" placeholder="Estaca" style="width: 80px;" oninput="calcularMetragemSeparada()">
-                        <span class="plus-symbol">+</span>
-                        <input type="number" step="any" id="maisIni" placeholder="Metros" style="width: 80px;" oninput="calcularMetragemSeparada()">
-                    </div>
+                    <label for="estacaInicial">Estaca Inicial (ex: 01+00 ou 1+0)</label>
+                    <input type="text" id="estacaInicial" placeholder="Ex: 01+00" oninput="calcularMetragem()">
                 </div>
-
-                <div style="font-weight: bold; color: #64748b; padding-bottom: 10px;">até</div>
-
-                <!-- Estaca Final -->
                 <div class="form-group">
-                    <label>Estaca Final</label>
-                    <div class="estaca-input-group">
-                        <input type="number" id="estacaFim" placeholder="Estaca" style="width: 80px;" oninput="calcularMetragemSeparada()">
-                        <span class="plus-symbol">+</span>
-                        <input type="number" step="any" id="maisFim" placeholder="Metros" style="width: 80px;" oninput="calcularMetragemSeparada()">
-                    </div>
+                    <label for="estacaFinal">Estaca Final (ex: 45+19)</label>
+                    <input type="text" id="estacaFinal" placeholder="Ex: 45+19" oninput="calcularMetragem()">
                 </div>
-
-                <!-- Metragem Calculada -->
-                <div class="form-group" style="flex: 1; min-width: 200px;">
-                    <label for="metragemExecutada">Metragem executada (m)</label>
-                    <input type="text" id="metragemExecutada" placeholder="Calculado automaticamente" readonly style="background-color: #f1f5f9; font-weight: bold; color: var(--primary);">
+                <div class="form-group">
+                    <label for="metragemCalculada">Extensão / Distância Calculada</label>
+                    <input type="text" id="metragemCalculada" readonly placeholder="Calculado automaticamente">
                 </div>
             </div>
 
@@ -356,31 +306,32 @@ html_code = """<!DOCTYPE html>
         renderHistory();
     });
 
-    // CÁLCULO DE ESTAQUEAMENTO COM CAMPOS SEPARADOS
-    function calcularMetragemSeparada() {
-        const estIniInput = document.getElementById('estacaIni').value;
-        const maisIniInput = document.getElementById('maisIni').value;
-        const estFimInput = document.getElementById('estacaFim').value;
-        const maisFimInput = document.getElementById('maisFim').value;
+    // CÁLCULO DE ESTAQUEAMENTO COM SUPORTE A VÍRGULA E PONTO
+    function estacaParaMetros(estacaStr) {
+        if (!estacaStr) return null;
+        const limpo = estacaStr.trim().replace(/\s+/g, '').replace(',', '.');
+        const partes = limpo.split('+');
+        
+        const estaca = parseFloat(partes[0]);
+        const mais = partes[1] ? parseFloat(partes[1]) : 0;
 
-        const eIni = parseFloat(estIniInput) || 0;
-        const mIni = parseFloat(maisIniInput) || 0;
-        const eFim = parseFloat(estFimInput) || 0;
-        const mFim = parseFloat(maisFimInput) || 0;
+        if (isNaN(estaca)) return null;
+        return (estaca * 20) + (isNaN(mais) ? 0 : mais);
+    }
 
-        const campoResultado = document.getElementById('metragemExecutada');
+    function calcularMetragem() {
+        const estInicial = document.getElementById('estacaInicial').value;
+        const estFinal = document.getElementById('estacaFinal').value;
+        const out = document.getElementById('metragemCalculada');
 
-        const temIni = estIniInput !== '' || maisIniInput !== '';
-        const temFim = estFimInput !== '' || maisFimInput !== '';
+        const m1 = estacaParaMetros(estInicial);
+        const m2 = estacaParaMetros(estFinal);
 
-        if (temIni && temFim) {
-            const mInicial = (eIni * 20) + mIni;
-            const mFinal = (eFim * 20) + mFim;
-
-            const total = Math.abs(mFinal - mInicial);
-            campoResultado.value = total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' m';
+        if (m1 !== null && m2 !== null) {
+            const diff = Math.abs(m2 - m1);
+            out.value = `${diff.toFixed(2)} metros`;
         } else {
-            campoResultado.value = '';
+            out.value = '';
         }
     }
 
@@ -445,6 +396,7 @@ html_code = """<!DOCTYPE html>
         return data;
     }
 
+    // CARREGAMENTO COM COMPRESSÃO AUTOMÁTICA DE IMAGEM (Evita travar o LocalStorage)
     function handleImageUpload(input, previewId, hiddenId) {
         const file = input.files[0];
         if (file) {
@@ -488,14 +440,6 @@ html_code = """<!DOCTYPE html>
         const rdoId = document.getElementById('rdoId').value || 'rdo_' + Date.now();
         const status = (submitter === 'CONCLUIR') ? 'CONCLUIDO' : 'ABERTO';
 
-        const estIni = document.getElementById('estacaIni').value;
-        const maisIni = document.getElementById('maisIni').value;
-        const estFim = document.getElementById('estacaFim').value;
-        const maisFim = document.getElementById('maisFim').value;
-
-        const estacaInicialStr = estIni ? `${estIni}+${maisIni || 0}` : '';
-        const estacaFinalStr = estFim ? `${estFim}+${maisFim || 0}` : '';
-
         const rdoData = {
             id: rdoId,
             status: status,
@@ -507,13 +451,9 @@ html_code = """<!DOCTYPE html>
             dataRdo: document.getElementById('dataRdo').value,
             clima: document.getElementById('clima').value,
             
-            estacaIni: estIni,
-            maisIni: maisIni,
-            estacaFim: estFim,
-            maisFim: maisFim,
-            estacaInicial: estacaInicialStr,
-            estacaFinal: estacaFinalStr,
-            metragemCalculada: document.getElementById('metragemExecutada').value.trim(),
+            estacaInicial: document.getElementById('estacaInicial').value.trim(),
+            estacaFinal: document.getElementById('estacaFinal').value.trim(),
+            metragemCalculada: document.getElementById('metragemCalculada').value.trim(),
 
             equipe: getEquipeData(),
             faltaEfetivo: document.getElementById('faltaEfetivo').value,
@@ -575,7 +515,7 @@ html_code = """<!DOCTYPE html>
         document.getElementById('rdoStatus').value = 'ABERTO';
         document.getElementById('equipeContainer').innerHTML = '';
         document.getElementById('equipamentosContainer').innerHTML = '';
-        document.getElementById('metragemExecutada').value = '';
+        document.getElementById('metragemCalculada').value = '';
 
         for (let i = 1; i <= 4; i++) {
             const hidden = document.getElementById(`imgData${i}`);
@@ -610,11 +550,9 @@ html_code = """<!DOCTYPE html>
         document.getElementById('dataRdo').value = rdo.dataRdo || '';
         document.getElementById('clima').value = rdo.clima || 'BOM';
 
-        document.getElementById('estacaIni').value = rdo.estacaIni || '';
-        document.getElementById('maisIni').value = rdo.maisIni || '';
-        document.getElementById('estacaFim').value = rdo.estacaFim || '';
-        document.getElementById('maisFim').value = rdo.maisFim || '';
-        calcularMetragemSeparada();
+        document.getElementById('estacaInicial').value = rdo.estacaInicial || '';
+        document.getElementById('estacaFinal').value = rdo.estacaFinal || '';
+        document.getElementById('metragemCalculada').value = rdo.metragemCalculada || '';
 
         if (rdo.equipe && Array.isArray(rdo.equipe)) {
             rdo.equipe.forEach(eq => addEquipeRow(eq.funcao, eq.quantidade));
@@ -761,7 +699,7 @@ html_code = """<!DOCTYPE html>
             sanitizeCSVField(item.producao)
         ]);
 
-        const csvContent = "data:text/csv;charset=utf-8,\\uFEFF" 
+        const csvContent = "data:text/csv;charset=utf-8,\uFEFF" 
             + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
 
         const encodedUri = encodeURI(csvContent);
@@ -806,8 +744,8 @@ html_code = """<!DOCTYPE html>
                     <p><label>Empreiteira:</label> ${escapeHTML(rdo.empreiteira || '-')} | <label>Clima:</label> ${escapeHTML(rdo.clima)}</p>
                 </div>
                 <div class="section">
-                    <h3>Localização / Trecho Executado</h3>
-                    <p><label>Estaca Inicial:</label> ${escapeHTML(rdo.estacaInicial || '-')} | <label>Estaca Final:</label> ${escapeHTML(rdo.estacaFinal || '-')} | <label>Metragem Executada:</label> ${escapeHTML(rdo.metragemCalculada || '-')}</p>
+                    <h3>Localização / Trecho</h3>
+                    <p><label>Estaca Inicial:</label> ${escapeHTML(rdo.estacaInicial || '-')} | <label>Estaca Final:</label> ${escapeHTML(rdo.estacaFinal || '-')} | <label>Distância Calculada:</label> ${escapeHTML(rdo.metragemCalculada || '-')}</p>
                 </div>
                 <div class="section">
                     <h3>Recursos</h3>
@@ -816,8 +754,8 @@ html_code = """<!DOCTYPE html>
                 </div>
                 <div class="section">
                     <h3>Atividades e Ocorrências</h3>
-                    <p><label>Atividades:</label><br>${escapeHTML(rdo.atividades).replace(/\\n/g, '<br>')}</p>
-                    <p><label>Produção:</label><br>${escapeHTML(rdo.producao || '-').replace(/\\n/g, '<br>')}</p>
+                    <p><label>Atividades:</label><br>${escapeHTML(rdo.atividades).replace(/\n/g, '<br>')}</p>
+                    <p><label>Produção:</label><br>${escapeHTML(rdo.producao || '-').replace(/\n/g, '<br>')}</p>
                 </div>
                 <div class="section">
                     <h3>Encerramento</h3>
@@ -837,9 +775,4 @@ html_code = """<!DOCTYPE html>
     }
 </script>
 </body>
-</html>"""
-
-with open("rdo_com_estaqueamento_fixo.html", "w", encoding="utf-8") as f:
-    f.write(html_code)
-
-print("HTML file created successfully.")
+</html>
