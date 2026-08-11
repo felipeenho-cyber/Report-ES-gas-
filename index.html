@@ -40,37 +40,8 @@
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; }
-        .image-preview-card img { width: 100%; height: 120px; object-fit: cover; display: block; border-radius: 0.375rem; }
-        
-        /* CSS ESPECÍFICO PARA TESTE E GERADOR DE PDF/IMPRESSÃO */
-        @media print { 
-            .no-print { display: none !important; } 
-            body { background: white !important; color: black !important; }
-            main { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
-            #formTab { display: block !important; }
-            #historyTab { display: none !important; }
-            
-            /* Forçar exibição das seções no PDF */
-            #sectionInicial, #sectionEncerramento { display: block !important; }
-            
-            .print-card { 
-                border: 1px solid #cbd5e1 !important; 
-                box-shadow: none !important; 
-                page-break-inside: avoid;
-                margin-bottom: 1rem !important;
-            }
-
-            input, select, textarea {
-                border: none !important;
-                background: transparent !important;
-                appearance: none !important;
-                padding: 0 !important;
-                font-weight: 600 !important;
-            }
-
-            input[type="file"] { display: none !important; }
-            .image-preview-card img { height: 160px !important; object-fit: contain !important; }
-        }
+        .image-preview-card img { width: 100%; height: 140px; object-fit: cover; display: block; }
+        @media print { .no-print { display: none !important; } }
     </style>
 </head>
 
@@ -129,7 +100,7 @@
     </section>
 
     <!-- INDICADOR DE TEMPO -->
-    <section class="flex items-center justify-between bg-gas-900 text-white px-5 py-3 rounded-xl shadow-sm mb-6 no-print">
+    <section class="flex items-center justify-between bg-gas-900 text-white px-5 py-3 rounded-xl shadow-sm mb-6">
         <div class="flex items-center gap-2">
             <i id="typeIndicatorIcon" class="fa-solid fa-play text-emerald-400 text-lg"></i>
             <span id="typeIndicatorText" class="font-bold text-sm">Abertura de RDO</span>
@@ -144,7 +115,7 @@
     <form id="rdoForm" onsubmit="handleFormSubmit(event)" class="space-y-6">
 
         <!-- IDENTIFICAÇÃO DA OBRA -->
-        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
             <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 mb-4">
                 <i class="fa-solid fa-id-card text-gas-500 mr-1"></i> Identificação da Obra
             </h2>
@@ -198,7 +169,7 @@
         <section id="sectionInicial" class="space-y-6">
 
             <!-- INFORMAÇÕES DA EMPREITEIRA -->
-            <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+            <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
                 <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4 text-slate-700">
                     <i class="fa-solid fa-clock text-gas-500 mr-1"></i> Horários e Empreiteira (Inicial)
                 </h2>
@@ -213,6 +184,7 @@
                     </div>
                 </div>
 
+                <!-- ENVIAR FOTO DO CANTEIRO -->
                 <div class="mt-4 pt-4 border-t">
                     <label class="block text-xs font-semibold mb-1">
                         <i class="fa-solid fa-camera text-gas-500 mr-1"></i> Enviar foto do canteiro (Time Stamp ESGas)
@@ -222,75 +194,52 @@
                 </div>
             </section>
 
-            <!-- SEGURANÇA DO TRABALHO (3 OPCÕES COM FOTO INDIVIDUAL) -->
-            <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+            <!-- SEGURANÇA DO TRABALHO -->
+            <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
                 <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
                     <i class="fa-solid fa-shield-halved text-emerald-600 mr-1"></i> Segurança do Trabalho
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    
-                    <!-- OPÇÃO 1 -->
-                    <div class="bg-slate-50 p-3.5 rounded-xl border flex flex-col justify-between">
-                        <div>
-                            <span class="text-xs font-medium block mb-2">1. Condições de trabalho adequadas?</span>
-                            <div class="flex gap-4 mb-2">
-                                <label class="text-xs font-semibold"><input type="radio" name="condicoesTrabalho" value="Sim" checked onchange="toggleNC('descCondicoes', false)"> Sim</label>
-                                <label class="text-xs font-semibold"><input type="radio" name="condicoesTrabalho" value="Não" onchange="toggleNC('descCondicoes', true)"> Não</label>
-                            </div>
-                            <input type="text" id="descCondicoes" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mb-2">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="bg-slate-50 p-3.5 rounded-xl border">
+                        <span class="text-xs font-medium block mb-2">1. Condições de trabalho adequadas?</span>
+                        <div class="flex gap-4">
+                            <label class="text-xs font-semibold"><input type="radio" name="condicoesTrabalho" value="Sim" checked onchange="toggleNC('descCondicoes', false)"> Sim</label>
+                            <label class="text-xs font-semibold"><input type="radio" name="condicoesTrabalho" value="Não" onchange="toggleNC('descCondicoes', true)"> Não</label>
                         </div>
-                        <div class="pt-2 border-t mt-2">
-                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">
-                                <i class="fa-solid fa-camera text-emerald-600 mr-1"></i> Foto de Evidência 1
-                            </label>
-                            <input type="file" id="fotoSeg1" accept="image/*" onchange="previewImage(this, 'previewSeg1', 'seg1')" class="w-full text-[11px] bg-white border border-slate-300 rounded p-1">
-                            <div id="previewSeg1" class="mt-2 hidden"></div>
-                        </div>
+                        <input type="text" id="descCondicoes" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mt-2">
                     </div>
 
-                    <!-- OPÇÃO 2 -->
-                    <div class="bg-slate-50 p-3.5 rounded-xl border flex flex-col justify-between">
-                        <div>
-                            <span class="text-xs font-medium block mb-2">2. Ferramental / caminhão adequado?</span>
-                            <div class="flex gap-4 mb-2">
-                                <label class="text-xs font-semibold"><input type="radio" name="caminhaoOrganizado" value="Sim" checked onchange="toggleNC('descCaminhao', false)"> Sim</label>
-                                <label class="text-xs font-semibold"><input type="radio" name="caminhaoOrganizado" value="Não" onchange="toggleNC('descCaminhao', true)"> Não</label>
-                            </div>
-                            <input type="text" id="descCaminhao" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mb-2">
+                    <div class="bg-slate-50 p-3.5 rounded-xl border">
+                        <span class="text-xs font-medium block mb-2">2. Ferramental / caminhão adequado?</span>
+                        <div class="flex gap-4">
+                            <label class="text-xs font-semibold"><input type="radio" name="caminhaoOrganizado" value="Sim" checked onchange="toggleNC('descCaminhao', false)"> Sim</label>
+                            <label class="text-xs font-semibold"><input type="radio" name="caminhaoOrganizado" value="Não" onchange="toggleNC('descCaminhao', true)"> Não</label>
                         </div>
-                        <div class="pt-2 border-t mt-2">
-                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">
-                                <i class="fa-solid fa-camera text-emerald-600 mr-1"></i> Foto de Evidência 2
-                            </label>
-                            <input type="file" id="fotoSeg2" accept="image/*" onchange="previewImage(this, 'previewSeg2', 'seg2')" class="w-full text-[11px] bg-white border border-slate-300 rounded p-1">
-                            <div id="previewSeg2" class="mt-2 hidden"></div>
-                        </div>
+                        <input type="text" id="descCaminhao" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mt-2">
                     </div>
 
-                    <!-- OPÇÃO 3 -->
-                    <div class="bg-slate-50 p-3.5 rounded-xl border flex flex-col justify-between">
-                        <div>
-                            <span class="text-xs font-medium block mb-2">3. Sinalização de via adequada?</span>
-                            <div class="flex gap-4 mb-2">
-                                <label class="text-xs font-semibold"><input type="radio" name="sinalizacaoAdequada" value="Sim" checked onchange="toggleNC('descSinalizacao', false)"> Sim</label>
-                                <label class="text-xs font-semibold"><input type="radio" name="sinalizacaoAdequada" value="Não" onchange="toggleNC('descSinalizacao', true)"> Não</label>
-                            </div>
-                            <input type="text" id="descSinalizacao" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mb-2">
+                    <div class="bg-slate-50 p-3.5 rounded-xl border">
+                        <span class="text-xs font-medium block mb-2">3. Sinalização de via adequada?</span>
+                        <div class="flex gap-4">
+                            <label class="text-xs font-semibold"><input type="radio" name="sinalizacaoAdequada" value="Sim" checked onchange="toggleNC('descSinalizacao', false)"> Sim</label>
+                            <label class="text-xs font-semibold"><input type="radio" name="sinalizacaoAdequada" value="Não" onchange="toggleNC('descSinalizacao', true)"> Não</label>
                         </div>
-                        <div class="pt-2 border-t mt-2">
-                            <label class="block text-[11px] font-semibold text-slate-600 mb-1">
-                                <i class="fa-solid fa-camera text-emerald-600 mr-1"></i> Foto de Evidência 3
-                            </label>
-                            <input type="file" id="fotoSeg3" accept="image/*" onchange="previewImage(this, 'previewSeg3', 'seg3')" class="w-full text-[11px] bg-white border border-slate-300 rounded p-1">
-                            <div id="previewSeg3" class="mt-2 hidden"></div>
-                        </div>
+                        <input type="text" id="descSinalizacao" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mt-2">
                     </div>
+                </div>
 
+                <!-- FOTOS DE SEGURANÇA -->
+                <div class="pt-4 border-t">
+                    <label class="block text-xs font-semibold mb-1">
+                        <i class="fa-solid fa-camera text-emerald-600 mr-1"></i> Fotos de Segurança do Trabalho (Evidências / SST)
+                    </label>
+                    <input type="file" id="fotoSeguranca" accept="image/*" onchange="previewImage(this, 'previewSeguranca', 'seguranca')" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2">
+                    <div id="previewSeguranca" class="mt-2 hidden max-w-xs"></div>
                 </div>
             </section>
 
             <!-- PLANEJAMENTO -->
-            <section class="bg-white rounded-2xl p-5 shadow-sm border print-card">
+            <section class="bg-white rounded-2xl p-5 shadow-sm border">
                 <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
                     <i class="fa-solid fa-list-check text-gas-500 mr-1"></i> Planejamento do Dia
                 </h2>
@@ -300,7 +249,7 @@
 
         <!-- SEÇÃO: RELATÓRIO DE ENCERRAMENTO -->
         <section id="sectionEncerramento" class="hidden space-y-6">
-            <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+            <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200">
                 <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4 text-slate-700">
                     <i class="fa-solid fa-stopwatch text-red-500 mr-1"></i> Controle de Horários (Encerramento)
                 </h2>
@@ -332,14 +281,14 @@
                 </div>
             </section>
 
-            <section class="bg-white rounded-2xl p-5 shadow-sm border print-card">
+            <section class="bg-white rounded-2xl p-5 shadow-sm border">
                 <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
                     <i class="fa-solid fa-clipboard-check text-indigo-600 mr-1"></i> Atividades Realizadas
                 </h2>
                 <textarea id="atividadesRealizadas" rows="5" placeholder="Descreva detalhadamente o que foi realizado..." class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-3"></textarea>
             </section>
 
-            <section class="bg-white rounded-2xl p-5 shadow-sm border print-card">
+            <section class="bg-white rounded-2xl p-5 shadow-sm border">
                 <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
                     <i class="fa-solid fa-ruler-combined text-indigo-600 mr-1"></i> Produção / Assentamento PEAD
                 </h2>
@@ -366,8 +315,8 @@
             </section>
         </section>
 
-        <!-- BOTÃO SALVAR -->
-        <div class="flex justify-end gap-3 pt-4 border-t no-print">
+        <!-- SUBMIT -->
+        <div class="flex justify-end gap-3 pt-4 border-t">
             <button type="submit" class="px-6 py-2.5 bg-gas-orange hover:bg-orange-600 text-white rounded-xl font-bold text-xs shadow-md">
                 <i class="fa-solid fa-floppy-disk mr-2"></i> Salvar Relatório
             </button>
@@ -378,20 +327,9 @@
 <!-- ABA HISTÓRICO -->
 <div id="historyTab" class="hidden space-y-4">
     <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
-        <div class="flex flex-wrap justify-between items-center gap-3 border-b pb-3 mb-3">
-            <h2 class="text-xs font-bold uppercase text-slate-700">
-                <i class="fa-solid fa-filter text-gas-500 mr-1"></i> Filtrar Histórico
-            </h2>
-            <div class="flex gap-2">
-                <button type="button" onclick="exportToCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition">
-                    <i class="fa-solid fa-file-excel mr-1"></i> Exportar CSV
-                </button>
-                <button type="button" onclick="exportToPDF()" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow-sm transition">
-                    <i class="fa-solid fa-file-pdf mr-1"></i> Imprimir / PDF
-                </button>
-            </div>
-        </div>
-
+        <h2 class="text-xs font-bold uppercase text-slate-700 mb-3">
+            <i class="fa-solid fa-filter text-gas-500 mr-1"></i> Filtrar Histórico
+        </h2>
         <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div>
                 <label class="block text-[11px] font-medium text-slate-500 mb-1">Buscar por texto</label>
@@ -425,12 +363,10 @@
 <script>
     let currentReportType = 'inicial';
     let rdoHistory = JSON.parse(localStorage.getItem('rdo_history_data') || '[]');
-    
     let currentBase64Canteiro = '';
-    let currentBase64Seg1 = '';
-    let currentBase64Seg2 = '';
-    let currentBase64Seg3 = '';
+    let currentBase64Seguranca = '';
 
+    // Função Auxiliar para Evitar Erros ao Acessar Elementos Nulos
     function getVal(id) {
         const el = document.getElementById(id);
         return el ? el.value : '';
@@ -485,17 +421,17 @@
     function previewImage(input, previewId, key) {
         const container = document.getElementById(previewId);
         container.innerHTML = '';
+        if (key === 'canteiro') currentBase64Canteiro = '';
+        if (key === 'seguranca') currentBase64Seguranca = '';
 
         if (input.files && input.files[0]) {
             const reader = new FileReader();
             reader.onload = function(e) {
                 if (key === 'canteiro') currentBase64Canteiro = e.target.result;
-                if (key === 'seg1') currentBase64Seg1 = e.target.result;
-                if (key === 'seg2') currentBase64Seg2 = e.target.result;
-                if (key === 'seg3') currentBase64Seg3 = e.target.result;
+                if (key === 'seguranca') currentBase64Seguranca = e.target.result;
 
                 container.classList.remove('hidden');
-                container.innerHTML = `<div class="image-preview-card border rounded p-1 bg-white shadow-sm mt-1"><img src="${e.target.result}"><p class="text-[9px] text-slate-500 mt-1 text-center font-semibold">Foto Anexada</p></div>`;
+                container.innerHTML = `<div class="image-preview-card border rounded-lg p-1 bg-white"><img src="${e.target.result}" class="rounded-lg"><p class="text-[10px] text-slate-500 mt-1 text-center">Imagem salva</p></div>`;
             }
             reader.readAsDataURL(input.files[0]);
         }
@@ -520,12 +456,8 @@
             tecnico: getVal('selectTecnico'),
             engenheiro: getVal('selectEngenheiro'),
             tipoObra: getVal('selectTipoObra'),
-            fotos: {
-                canteiro: currentBase64Canteiro,
-                seguranca1: currentBase64Seg1,
-                seguranca2: currentBase64Seg2,
-                seguranca3: currentBase64Seg3
-            },
+            fotoCanteiro: currentBase64Canteiro,
+            fotoSeguranca: currentBase64Seguranca,
             horarios: {
                 empreiteira: getVal('nomeEmpreiteira'),
                 previstoEmpreiteira: getVal('horarioPrevistoEmpreiteira'),
@@ -560,16 +492,10 @@
 
         alert('Relatório salvo com sucesso!');
         document.getElementById('rdoForm').reset();
-        
-        ['previewCanteiro', 'previewSeg1', 'previewSeg2', 'previewSeg3'].forEach(id => {
-            const el = document.getElementById(id);
-            if (el) el.classList.add('hidden');
-        });
+        document.getElementById('previewCanteiro').classList.add('hidden');
+        document.getElementById('previewSeguranca').classList.add('hidden');
         currentBase64Canteiro = '';
-        currentBase64Seg1 = '';
-        currentBase64Seg2 = '';
-        currentBase64Seg3 = '';
-
+        currentBase64Seguranca = '';
         switchTab('historyTab');
     }
 
@@ -641,44 +567,6 @@
             updateHistoryBadge();
             applyHistoryFilter();
         }
-    }
-
-    function exportToCSV() {
-        if (rdoHistory.length === 0) {
-            alert('Não há dados salvos no histórico para exportar.');
-            return;
-        }
-
-        let csv = 'ID;Data/Hora;Tipo;Projeto;Tecnico;Engenheiro;Tipo Obra;Empreiteira;Atividades Previstas;Atividades Realizadas\n';
-
-        rdoHistory.forEach(item => {
-            const row = [
-                item.id,
-                `"${item.dataHora || ''}"`,
-                `"${item.tipo || ''}"`,
-                `"${item.projeto || ''}"`,
-                `"${item.tecnico || ''}"`,
-                `"${item.engenheiro || ''}"`,
-                `"${item.tipoObra || ''}"`,
-                `"${item.horarios.empreiteira || ''}"`,
-                `"${(item.atividadesPrevistas || '').replace(/\n/g, ' ')}"`,
-                `"${(item.atividadesRealizadas || '').replace(/\n/g, ' ')}"`
-            ];
-            csv += row.join(';') + '\n';
-        });
-
-        const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `Relatorios_RDO_${new Date().toISOString().split('T')[0]}.csv`;
-        link.click();
-    }
-
-    function exportToPDF() {
-        switchTab('formTab');
-        setTimeout(() => {
-            window.print();
-        }, 300);
     }
 </script>
 
