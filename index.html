@@ -1,39 +1,845 @@
-import re
+# Let's generate a full complete HTML file with the requested improvements and provide it as a file download, while also showing the code in the response.
 
-# Vamos carregar o código HTML/JS e testar as funções principais de cálculo e formatação do RDO
-with open("rdo_com_estaqueamento_fixo.html", "r", encoding="utf-8") as f:
-    html_content = f.read()
+html_code = """<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Relatório Diário de Obra (RDO)</title>
+    <style>
+        :root {
+            --primary: #1e3a8a;
+            --primary-hover: #1d4ed8;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #0f172a;
+            --border: #cbd5e1;
+            --danger: #dc2626;
+            --success: #16a34a;
+        }
 
-# Teste simulado em Python das funções lógicas contidas no JavaScript do arquivo HTML
-def calcular_metragem_separada(est_ini, mais_ini, est_fim, mais_fim):
-    e_ini = float(est_ini) if est_ini != "" else 0.0
-    m_ini = float(mais_ini) if mais_ini != "" else 0.0
-    e_fim = float(est_fim) if est_fim != "" else 0.0
-    m_fim = float(mais_fim) if mais_fim != "" else 0.0
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: var(--bg); color: var(--text); padding: 20px; }
+        .container { max-width: 1100px; margin: 0 auto; }
+        
+        .card { background: var(--card-bg); border-radius: 8px; padding: 24px; margin-bottom: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border: 1px solid var(--border); }
+        h1, h2, h3 { color: var(--primary); margin-bottom: 16px; }
+        h1 { text-align: center; font-size: 1.8rem; border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 16px; }
+        .form-group { display: flex; flex-direction: column; gap: 6px; }
+        .form-group.full-width { grid-column: 1 / -1; }
+        
+        label { font-weight: 600; font-size: 0.9rem; }
+        input, select, textarea { padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; font-size: 0.95rem; width: 100%; }
+        textarea { resize: vertical; min-height: 80px; }
+        input:focus, select:focus, textarea:focus { outline: 2px solid var(--primary); }
+        input[readonly] { background-color: #f1f5f9; cursor: not-allowed; font-weight: bold; }
 
-    tem_ini = (est_ini != "") or (mais_ini != "")
-    tem_fim = (est_fim != "") or (mais_fim != "")
+        /* Estilo para campos de estaca com '+' fixo */
+        .estaca-input-group {
+            display: flex;
+            align-items: center;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            background: #fff;
+            overflow: hidden;
+        }
+        .estaca-input-group:focus-within {
+            outline: 2px solid var(--primary);
+        }
+        .estaca-input-group input {
+            border: none;
+            outline: none !important;
+            padding: 8px;
+            text-align: center;
+        }
+        .estaca-input-group input:focus {
+            outline: none;
+        }
+        .estaca-input-group .plus-symbol {
+            font-weight: bold;
+            color: #475569;
+            background-color: #f1f5f9;
+            padding: 8px 10px;
+            user-select: none;
+            border-left: 1px solid var(--border);
+            border-right: 1px solid var(--border);
+        }
 
-    if tem_ini and tem_fim:
-        m_inicial = (e_ini * 20) + m_ini
-        m_final = (e_fim * 20) + m_fim
-        total = abs(m_final - m_inicial)
-        return f"{total:,.2f} m".replace(',', 'X').replace('.', ',').replace('X', '.')
+        .dynamic-row { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
+        .dynamic-row input { flex: 1; }
+        .dynamic-row input[type="number"] { max-width: 100px; }
 
-    return ""
+        .btn { background: var(--primary); color: white; border: none; padding: 10px 18px; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.9rem; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn:hover { background: var(--primary-hover); }
+        .btn-secondary { background: #64748b; }
+        .btn-secondary:hover { background: #475569; }
+        .btn-danger { background: var(--danger); }
+        .btn-danger:hover { background: #b91c1c; }
+        .btn-success { background: var(--success); }
+        .btn-success:hover { background: #15803d; }
+        .btn-sm { padding: 4px 8px; font-size: 0.8rem; }
 
-# Testes de casos de uso de estacas:
-testes = [
-    # (Estaca Ini, Metros Ini, Estaca Fim, Metros Fim)
-    ("0", "0", "10", "0"),          # 0+0 ate 10+0 -> (10*20 = 200m)
-    ("10", "5", "12", "15"),        # 10+5 (205m) ate 12+15 (255m) -> (50m)
-    ("100", "12.5", "105", "2.5"), # 100+12.5 (2012.5m) ate 105+2.5 (2102.5m) -> (90m)
-    ("", "", "5", "0")              # Incompleto
-]
+        .photo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-top: 10px; }
+        .photo-card { border: 1px dashed var(--border); padding: 10px; border-radius: 4px; text-align: center; }
+        .photo-preview { width: 100%; height: 140px; object-fit: cover; border-radius: 4px; margin-top: 8px; display: none; }
 
-resultados = []
-for t in testes:
-    res = calcular_metragem_separada(t[0], t[1], t[2], t[3])
-    resultados.append(f"Estaca Início: {t[0]}+{t[1]} | Estaca Fim: {t[2]}+{t[3]} => Metragem: '{res}'")
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; font-weight: bold; text-transform: uppercase; }
+        .badge-aberto { background-color: #fef3c7; color: #92400e; }
+        .badge-concluido { background-color: #dcfce7; color: #166534; }
 
-print("\n".join(resultados))
+        .actions-bar { display: flex; gap: 12px; flex-wrap: wrap; justify-content: flex-end; margin-top: 16px; }
+        
+        .history-controls { display: flex; gap: 12px; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; }
+        .filter-group { display: flex; gap: 8px; flex: 1; min-width: 280px; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; }
+        th, td { border: 1px solid var(--border); padding: 10px; text-align: left; font-size: 0.9rem; }
+        th { background: #f1f5f9; }
+
+        @media print {
+            body { background: white; padding: 0; }
+            .no-print, .actions-bar, .btn, .history-controls, #historyCard { display: none !important; }
+            .card { border: none; box-shadow: none; padding: 0; margin-bottom: 20px; }
+            .photo-preview { display: block !important; height: 180px; }
+            input, select, textarea { border: none; background: transparent; padding: 0; font-weight: bold; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Relatório Diário de Obra (RDO)</h1>
+
+    <form id="rdoForm" onsubmit="handleFormSubmit(event)">
+        <input type="hidden" id="rdoId" value="">
+        <input type="hidden" id="rdoStatus" value="ABERTO">
+
+        <div class="card">
+            <h2>1. Identificação do Projeto e Data</h2>
+            <div class="grid">
+                <div class="form-group">
+                    <label for="projeto">Projeto / Obra *</label>
+                    <input type="text" id="projeto" required>
+                </div>
+                <div class="form-group">
+                    <label for="tecnico">Técnico Responsável *</label>
+                    <input type="text" id="tecnico" required>
+                </div>
+                <div class="form-group">
+                    <label for="engenheiro">Engenheiro Responsável</label>
+                    <input type="text" id="engenheiro">
+                </div>
+                <div class="form-group">
+                    <label for="empreiteira">Empreiteira / Empresa</label>
+                    <input type="text" id="empreiteira">
+                </div>
+                <div class="form-group">
+                    <label for="dataRdo">Data do RDO *</label>
+                    <input type="date" id="dataRdo" required>
+                </div>
+                <div class="form-group">
+                    <label for="clima">Condições Climáticas</label>
+                    <select id="clima">
+                        <option value="BOM">Bom / Ensolarado</option>
+                        <option value="NUBLADO">Nublado</option>
+                        <option value="CHUVA_LEVE">Chuva Leve</option>
+                        <option value="CHUVA_FORTE">Chuva Forte / Paralisação</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>2. Mão de Obra e Equipamentos</h2>
+            
+            <h3>Efetivo / Equipe</h3>
+            <div id="equipeContainer"></div>
+            <button type="button" class="btn btn-secondary btn-sm" style="margin-bottom: 12px;" onclick="addEquipeRow()">+ Adicionar Função</button>
+            
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label for="faltaEfetivo">Houve falta de efetivo?</label>
+                <select id="faltaEfetivo" onchange="toggleDescricao('faltaEfetivo', 'faltaEfetivoDescGroup', 'faltaEfetivoDesc')">
+                    <option value="NAO">Não</option>
+                    <option value="SIM">Sim</option>
+                </select>
+            </div>
+            <div class="form-group full-width" id="faltaEfetivoDescGroup" style="display: none; margin-bottom: 16px;">
+                <label for="faltaEfetivoDesc">Descreva a falta de efetivo e os impactos *</label>
+                <textarea id="faltaEfetivoDesc"></textarea>
+            </div>
+
+            <hr style="margin: 16px 0; border: 0; border-top: 1px solid var(--border);">
+
+            <h3>Equipamentos</h3>
+            <div id="equipamentosContainer"></div>
+            <button type="button" class="btn btn-secondary btn-sm" style="margin-bottom: 12px;" onclick="addEquipamentoRow()">+ Adicionar Equipamento</button>
+
+            <div class="form-group" style="margin-bottom: 16px;">
+                <label for="faltaEquipamento">Houve falta de equipamento?</label>
+                <select id="faltaEquipamento" onchange="toggleDescricao('faltaEquipamento', 'faltaEquipamentoDescGroup', 'faltaEquipamentoDesc')">
+                    <option value="NAO">Não</option>
+                    <option value="SIM">Sim</option>
+                </select>
+            </div>
+            <div class="form-group full-width" id="faltaEquipamentoDescGroup" style="display: none;">
+                <label for="faltaEquipamentoDesc">Descreva a falta de equipamento e os impactos *</label>
+                <textarea id="faltaEquipamentoDesc"></textarea>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>3. Localização, Atividades e Segurança</h2>
+            
+            <h3 style="margin-top: 5px;">Produção / Assentamento (Trecho Executado)</h3>
+            <p style="font-size: 0.85rem; color: #64748b; margin-bottom: 12px;">Informe o trecho inicial e final nas caixas abaixo (cada estaca = 20 metros):</p>
+            
+            <div style="display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-end; margin-bottom: 16px;">
+                <!-- Estaca Inicial -->
+                <div class="form-group">
+                    <label>Estaca Inicial</label>
+                    <div class="estaca-input-group">
+                        <input type="number" id="estacaIni" placeholder="Estaca" style="width: 80px;" oninput="calcularMetragemSeparada()">
+                        <span class="plus-symbol">+</span>
+                        <input type="number" step="any" id="maisIni" placeholder="Metros" style="width: 80px;" oninput="calcularMetragemSeparada()">
+                    </div>
+                </div>
+
+                <div style="font-weight: bold; color: #64748b; padding-bottom: 10px;">até</div>
+
+                <!-- Estaca Final -->
+                <div class="form-group">
+                    <label>Estaca Final</label>
+                    <div class="estaca-input-group">
+                        <input type="number" id="estacaFim" placeholder="Estaca" style="width: 80px;" oninput="calcularMetragemSeparada()">
+                        <span class="plus-symbol">+</span>
+                        <input type="number" step="any" id="maisFim" placeholder="Metros" style="width: 80px;" oninput="calcularMetragemSeparada()">
+                    </div>
+                </div>
+
+                <!-- Metragem Calculada -->
+                <div class="form-group" style="flex: 1; min-width: 200px;">
+                    <label for="metragemExecutada">Metragem executada (m)</label>
+                    <input type="text" id="metragemExecutada" placeholder="Calculado automaticamente" readonly style="background-color: #f1f5f9; font-weight: bold; color: var(--primary);">
+                </div>
+            </div>
+
+            <hr style="margin: 16px 0; border: 0; border-top: 1px solid var(--border);">
+
+            <div class="grid">
+                <div class="form-group full-width">
+                    <label for="atividades">Atividades Desenvolvidas / Progresso *</label>
+                    <textarea id="atividades" required></textarea>
+                </div>
+                <div class="form-group full-width">
+                    <label for="producao">Produção / Quantitativos do Dia</label>
+                    <textarea id="producao"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="naoConformidade">Houve Não Conformidade / Ocorrência?</label>
+                    <select id="naoConformidade" onchange="toggleDescricao('naoConformidade', 'naoConformidadeDescGroup', 'naoConformidadeDesc')">
+                        <option value="NAO">Não</option>
+                        <option value="SIM">Sim</option>
+                    </select>
+                </div>
+                <div class="form-group full-width" id="naoConformidadeDescGroup" style="display: none;">
+                    <label for="naoConformidadeDesc">Descrição da Não Conformidade e Ação Corretiva *</label>
+                    <textarea id="naoConformidadeDesc"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>4. Registro Fotográfico (Até 4 Imagens)</h2>
+            <div class="photo-grid">
+                <div class="photo-card">
+                    <label>Foto 1</label>
+                    <input type="file" accept="image/*" onchange="handleImageUpload(this, 'imgPreview1', 'imgData1')">
+                    <input type="hidden" id="imgData1">
+                    <img id="imgPreview1" class="photo-preview" alt="Preview 1">
+                </div>
+                <div class="photo-card">
+                    <label>Foto 2</label>
+                    <input type="file" accept="image/*" onchange="handleImageUpload(this, 'imgPreview2', 'imgData2')">
+                    <input type="hidden" id="imgData2">
+                    <img id="imgPreview2" class="photo-preview" alt="Preview 2">
+                </div>
+                <div class="photo-card">
+                    <label>Foto 3</label>
+                    <input type="file" accept="image/*" onchange="handleImageUpload(this, 'imgPreview3', 'imgData3')">
+                    <input type="hidden" id="imgData3">
+                    <img id="imgPreview3" class="photo-preview" alt="Preview 3">
+                </div>
+                <div class="photo-card">
+                    <label>Foto 4</label>
+                    <input type="file" accept="image/*" onchange="handleImageUpload(this, 'imgPreview4', 'imgData4')">
+                    <input type="hidden" id="imgData4">
+                    <img id="imgPreview4" class="photo-preview" alt="Preview 4">
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="encerramentoSection">
+            <h2>5. Encerramento do Dia</h2>
+            <div class="grid">
+                <div class="form-group">
+                    <label for="horarioTermino">Horário de Término</label>
+                    <input type="time" id="horarioTermino">
+                </div>
+                <div class="form-group full-width">
+                    <label for="obsEncerramento">Observações / Pendências para o Próximo Dia</label>
+                    <textarea id="obsEncerramento"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <div class="actions-bar no-print">
+            <button type="button" class="btn btn-secondary" onclick="resetForm()">Novo / Limpar</button>
+            <button type="submit" name="action" value="SALVAR_ABERTO" class="btn">Salvar Abertura</button>
+            <button type="submit" name="action" value="CONCLUIR" class="btn btn-success">Salvar e Concluir RDO</button>
+        </div>
+    </form>
+
+    <div class="card no-print" id="historyCard" style="margin-top: 30px;">
+        <h2>Histórico de RDOs Salvos</h2>
+        
+        <div class="history-controls">
+            <div class="filter-group">
+                <input type="text" id="filterText" placeholder="Buscar por projeto ou técnico..." oninput="renderHistory()">
+                <select id="filterStatus" onchange="renderHistory()" style="max-width: 150px;">
+                    <option value="TODOS">Todos Status</option>
+                    <option value="ABERTO">Abertos</option>
+                    <option value="CONCLUIDO">Concluídos</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="exportSelectedCSV()">Exportar CSV (Selecionados)</button>
+                <button type="button" class="btn btn-danger btn-sm" onclick="deleteSelectedRDOs()">Excluir Selecionados</button>
+            </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width: 30px;"><input type="checkbox" id="selectAll" onchange="toggleSelectAll(this)"></th>
+                        <th>Data</th>
+                        <th>Projeto</th>
+                        <th>Estaqueamento</th>
+                        <th>Técnico</th>
+                        <th>Status</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    const STORAGE_KEY = 'rdo_registros_v2';
+
+    function escapeHTML(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('dataRdo').valueAsDate = new Date();
+        renderHistory();
+    });
+
+    // CÁLCULO DE ESTAQUEAMENTO COM CAMPOS SEPARADOS
+    function calcularMetragemSeparada() {
+        const estIniInput = document.getElementById('estacaIni').value;
+        const maisIniInput = document.getElementById('maisIni').value;
+        const estFimInput = document.getElementById('estacaFim').value;
+        const maisFimInput = document.getElementById('maisFim').value;
+
+        const eIni = parseFloat(estIniInput) || 0;
+        const mIni = parseFloat(maisIniInput) || 0;
+        const eFim = parseFloat(estFimInput) || 0;
+        const mFim = parseFloat(maisFimInput) || 0;
+
+        const campoResultado = document.getElementById('metragemExecutada');
+
+        const temIni = estIniInput !== '' || maisIniInput !== '';
+        const temFim = estFimInput !== '' || maisFimInput !== '';
+
+        if (temIni && temFim) {
+            const mInicial = (eIni * 20) + mIni;
+            const mFinal = (eFim * 20) + mFim;
+
+            const total = Math.abs(mFinal - mInicial);
+            campoResultado.value = total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' m';
+        } else {
+            campoResultado.value = '';
+        }
+    }
+
+    function toggleDescricao(selectId, groupId, textareaId) {
+        const val = document.getElementById(selectId).value;
+        const group = document.getElementById(groupId);
+        const area = document.getElementById(textareaId);
+
+        if (val === 'SIM') {
+            group.style.display = 'block';
+            area.setAttribute('required', 'required');
+        } else {
+            group.style.display = 'none';
+            area.removeAttribute('required');
+            area.value = '';
+        }
+    }
+
+    function addEquipeRow(funcao = '', quantidade = '') {
+        const container = document.getElementById('equipeContainer');
+        const div = document.createElement('div');
+        div.className = 'dynamic-row';
+        div.innerHTML = `
+            <input type="text" placeholder="Função / Cargo" value="${escapeHTML(funcao)}" class="eq-funcao">
+            <input type="number" placeholder="Qtd" min="1" value="${escapeHTML(quantidade)}" class="eq-qtd">
+            <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">X</button>
+        `;
+        container.appendChild(div);
+    }
+
+    function addEquipamentoRow(item = '', quantidade = '') {
+        const container = document.getElementById('equipamentosContainer');
+        const div = document.createElement('div');
+        div.className = 'dynamic-row';
+        div.innerHTML = `
+            <input type="text" placeholder="Equipamento / Ferramenta" value="${escapeHTML(item)}" class="eqp-item">
+            <input type="number" placeholder="Qtd" min="1" value="${escapeHTML(quantidade)}" class="eqp-qtd">
+            <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.remove()">X</button>
+        `;
+        container.appendChild(div);
+    }
+
+    function getEquipeData() {
+        const rows = document.querySelectorAll('#equipeContainer .dynamic-row');
+        const data = [];
+        rows.forEach(r => {
+            const funcao = r.querySelector('.eq-funcao').value.trim();
+            const quantidade = r.querySelector('.eq-qtd').value.trim();
+            if (funcao) data.push({ funcao, quantidade: quantidade || 1 });
+        });
+        return data;
+    }
+
+    function getEquipamentosData() {
+        const rows = document.querySelectorAll('#equipamentosContainer .dynamic-row');
+        const data = [];
+        rows.forEach(r => {
+            const item = r.querySelector('.eqp-item').value.trim();
+            const quantidade = r.querySelector('.eqp-qtd').value.trim();
+            if (item) data.push({ item, quantidade: quantidade || 1 });
+        });
+        return data;
+    }
+
+    function handleImageUpload(input, previewId, hiddenId) {
+        const file = input.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imgObj = new Image();
+                imgObj.src = e.target.result;
+                imgObj.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    
+                    const maxWidth = 800;
+                    let width = imgObj.width;
+                    let height = imgObj.height;
+
+                    if (width > maxWidth) {
+                        height = (maxWidth * height) / width;
+                        width = maxWidth;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    ctx.drawImage(imgObj, 0, 0, width, height);
+
+                    const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+                    
+                    document.getElementById(hiddenId).value = compressedBase64;
+                    const img = document.getElementById(previewId);
+                    img.src = compressedBase64;
+                    img.style.display = 'block';
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function handleFormSubmit(event) {
+        event.preventDefault();
+        const submitter = event.submitter ? event.submitter.value : 'SALVAR_ABERTO';
+        
+        const rdoId = document.getElementById('rdoId').value || 'rdo_' + Date.now();
+        const status = (submitter === 'CONCLUIR') ? 'CONCLUIDO' : 'ABERTO';
+
+        const estIni = document.getElementById('estacaIni').value;
+        const maisIni = document.getElementById('maisIni').value;
+        const estFim = document.getElementById('estacaFim').value;
+        const maisFim = document.getElementById('maisFim').value;
+
+        const estacaInicialStr = estIni ? `${estIni}+${maisIni || 0}` : '';
+        const estacaFinalStr = estFim ? `${estFim}+${maisFim || 0}` : '';
+
+        const rdoData = {
+            id: rdoId,
+            status: status,
+            dataCriacao: new Date().toISOString(),
+            projeto: document.getElementById('projeto').value.trim(),
+            tecnico: document.getElementById('tecnico').value.trim(),
+            engenheiro: document.getElementById('engenheiro').value.trim(),
+            empreiteira: document.getElementById('empreiteira').value.trim(),
+            dataRdo: document.getElementById('dataRdo').value,
+            clima: document.getElementById('clima').value,
+            
+            estacaIni: estIni,
+            maisIni: maisIni,
+            estacaFim: estFim,
+            maisFim: maisFim,
+            estacaInicial: estacaInicialStr,
+            estacaFinal: estacaFinalStr,
+            metragemCalculada: document.getElementById('metragemExecutada').value.trim(),
+
+            equipe: getEquipeData(),
+            faltaEfetivo: document.getElementById('faltaEfetivo').value,
+            faltaEfetivoDesc: document.getElementById('faltaEfetivoDesc').value.trim(),
+            
+            equipamentos: getEquipamentosData(),
+            faltaEquipamento: document.getElementById('faltaEquipamento').value,
+            faltaEquipamentoDesc: document.getElementById('faltaEquipamentoDesc').value.trim(),
+            
+            atividades: document.getElementById('atividades').value.trim(),
+            producao: document.getElementById('producao').value.trim(),
+            naoConformidade: document.getElementById('naoConformidade').value,
+            naoConformidadeDesc: document.getElementById('naoConformidadeDesc').value.trim(),
+            
+            fotos: [
+                document.getElementById('imgData1').value,
+                document.getElementById('imgData2').value,
+                document.getElementById('imgData3').value,
+                document.getElementById('imgData4').value
+            ],
+
+            horarioTermino: document.getElementById('horarioTermino').value,
+            obsEncerramento: document.getElementById('obsEncerramento').value.trim()
+        };
+
+        try {
+            saveRDOToStorage(rdoData);
+            alert(`RDO ${status === 'CONCLUIDO' ? 'concluído' : 'salvo'} com sucesso!`);
+            resetForm();
+            renderHistory();
+        } catch (e) {
+            alert('Erro ao salvar no navegador. O histórico pode estar cheio.');
+            console.error(e);
+        }
+    }
+
+    function getStoredRDOs() {
+        try {
+            return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function saveRDOToStorage(rdo) {
+        const list = getStoredRDOs();
+        const index = list.findIndex(item => item.id === rdo.id);
+        if (index >= 0) {
+            list[index] = rdo;
+        } else {
+            list.push(rdo);
+        }
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    }
+
+    function resetForm() {
+        document.getElementById('rdoForm').reset();
+        document.getElementById('rdoId').value = '';
+        document.getElementById('rdoStatus').value = 'ABERTO';
+        document.getElementById('equipeContainer').innerHTML = '';
+        document.getElementById('equipamentosContainer').innerHTML = '';
+        document.getElementById('metragemExecutada').value = '';
+
+        for (let i = 1; i <= 4; i++) {
+            const hidden = document.getElementById(`imgData${i}`);
+            const img = document.getElementById(`imgPreview${i}`);
+            if (hidden) hidden.value = '';
+            if (img) {
+                img.src = '';
+                img.style.display = 'none';
+            }
+        }
+
+        toggleDescricao('faltaEfetivo', 'faltaEfetivoDescGroup', 'faltaEfetivoDesc');
+        toggleDescricao('faltaEquipamento', 'faltaEquipamentoDescGroup', 'faltaEquipamentoDesc');
+        toggleDescricao('naoConformidade', 'naoConformidadeDescGroup', 'naoConformidadeDesc');
+        
+        document.getElementById('dataRdo').valueAsDate = new Date();
+    }
+
+    function loadRDOForEdit(id) {
+        const list = getStoredRDOs();
+        const rdo = list.find(item => item.id === id);
+        if (!rdo) return;
+
+        resetForm();
+
+        document.getElementById('rdoId').value = rdo.id;
+        document.getElementById('rdoStatus').value = rdo.status || 'ABERTO';
+        document.getElementById('projeto').value = rdo.projeto || '';
+        document.getElementById('tecnico').value = rdo.tecnico || '';
+        document.getElementById('engenheiro').value = rdo.engenheiro || '';
+        document.getElementById('empreiteira').value = rdo.empreiteira || '';
+        document.getElementById('dataRdo').value = rdo.dataRdo || '';
+        document.getElementById('clima').value = rdo.clima || 'BOM';
+
+        document.getElementById('estacaIni').value = rdo.estacaIni || '';
+        document.getElementById('maisIni').value = rdo.maisIni || '';
+        document.getElementById('estacaFim').value = rdo.estacaFim || '';
+        document.getElementById('maisFim').value = rdo.maisFim || '';
+        calcularMetragemSeparada();
+
+        if (rdo.equipe && Array.isArray(rdo.equipe)) {
+            rdo.equipe.forEach(eq => addEquipeRow(eq.funcao, eq.quantidade));
+        }
+
+        document.getElementById('faltaEfetivo').value = rdo.faltaEfetivo || 'NAO';
+        document.getElementById('faltaEfetivoDesc').value = rdo.faltaEfetivoDesc || '';
+        toggleDescricao('faltaEfetivo', 'faltaEfetivoDescGroup', 'faltaEfetivoDesc');
+
+        if (rdo.equipamentos && Array.isArray(rdo.equipamentos)) {
+            rdo.equipamentos.forEach(eqp => addEquipamentoRow(eqp.item, eqp.quantidade));
+        }
+
+        document.getElementById('faltaEquipamento').value = rdo.faltaEquipamento || 'NAO';
+        document.getElementById('faltaEquipamentoDesc').value = rdo.faltaEquipamentoDesc || '';
+        toggleDescricao('faltaEquipamento', 'faltaEquipamentoDescGroup', 'faltaEquipamentoDesc');
+
+        document.getElementById('atividades').value = rdo.atividades || '';
+        document.getElementById('producao').value = rdo.producao || '';
+        document.getElementById('naoConformidade').value = rdo.naoConformidade || 'NAO';
+        document.getElementById('naoConformidadeDesc').value = rdo.naoConformidadeDesc || '';
+        toggleDescricao('naoConformidade', 'naoConformidadeDescGroup', 'naoConformidadeDesc');
+
+        if (rdo.fotos && Array.isArray(rdo.fotos)) {
+            rdo.fotos.forEach((fotoBase64, idx) => {
+                const num = idx + 1;
+                const hidden = document.getElementById(`imgData${num}`);
+                const img = document.getElementById(`imgPreview${num}`);
+                if (fotoBase64 && hidden && img) {
+                    hidden.value = fotoBase64;
+                    img.src = fotoBase64;
+                    img.style.display = 'block';
+                }
+            });
+        }
+
+        document.getElementById('horarioTermino').value = rdo.horarioTermino || '';
+        document.getElementById('obsEncerramento').value = rdo.obsEncerramento || '';
+
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderHistory() {
+        const list = getStoredRDOs();
+        const tbody = document.getElementById('historyTableBody');
+        const filterText = document.getElementById('filterText').value.toLowerCase();
+        const filterStatus = document.getElementById('filterStatus').value;
+
+        tbody.innerHTML = '';
+
+        const filtered = list.filter(item => {
+            const matchText = (item.projeto || '').toLowerCase().includes(filterText) || 
+                              (item.tecnico || '').toLowerCase().includes(filterText);
+            const matchStatus = filterStatus === 'TODOS' || item.status === filterStatus;
+            return matchText && matchStatus;
+        });
+
+        if (filtered.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;">Nenhum registro encontrado.</td></tr>';
+            return;
+        }
+
+        filtered.forEach(item => {
+            const tr = document.createElement('tr');
+            const statusClass = item.status === 'CONCLUIDO' ? 'badge-concluido' : 'badge-aberto';
+            
+            const estaqueamentoStr = (item.estacaInicial || item.estacaFinal) 
+                ? `${escapeHTML(item.estacaInicial || '-')} até ${escapeHTML(item.estacaFinal || '-')}` 
+                : '-';
+
+            tr.innerHTML = `
+                <td><input type="checkbox" class="rdo-checkbox" value="${escapeHTML(item.id)}"></td>
+                <td>${escapeHTML(item.dataRdo)}</td>
+                <td>${escapeHTML(item.projeto)}</td>
+                <td>${estaqueamentoStr}</td>
+                <td>${escapeHTML(item.tecnico)}</td>
+                <td><span class="badge ${statusClass}">${escapeHTML(item.status || 'ABERTO')}</span></td>
+                <td>
+                    <button class="btn btn-sm" onclick="loadRDOForEdit('${escapeHTML(item.id)}')">Editar/Continuar</button>
+                    <button class="btn btn-secondary btn-sm" onclick="printSingleRDO('${escapeHTML(item.id)}')">Imprimir</button>
+                    <button class="btn btn-danger btn-sm" onclick="deleteRDO('${escapeHTML(item.id)}')">Excluir</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('selectAll').checked = false;
+    }
+
+    function toggleSelectAll(master) {
+        const checkboxes = document.querySelectorAll('#historyTableBody .rdo-checkbox');
+        checkboxes.forEach(cb => cb.checked = master.checked);
+    }
+
+    function deleteRDO(id) {
+        if (confirm('Deseja realmente excluir este RDO?')) {
+            let list = getStoredRDOs();
+            list = list.filter(item => item.id !== id);
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+            renderHistory();
+        }
+    }
+
+    function deleteSelectedRDOs() {
+        const selected = Array.from(document.querySelectorAll('#historyTableBody .rdo-checkbox:checked')).map(cb => cb.value);
+        if (selected.length === 0) {
+            alert('Selecione ao menos um RDO para excluir.');
+            return;
+        }
+        if (confirm(`Deseja realmente excluir os ${selected.length} RDOs selecionados?`)) {
+            let list = getStoredRDOs();
+            list = list.filter(item => !selected.includes(item.id));
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+            renderHistory();
+        }
+    }
+
+    function sanitizeCSVField(field) {
+        if (field === null || field === undefined) return '""';
+        const str = String(field).replace(/"/g, '""');
+        return `"${str}"`;
+    }
+
+    function exportSelectedCSV() {
+        const selectedIds = Array.from(document.querySelectorAll('#historyTableBody .rdo-checkbox:checked')).map(cb => cb.value);
+        const list = getStoredRDOs().filter(item => selectedIds.includes(item.id));
+
+        if (list.length === 0) {
+            alert('Selecione pelo menos um RDO para exportar.');
+            return;
+        }
+
+        const headers = ["ID", "Data", "Projeto", "Tecnico", "Estaca Inicial", "Estaca Final", "Extensao Metros", "Status", "Atividades", "Producao"];
+        const rows = list.map(item => [
+            sanitizeCSVField(item.id),
+            sanitizeCSVField(item.dataRdo),
+            sanitizeCSVField(item.projeto),
+            sanitizeCSVField(item.tecnico),
+            sanitizeCSVField(item.estacaInicial),
+            sanitizeCSVField(item.estacaFinal),
+            sanitizeCSVField(item.metragemCalculada),
+            sanitizeCSVField(item.status),
+            sanitizeCSVField(item.atividades),
+            sanitizeCSVField(item.producao)
+        ]);
+
+        const csvContent = "data:text/csv;charset=utf-8,\\uFEFF" 
+            + [headers.join(","), ...rows.map(e => e.join(","))].join("\n");
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `RDO_Export_${Date.now()}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    function printSingleRDO(id) {
+        const list = getStoredRDOs();
+        const rdo = list.find(item => item.id === id);
+        if (!rdo) return;
+
+        const printWindow = window.open('', '_blank');
+        const equipeStr = (rdo.equipe || []).map(e => `${escapeHTML(e.funcao)}: ${escapeHTML(e.quantidade)}`).join(', ') || 'Nenhum informado';
+        const equipStr = (rdo.equipamentos || []).map(e => `${escapeHTML(e.item)}: ${escapeHTML(e.quantidade)}`).join(', ') || 'Nenhum informado';
+        
+        const fotosHtml = (rdo.fotos || [])
+            .filter(f => f)
+            .map(f => `<img src="${f}" style="max-width: 45%; max-height: 200px; margin: 5px; border: 1px solid #ccc;">`)
+            .join('');
+
+        printWindow.document.write(`
+            <html>
+            <head>
+                <title>RDO - ${escapeHTML(rdo.projeto)} - ${escapeHTML(rdo.dataRdo)}</title>
+                <style>
+                    body { font-family: sans-serif; padding: 20px; color: #333; }
+                    h1 { text-align: center; border-bottom: 2px solid #333; }
+                    .section { margin-bottom: 15px; border-bottom: 1px solid #ddd; padding-bottom: 10px; }
+                    label { font-weight: bold; }
+                </style>
+            </head>
+            <body>
+                <h1>Relatório Diário de Obra</h1>
+                <div class="section">
+                    <p><label>Projeto:</label> ${escapeHTML(rdo.projeto)} | <label>Data:</label> ${escapeHTML(rdo.dataRdo)} | <label>Status:</label> ${escapeHTML(rdo.status)}</p>
+                    <p><label>Técnico:</label> ${escapeHTML(rdo.tecnico)} | <label>Engenheiro:</label> ${escapeHTML(rdo.engenheiro || '-')}</p>
+                    <p><label>Empreiteira:</label> ${escapeHTML(rdo.empreiteira || '-')} | <label>Clima:</label> ${escapeHTML(rdo.clima)}</p>
+                </div>
+                <div class="section">
+                    <h3>Localização / Trecho Executado</h3>
+                    <p><label>Estaca Inicial:</label> ${escapeHTML(rdo.estacaInicial || '-')} | <label>Estaca Final:</label> ${escapeHTML(rdo.estacaFinal || '-')} | <label>Metragem Executada:</label> ${escapeHTML(rdo.metragemCalculada || '-')}</p>
+                </div>
+                <div class="section">
+                    <h3>Recursos</h3>
+                    <p><label>Equipe:</label> ${equipeStr}</p>
+                    <p><label>Equipamentos:</label> ${equipStr}</p>
+                </div>
+                <div class="section">
+                    <h3>Atividades e Ocorrências</h3>
+                    <p><label>Atividades:</label><br>${escapeHTML(rdo.atividades).replace(/\\n/g, '<br>')}</p>
+                    <p><label>Produção:</label><br>${escapeHTML(rdo.producao || '-').replace(/\\n/g, '<br>')}</p>
+                </div>
+                <div class="section">
+                    <h3>Encerramento</h3>
+                    <p><label>Horário Término:</label> ${escapeHTML(rdo.horarioTermino || '-')}</p>
+                    <p><label>Observações:</label> ${escapeHTML(rdo.obsEncerramento || '-')}</p>
+                </div>
+                <div class="section">
+                    <h3>Fotos</h3>
+                    <div>${fotosHtml || 'Sem fotos anexadas.'}</div>
+                </div>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
+        printWindow.focus();
+        setTimeout(() => printWindow.print(), 500);
+    }
+</script>
+</body>
+</html>"""
+
+with open("rdo_com_estaqueamento_fixo.html", "w", encoding="utf-8") as f:
+    f.write(html_code)
+
+print("HTML file created successfully.")
