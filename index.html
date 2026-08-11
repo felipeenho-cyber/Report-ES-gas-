@@ -57,16 +57,16 @@
                     <i class="fa-solid fa-list-check text-blue-600"></i> Tipo de RDO
                 </span>
                 <div class="flex space-x-3">
-                    <button type="button" onclick="setReportType('Inicial')" id="btn-type-inicial" class="px-5 py-2 rounded-lg text-sm font-semibold border border-slate-300 hover:bg-slate-50 transition">
+                    <button type="button" onclick="setReportType('Inicial')" id="btn-type-inicial" class="px-5 py-2 rounded-lg text-sm font-semibold bg-blue-100 text-blue-700 border border-blue-200">
                         Inicial / Acompanhamento
                     </button>
-                    <button type="button" onclick="setReportType('Encerramento')" id="btn-type-encerramento" class="px-5 py-2 rounded-lg text-sm font-semibold bg-red-100 text-red-700 border border-red-200">
+                    <button type="button" onclick="setReportType('Encerramento')" id="btn-type-encerramento" class="px-5 py-2 rounded-lg text-sm font-semibold border border-slate-300 hover:bg-slate-50 transition">
                         Encerramento
                     </button>
                 </div>
             </div>
 
-            <!-- Identificação -->
+            <!-- Identificação (Comum às duas páginas) -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
                 <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
                     <i class="fa-solid fa-id-card text-blue-600"></i> Identificação da Obra
@@ -102,47 +102,49 @@
                 </div>
             </div>
 
-            <!-- Dados Iniciais -->
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-clock text-blue-600"></i> Informações Iniciais
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Horário Previsto Empreiteira</label>
-                        <input type="time" id="hora-prevista" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <!-- PÁGINA 1: DADOS INICIAIS (Apenas no RDO Inicial) -->
+            <div id="section-inicial" class="space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                    <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-clock text-blue-600"></i> Informações Iniciais
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Horário Previsto Empreiteira</label>
+                            <input type="time" id="hora-prevista" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Foto Canteiro / Início</label>
+                            <input type="file" id="foto-inicio" accept="image/*" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Foto Canteiro / Início</label>
-                        <input type="file" id="foto-inicio" accept="image/*" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                    
+                    <div class="pt-2">
+                        <label class="block text-xs font-semibold text-slate-600 mb-2">Checklist Segurança do Trabalho (SST)</label>
+                        <div class="flex flex-wrap gap-4 text-sm">
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="sst-epi" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+                                EPIs Conformes
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="sst-sinalizacao" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+                                Sinalização da Área
+                            </label>
+                            <label class="flex items-center gap-2 cursor-pointer">
+                                <input type="checkbox" id="sst-dds" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
+                                DDS Realizado
+                            </label>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="pt-2">
-                    <label class="block text-xs font-semibold text-slate-600 mb-2">Checklist Segurança do Trabalho (SST)</label>
-                    <div class="flex flex-wrap gap-4 text-sm">
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" id="sst-epi" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
-                            EPIs Conformes
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" id="sst-sinalizacao" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
-                            Sinalização da Área
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer">
-                            <input type="checkbox" id="sst-dds" class="rounded text-blue-600 focus:ring-blue-500 h-4 w-4">
-                            DDS Realizado
-                        </label>
-                    </div>
-                </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Planejamento do Dia</label>
-                    <textarea id="planejamento-dia" rows="3" placeholder="Descreva as atividades planejadas para o dia..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Planejamento do Dia</label>
+                        <textarea id="planejamento-dia" rows="3" placeholder="Descreva as atividades planejadas para o dia..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                    </div>
                 </div>
             </div>
 
-            <!-- Efetivo de Equipe -->
+            <!-- Efetivo de Equipe (Comum) -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
                 <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
                     <i class="fa-solid fa-users text-blue-600"></i> Efetivo de Equipe
@@ -159,7 +161,7 @@
                 </div>
             </div>
 
-            <!-- Equipamentos em Campo -->
+            <!-- Equipamentos em Campo (Comum) -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
                 <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
                     <i class="fa-solid fa-truck-monster text-blue-600"></i> Equipamentos em Campo
@@ -176,7 +178,7 @@
                 </div>
             </div>
 
-            <!-- Calculador de Estacas PEAD -->
+            <!-- Calculador de Estacas PEAD (Comum) -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
                 <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
                     <i class="fa-solid fa-ruler-combined text-blue-600"></i> Estaqueamento e Extensão PEAD
@@ -225,29 +227,31 @@
                 </div>
             </div>
 
-            <!-- Seção Encerramento -->
-            <div id="section-encerramento" class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
-                <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
-                    <i class="fa-solid fa-flag-checkered text-red-600"></i> Detalhes de Encerramento
-                </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Horário Real Chegada Empreiteira</label>
-                        <input type="time" id="hora-real" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+            <!-- PÁGINA 2: DETALHES DE ENCERRAMENTO (Apenas no RDO Encerramento) -->
+            <div id="section-encerramento" class="hidden space-y-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
+                    <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
+                        <i class="fa-solid fa-flag-checkered text-red-600"></i> Detalhes de Encerramento
+                    </h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Horário Real Chegada Empreiteira</label>
+                            <input type="time" id="hora-real" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Justificativa de Atraso (se houver)</label>
+                            <input type="text" id="justificativa-atraso" placeholder="Motivo do atraso..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
+                        </div>
                     </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Justificativa de Atraso (se houver)</label>
-                        <input type="text" id="justificativa-atraso" placeholder="Motivo do atraso..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none">
-                    </div>
-                </div>
 
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Atividades Realizadas no Dia</label>
-                    <textarea id="atividades-realizadas" rows="3" placeholder="Descreva detalhadamente o serviço executado..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Atividades Realizadas no Dia</label>
+                        <textarea id="atividades-realizadas" rows="3" placeholder="Descreva detalhadamente o serviço executado..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none"></textarea>
+                    </div>
                 </div>
             </div>
 
-            <!-- Assinatura -->
+            <!-- Assinatura (Comum) -->
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200 space-y-4">
                 <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wide border-b pb-2 flex items-center gap-2">
                     <i class="fa-solid fa-file-signature text-blue-600"></i> Assinatura do Responsável
@@ -334,10 +338,11 @@
 
     <!-- Script de Lógica e Ações -->
     <script>
-        let currentReportType = 'Encerramento';
+        let currentReportType = 'Inicial';
         let reports = JSON.parse(localStorage.getItem('rdo_pead_reports') || '[]');
 
         document.addEventListener('DOMContentLoaded', () => {
+            setReportType('Inicial');
             updateHistoryBadge();
             renderHistory();
         });
@@ -376,15 +381,18 @@
             currentReportType = type;
             const btnIni = document.getElementById('btn-type-inicial');
             const btnEnc = document.getElementById('btn-type-encerramento');
+            const secIni = document.getElementById('section-inicial');
             const secEnc = document.getElementById('section-encerramento');
 
             if (type === 'Inicial') {
                 btnIni.className = 'px-5 py-2 rounded-lg text-sm font-semibold bg-blue-100 text-blue-700 border border-blue-200';
                 btnEnc.className = 'px-5 py-2 rounded-lg text-sm font-semibold border border-slate-300 hover:bg-slate-50 transition';
+                secIni.classList.remove('hidden');
                 secEnc.classList.add('hidden');
             } else {
                 btnEnc.className = 'px-5 py-2 rounded-lg text-sm font-semibold bg-red-100 text-red-700 border border-red-200';
                 btnIni.className = 'px-5 py-2 rounded-lg text-sm font-semibold border border-slate-300 hover:bg-slate-50 transition';
+                secIni.classList.add('hidden');
                 secEnc.classList.remove('hidden');
             }
         }
@@ -468,7 +476,6 @@
                 dataFormatada: now.toLocaleDateString('pt-BR') + ' ' + now.toLocaleTimeString('pt-BR')
             };
 
-            // Adiciona APENAS UM registro no array
             reports.unshift(report);
             localStorage.setItem('rdo_pead_reports', JSON.stringify(reports));
             
@@ -520,17 +527,9 @@
                             </p>
                         </div>
                     </div>
-
-                    <!-- Botões de Ação por Registro -->
-                    <div class="flex items-center gap-2 flex-wrap">
-                        <button onclick="exportarPDFSingle(${r.id})" title="Imprimir/PDF" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-300 transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-file-pdf text-red-600"></i> PDF
-                        </button>
-                        <button onclick="exportarCSVSingle(${r.id})" title="Exportar CSV" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg border border-slate-300 transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-file-csv text-emerald-600"></i> CSV
-                        </button>
-                        <button onclick="excluirRDO(${r.id})" class="bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold px-3 py-2 rounded-lg border border-red-200 transition flex items-center gap-1.5">
-                            <i class="fa-solid fa-trash-can"></i> Excluir
+                    <div class="flex items-center gap-2">
+                        <button onclick="excluirRDO(${r.id})" class="text-red-500 hover:bg-red-50 p-2 rounded-lg text-sm transition" title="Excluir">
+                            <i class="fa-solid fa-trash"></i>
                         </button>
                     </div>
                 </div>
@@ -558,117 +557,34 @@
             }
         }
 
-        function exportarCSVSingle(id) {
-            const item = reports.find(r => r.id === id);
-            if (!item) return;
-            gerarDownloadCSV([item], `rdo_${item.id}.csv`);
-        }
-
-        function exportarSelecionadosCSV() {
-            const selectedBoxes = Array.from(document.querySelectorAll('.chk-report-item:checked'));
-            if (selectedBoxes.length === 0) {
-                alert('Selecione pelo menos um relatório na lista para exportar.');
-                return;
-            }
-            const selectedIds = selectedBoxes.map(cb => Number(cb.value));
-            const selectedReports = reports.filter(r => selectedIds.includes(r.id));
-            gerarDownloadCSV(selectedReports, `relatorios_selecionados_${Date.now()}.csv`);
-        }
-
         function exportarCSVGeral() {
             if (reports.length === 0) {
                 alert('Não há relatórios para exportar.');
                 return;
             }
-            gerarDownloadCSV(reports, `relatorio_geral_rdo_${Date.now()}.csv`);
+            gerarCSV(reports);
         }
 
-        function gerarDownloadCSV(lista, filename) {
-            const headers = [
-                "ID", "Tipo", "Projeto", "Tecnico", "Engenheiro", "Data", 
-                "Falta Efetivo", "Detalhe Falta Efetivo", 
-                "Falta Equipamentos", "Detalhe Falta Equipamentos", 
-                "PEAD 63mm (m)", "PEAD 125mm (m)", "Assinatura"
-            ];
-            
-            const rows = lista.map(r => [
-                r.id,
-                `"${r.tipo || ''}"`,
-                `"${r.projeto || ''}"`,
-                `"${r.tecnico || ''}"`,
-                `"${r.engenheiro || ''}"`,
-                `"${r.dataFormatada || ''}"`,
-                `"${r.faltaEfetivo ? 'Sim' : 'Não'}"`,
-                `"${(r.detalheFaltaEfetivo || '').replace(/"/g, '""')}"`,
-                `"${r.faltaEquipamentos ? 'Sim' : 'Não'}"`,
-                `"${(r.detalheFaltaEquipamentos || '').replace(/"/g, '""')}"`,
-                `"${r.pead63?.ext || '0.00'}"`,
-                `"${r.pead125?.ext || '0.00'}"`,
-                `"${r.assinatura?.nome || ''}"`
-            ]);
+        function exportarSelecionadosCSV() {
+            const selecionadosIds = Array.from(document.querySelectorAll('.chk-report-item:checked')).map(cb => Number(cb.value));
+            if (selecionadosIds.length === 0) {
+                alert('Selecione pelo menos um relatório na lista.');
+                return;
+            }
+            const selecionados = reports.filter(r => selecionadosIds.includes(r.id));
+            gerarCSV(selecionados);
+        }
 
-            const csvContent = "\uFEFF" + [headers.join(";"), ...rows.map(e => e.join(";"))].join("\n");
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
+        function gerarCSV(dados) {
+            let csv = 'ID;Tipo;Data;Projeto;Tecnico;Engenheiro;Falta Efetivo;Falta Equipamentos;Ext PEAD 63;Ext PEAD 125;Assinatura\n';
+            dados.forEach(r => {
+                csv += `${r.id};${r.tipo};"${r.dataFormatada}";"${r.projeto}";"${r.tecnico}";"${r.engenheiro}";"${r.faltaEfetivo ? 'Sim' : 'Não'}";"${r.faltaEquipamentos ? 'Sim' : 'Não'}";"${r.pead63.ext}";"${r.pead125.ext}";"${r.assinatura ? r.assinatura.nome : ''}"\n`;
+            });
+            const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement("a");
-            link.setAttribute("href", url);
-            link.setAttribute("download", filename);
-            document.body.appendChild(link);
+            link.href = URL.createObjectURL(blob);
+            link.download = `Relatorio_RDO_PEAD_${Date.now()}.csv`;
             link.click();
-            document.body.removeChild(link);
-        }
-
-        function exportarPDFSingle(id) {
-            const r = reports.find(item => item.id === id);
-            if (!r) return;
-
-            const win = window.open('', '_blank');
-            win.document.write(`
-                <html>
-                <head>
-                    <title>RDO PEAD - ${r.projeto}</title>
-                    <style>
-                        body { font-family: Arial, sans-serif; padding: 20px; color: #333; }
-                        h1 { color: #004e7c; border-bottom: 2px solid #004e7c; padding-bottom: 5px; }
-                        .field { margin-bottom: 10px; }
-                        .label { font-weight: bold; font-size: 12px; color: #666; }
-                        .value { font-size: 14px; margin-top: 2px; }
-                        .box { border: 1px solid #ccc; padding: 10px; border-radius: 5px; margin-bottom: 15px; }
-                        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-                    </style>
-                </head>
-                <body>
-                    <h1>Relatório Diário de Obra (${r.tipo})</h1>
-                    <div class="box">
-                        <div class="grid">
-                            <div class="field"><div class="label">PROJETO</div><div class="value">${r.projeto}</div></div>
-                            <div class="field"><div class="label">DATA/HORA</div><div class="value">${r.dataFormatada}</div></div>
-                            <div class="field"><div class="label">TÉCNICO</div><div class="value">${r.tecnico}</div></div>
-                            <div class="field"><div class="label">ENGENHEIRO</div><div class="value">${r.engenheiro || '-'}</div></div>
-                        </div>
-                    </div>
-                    <div class="box">
-                        <h3>Falta de Efetivo / Equipamentos</h3>
-                        <p><strong>Falta de Efetivo:</strong> ${r.faltaEfetivo ? 'SIM - ' + r.detalheFaltaEfetivo : 'NÃO'}</p>
-                        <p><strong>Falta de Equipamentos:</strong> ${r.faltaEquipamentos ? 'SIM - ' + r.detalheFaltaEquipamentos : 'NÃO'}</p>
-                    </div>
-                    <div class="box">
-                        <h3>Extensão Executada</h3>
-                        <p><strong>PEAD 63mm:</strong> ${r.pead63?.ext || '0.00'} m</p>
-                        <p><strong>PEAD 125mm:</strong> ${r.pead125?.ext || '0.00'} m</p>
-                    </div>
-                    <div class="box">
-                        <h3>Assinatura</h3>
-                        <p><strong>Nome:</strong> ${r.assinatura?.nome || '-'}</p>
-                        <p><strong>Cargo:</strong> ${r.assinatura?.cargo || '-'}</p>
-                    </div>
-                    <script>
-                        window.onload = function() { window.print(); window.close(); }
-                    <\/script>
-                </body>
-                </html>
-            `);
-            win.document.close();
         }
     </script>
 </body>
