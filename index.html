@@ -42,15 +42,12 @@
         body { font-family: 'Inter', sans-serif; }
         .image-preview-card img { width: 100%; height: 120px; object-fit: cover; display: block; border-radius: 0.375rem; }
         
-        /* CSS ESPECÍFICO PARA TESTE E GERADOR DE PDF/IMPRESSÃO */
         @media print { 
             .no-print { display: none !important; } 
             body { background: white !important; color: black !important; }
             main { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
             #formTab { display: block !important; }
             #historyTab { display: none !important; }
-            
-            /* Forçar exibição das seções no PDF */
             #sectionInicial, #sectionEncerramento { display: block !important; }
             
             .print-card { 
@@ -70,6 +67,7 @@
 
             input[type="file"] { display: none !important; }
             .image-preview-card img { height: 160px !important; object-fit: contain !important; }
+            canvas { border: none !important; }
         }
     </style>
 </head>
@@ -98,7 +96,7 @@
             </button>
             <button type="button" id="btnTabHistory" onclick="switchTab('historyTab')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20">
                 <i class="fa-solid fa-database"></i> Histórico
-                <span id="historyBadge" class="bg-gas-orange text-white text-[10px] px-1.5 py-0.2 rounded-full">0</span>
+                <span id="historyBadge" class="bg-gas-orange text-white text-[10px] px-1.5 py-0.5 rounded-full">0</span>
             </button>
         </div>
     </div>
@@ -117,13 +115,13 @@
         <div class="grid grid-cols-2 gap-3 max-w-xl mx-auto">
             <button type="button" id="btnReportInicial" onclick="setReportType('inicial')" class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gas-500 bg-gas-50 text-gas-900">
                 <i class="fa-solid fa-play text-emerald-500 text-xl mb-1"></i>
-                <span class="font-bold text-xs">Abrir / Editar RDO</span>
-                <span class="text-[10px] text-slate-500">Iniciar ou continuar</span>
+                <span class="font-bold text-xs">Abertura de RDO</span>
+                <span class="text-[10px] text-slate-500">Iniciar no começo do dia</span>
             </button>
             <button type="button" id="btnReportEncerramento" onclick="setReportType('encerramento')" class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200">
                 <i class="fa-solid fa-stop text-red-500 text-xl mb-1"></i>
-                <span class="font-bold text-xs">Encerrar RDO</span>
-                <span class="text-[10px] text-slate-500">Finalizar o serviço</span>
+                <span class="font-bold text-xs">Encerramento de RDO</span>
+                <span class="text-[10px] text-slate-500">Finalizar o dia de serviço</span>
             </button>
         </div>
     </section>
@@ -142,6 +140,7 @@
 
     <!-- FORM -->
     <form id="rdoForm" onsubmit="handleFormSubmit(event)" class="space-y-6">
+        <input type="hidden" id="editingRecordId" value="">
 
         <!-- IDENTIFICAÇÃO DA OBRA -->
         <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
@@ -197,12 +196,12 @@
         <!-- SEÇÃO: RELATÓRIO INICIAL -->
         <section id="sectionInicial" class="space-y-6">
 
-            <!-- INFORMAÇÕES DA EMPREITEIRA -->
+            <!-- INFORMAÇÕES DA EMPREITEIRA E RECURSOS -->
             <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
                 <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4 text-slate-700">
-                    <i class="fa-solid fa-clock text-gas-500 mr-1"></i> Horários e Empreiteira (Inicial)
+                    <i class="fa-solid fa-users text-gas-500 mr-1"></i> Equipe, Equipamentos e Horários
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-xs font-semibold mb-1">Empreiteira</label>
                         <input type="text" id="nomeEmpreiteira" placeholder="Nome da empreiteira" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
@@ -210,6 +209,33 @@
                     <div>
                         <label class="block text-xs font-semibold mb-1">Horário Previsto Chegada Equipe Empreiteira</label>
                         <input type="time" id="horarioPrevistoEmpreiteira" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                    </div>
+                </div>
+
+                <!-- CONTROLE DE EFETIVO E EQUIPAMENTOS -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
+                    <!-- FALTA DE EFETIVO -->
+                    <div class="bg-slate-50 p-3.5 rounded-xl border">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-slate-700">Houve falta de efetivo?</span>
+                            <div class="flex gap-3">
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="faltaEfetivo" value="Não" checked onchange="toggleNC('descFaltaEfetivo', false)"> Não</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="faltaEfetivo" value="Sim" onchange="toggleNC('descFaltaEfetivo', true)"> Sim</label>
+                            </div>
+                        </div>
+                        <input type="text" id="descFaltaEfetivo" placeholder="Descreva quais profissionais faltaram..." class="hidden w-full text-xs bg-red-50 border border-red-300 rounded-lg p-2 mt-2">
+                    </div>
+
+                    <!-- FALTA DE EQUIPAMENTO -->
+                    <div class="bg-slate-50 p-3.5 rounded-xl border">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-slate-700">Houve falta de equipamento?</span>
+                            <div class="flex gap-3">
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="faltaEquipamento" value="Não" checked onchange="toggleNC('descFaltaEquipamento', false)"> Não</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="faltaEquipamento" value="Sim" onchange="toggleNC('descFaltaEquipamento', true)"> Sim</label>
+                            </div>
+                        </div>
+                        <input type="text" id="descFaltaEquipamento" placeholder="Descreva quais equipamentos faltaram..." class="hidden w-full text-xs bg-red-50 border border-red-300 rounded-lg p-2 mt-2">
                     </div>
                 </div>
 
@@ -222,20 +248,18 @@
                 </div>
             </section>
 
-            <!-- SEGURANÇA DO TRABALHO (3 OPCÕES COM FOTO INDIVIDUAL) -->
+            <!-- SEGURANÇA DO TRABALHO -->
             <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
                 <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
                     <i class="fa-solid fa-shield-halved text-emerald-600 mr-1"></i> Segurança do Trabalho
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    
-                    <!-- OPÇÃO 1 -->
                     <div class="bg-slate-50 p-3.5 rounded-xl border flex flex-col justify-between">
                         <div>
                             <span class="text-xs font-medium block mb-2">1. Condições de trabalho adequadas?</span>
                             <div class="flex gap-4 mb-2">
-                                <label class="text-xs font-semibold"><input type="radio" name="condicoesTrabalho" value="Sim" checked onchange="toggleNC('descCondicoes', false)"> Sim</label>
-                                <label class="text-xs font-semibold"><input type="radio" name="condicoesTrabalho" value="Não" onchange="toggleNC('descCondicoes', true)"> Não</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="condicoesTrabalho" value="Sim" checked onchange="toggleNC('descCondicoes', false)"> Sim</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="condicoesTrabalho" value="Não" onchange="toggleNC('descCondicoes', true)"> Não</label>
                             </div>
                             <input type="text" id="descCondicoes" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mb-2">
                         </div>
@@ -248,13 +272,12 @@
                         </div>
                     </div>
 
-                    <!-- OPÇÃO 2 -->
                     <div class="bg-slate-50 p-3.5 rounded-xl border flex flex-col justify-between">
                         <div>
                             <span class="text-xs font-medium block mb-2">2. Ferramental / caminhão adequado?</span>
                             <div class="flex gap-4 mb-2">
-                                <label class="text-xs font-semibold"><input type="radio" name="caminhaoOrganizado" value="Sim" checked onchange="toggleNC('descCaminhao', false)"> Sim</label>
-                                <label class="text-xs font-semibold"><input type="radio" name="caminhaoOrganizado" value="Não" onchange="toggleNC('descCaminhao', true)"> Não</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="caminhaoOrganizado" value="Sim" checked onchange="toggleNC('descCaminhao', false)"> Sim</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="caminhaoOrganizado" value="Não" onchange="toggleNC('descCaminhao', true)"> Não</label>
                             </div>
                             <input type="text" id="descCaminhao" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mb-2">
                         </div>
@@ -267,13 +290,12 @@
                         </div>
                     </div>
 
-                    <!-- OPÇÃO 3 -->
                     <div class="bg-slate-50 p-3.5 rounded-xl border flex flex-col justify-between">
                         <div>
                             <span class="text-xs font-medium block mb-2">3. Sinalização de via adequada?</span>
                             <div class="flex gap-4 mb-2">
-                                <label class="text-xs font-semibold"><input type="radio" name="sinalizacaoAdequada" value="Sim" checked onchange="toggleNC('descSinalizacao', false)"> Sim</label>
-                                <label class="text-xs font-semibold"><input type="radio" name="sinalizacaoAdequada" value="Não" onchange="toggleNC('descSinalizacao', true)"> Não</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="sinalizacaoAdequada" value="Sim" checked onchange="toggleNC('descSinalizacao', false)"> Sim</label>
+                                <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="sinalizacaoAdequada" value="Não" onchange="toggleNC('descSinalizacao', true)"> Não</label>
                             </div>
                             <input type="text" id="descSinalizacao" placeholder="Descreva a não conformidade *" class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mb-2">
                         </div>
@@ -285,7 +307,6 @@
                             <div id="previewSeg3" class="mt-2 hidden"></div>
                         </div>
                     </div>
-
                 </div>
             </section>
 
@@ -341,29 +362,85 @@
 
             <section class="bg-white rounded-2xl p-5 shadow-sm border print-card">
                 <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
-                    <i class="fa-solid fa-ruler-combined text-indigo-600 mr-1"></i> Produção / Assentamento PEAD
+                    <i class="fa-solid fa-ruler-combined text-indigo-600 mr-1"></i> Produção / Assentamento PEAD (1 Estaca = 20m)
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- PEAD 63 mm -->
                     <div class="bg-slate-50 p-4 rounded-xl border">
-                        <label class="flex items-center gap-2 text-xs font-bold">
-                            <input type="checkbox" id="checkPEAD63" onchange="togglePEAD('fieldsPEAD63')"> PEAD 63 mm
+                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer">
+                            <input type="checkbox" id="checkPEAD63" onchange="togglePEAD('fieldsPEAD63', this.checked)"> PEAD 63 mm
                         </label>
-                        <div id="fieldsPEAD63" class="hidden mt-3 space-y-2">
-                            <input type="number" id="extensao63" min="0.01" step="0.01" placeholder="Metragem (m)" class="w-full text-xs p-2 border rounded">
-                            <input type="text" id="estaca63" placeholder="Estaqueamento / Trecho" class="w-full text-xs p-2 border rounded">
+                        <div id="fieldsPEAD63" class="mt-3 space-y-3 hidden">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <span class="text-[10px] font-semibold text-slate-500">Estaca Início (X)</span>
+                                    <div class="flex gap-1">
+                                        <input type="number" id="estacaInicio63" min="0" placeholder="Estaca" oninput="calcularPead('63')" class="w-1/2 text-xs p-2 border rounded">
+                                        <input type="number" id="metroInicio63" min="0" max="19.99" step="0.01" placeholder="+ m" oninput="calcularPead('63')" class="w-1/2 text-xs p-2 border rounded">
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] font-semibold text-slate-500">Estaca Final (Y)</span>
+                                    <div class="flex gap-1">
+                                        <input type="number" id="estacaFim63" min="0" placeholder="Estaca" oninput="calcularPead('63')" class="w-1/2 text-xs p-2 border rounded">
+                                        <input type="number" id="metroFim63" min="0" max="19.99" step="0.01" placeholder="+ m" oninput="calcularPead('63')" class="w-1/2 text-xs p-2 border rounded">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1">Total Metragem (Calculado)</label>
+                                <input type="number" id="extensao63" readonly placeholder="Total em Metros" class="w-full text-xs p-2 border rounded bg-slate-100 font-bold text-gas-700">
+                            </div>
                         </div>
                     </div>
+
+                    <!-- PEAD 125 mm -->
                     <div class="bg-slate-50 p-4 rounded-xl border">
-                        <label class="flex items-center gap-2 text-xs font-bold">
-                            <input type="checkbox" id="checkPEAD125" onchange="togglePEAD('fieldsPEAD125')"> PEAD 125 mm
+                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer">
+                            <input type="checkbox" id="checkPEAD125" onchange="togglePEAD('fieldsPEAD125', this.checked)"> PEAD 125 mm
                         </label>
-                        <div id="fieldsPEAD125" class="hidden mt-3 space-y-2">
-                            <input type="number" id="extensao125" min="0.01" step="0.01" placeholder="Metragem (m)" class="w-full text-xs p-2 border rounded">
-                            <input type="text" id="estaca125" placeholder="Estaqueamento / Trecho" class="w-full text-xs p-2 border rounded">
+                        <div id="fieldsPEAD125" class="mt-3 space-y-3 hidden">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div>
+                                    <span class="text-[10px] font-semibold text-slate-500">Estaca Início (X)</span>
+                                    <div class="flex gap-1">
+                                        <input type="number" id="estacaInicio125" min="0" placeholder="Estaca" oninput="calcularPead('125')" class="w-1/2 text-xs p-2 border rounded">
+                                        <input type="number" id="metroInicio125" min="0" max="19.99" step="0.01" placeholder="+ m" oninput="calcularPead('125')" class="w-1/2 text-xs p-2 border rounded">
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] font-semibold text-slate-500">Estaca Final (Y)</span>
+                                    <div class="flex gap-1">
+                                        <input type="number" id="estacaFim125" min="0" placeholder="Estaca" oninput="calcularPead('125')" class="w-1/2 text-xs p-2 border rounded">
+                                        <input type="number" id="metroFim125" min="0" max="19.99" step="0.01" placeholder="+ m" oninput="calcularPead('125')" class="w-1/2 text-xs p-2 border rounded">
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1">Total Metragem (Calculado)</label>
+                                <input type="number" id="extensao125" readonly placeholder="Total em Metros" class="w-full text-xs p-2 border rounded bg-slate-100 font-bold text-gas-700">
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
+        </section>
+
+        <!-- SEÇÃO: ASSINATURA -->
+        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+            <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4 text-slate-700">
+                <i class="fa-solid fa-signature text-gas-500 mr-1"></i> Assinatura do Responsável
+            </h2>
+            <div class="max-w-md">
+                <label class="block text-xs font-semibold mb-1">Assine no campo abaixo:</label>
+                <div class="border-2 border-dashed border-slate-300 rounded-lg p-1 bg-slate-50 relative">
+                    <canvas id="signaturePad" width="400" height="150" class="w-full touch-none bg-white rounded cursor-crosshair"></canvas>
+                    <button type="button" onclick="clearSignature()" class="absolute top-2 right-2 px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-[10px] font-bold no-print">
+                        <i class="fa-solid fa-eraser"></i> Limpar
+                    </button>
+                </div>
+                <div id="previewSignaturePrint" class="hidden mt-2"></div>
+            </div>
         </section>
 
         <!-- BOTÃO SALVAR -->
@@ -379,12 +456,17 @@
 <div id="historyTab" class="hidden space-y-4">
     <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
         <div class="flex flex-wrap justify-between items-center gap-3 border-b pb-3 mb-3">
-            <h2 class="text-xs font-bold uppercase text-slate-700">
-                <i class="fa-solid fa-filter text-gas-500 mr-1"></i> Filtrar Histórico
-            </h2>
+            <div class="flex items-center gap-3">
+                <h2 class="text-xs font-bold uppercase text-slate-700">
+                    <i class="fa-solid fa-filter text-gas-500 mr-1"></i> Filtrar Histórico
+                </h2>
+                <label class="text-xs text-slate-500 flex items-center gap-1 cursor-pointer">
+                    <input type="checkbox" id="selectAllHistory" onchange="toggleSelectAll(this)" class="rounded"> Selecionar Todos
+                </label>
+            </div>
             <div class="flex gap-2">
-                <button type="button" onclick="exportToCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition">
-                    <i class="fa-solid fa-file-excel mr-1"></i> Exportar CSV
+                <button type="button" onclick="openExportModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition">
+                    <i class="fa-solid fa-file-excel mr-1"></i> Exportar Selecionados (CSV)
                 </button>
                 <button type="button" onclick="exportToPDF()" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow-sm transition">
                     <i class="fa-solid fa-file-pdf mr-1"></i> Imprimir / PDF
@@ -405,7 +487,7 @@
                 <label class="block text-[11px] font-medium text-slate-500 mb-1">Tipo de RDO</label>
                 <select id="filterType" onchange="applyHistoryFilter()" class="w-full text-xs p-2 border border-slate-300 rounded-lg">
                     <option value="">Todos</option>
-                    <option value="inicial">Inicial / Em Andamento</option>
+                    <option value="inicial">Em Aberto</option>
                     <option value="encerramento">Encerrado</option>
                 </select>
             </div>
@@ -422,6 +504,70 @@
 
 </main>
 
+<!-- MODAL SELEÇÃO DE COLUNAS DE EXPORTAÇÃO -->
+<div id="exportModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl border">
+        <h3 class="text-sm font-bold text-slate-800 uppercase mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-sliders text-gas-500"></i> Escolha as colunas para exportar
+        </h3>
+        <p class="text-xs text-slate-500 mb-4">Marque os campos que deseja incluir no arquivo CSV de relatórios:</p>
+        
+        <div class="space-y-2 max-h-60 overflow-y-auto pr-2 text-xs">
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_id" checked> ID do Relatório
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_dataHora" checked> Data/Hora
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_status" checked> Status
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_projeto" checked> Projeto
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_tecnico" checked> Técnico
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_engenheiro" checked> Engenheiro
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_empreiteira" checked> Empreiteira
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_faltaEfetivo" checked> Falta de Efetivo
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_faltaEquipamento" checked> Falta de Equipamento
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_seguranca" checked> Segurança do Trabalho
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_pead63" checked> PEAD 63mm (Início / Fim / Total)
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_pead125" checked> PEAD 125mm (Início / Fim / Total)
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_atividadesPrevistas" checked> Atividades Previstas
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_atividadesRealizadas" checked> Atividades Realizadas
+            </label>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-6">
+            <button type="button" onclick="closeExportModal()" class="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-300">
+                Cancelar
+            </button>
+            <button type="button" onclick="processCustomCSVExport()" class="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700">
+                Exportar CSV
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
     let currentReportType = 'inicial';
     let rdoHistory = JSON.parse(localStorage.getItem('rdo_history_data') || '[]');
@@ -430,15 +576,105 @@
     let currentBase64Seg1 = '';
     let currentBase64Seg2 = '';
     let currentBase64Seg3 = '';
+    let currentBase64Signature = '';
+
+    // Canvas Signature Logic
+    let canvas, ctx, isDrawing = false;
+
+    function initSignaturePad() {
+        canvas = document.getElementById('signaturePad');
+        if (!canvas) return;
+        ctx = canvas.getContext('2d');
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 2;
+
+        const getPos = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        };
+
+        const startDrawing = (e) => {
+            isDrawing = true;
+            const pos = getPos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        };
+
+        const draw = (e) => {
+            if (!isDrawing) return;
+            const pos = getPos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        };
+
+        const stopDrawing = () => { isDrawing = false; };
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); }, { passive: false });
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+    }
+
+    function clearSignature() {
+        if (ctx && canvas) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            currentBase64Signature = '';
+            document.getElementById('previewSignaturePrint').innerHTML = '';
+        }
+    }
 
     function getVal(id) {
         const el = document.getElementById(id);
         return el ? el.value : '';
     }
 
+    function setVal(id, val) {
+        const el = document.getElementById(id);
+        if (el) el.value = val || '';
+    }
+
+    function setRadioVal(name, val) {
+        const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
+        if (el) el.checked = true;
+    }
+
+    function renderBase64Preview(containerId, base64Str) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        if (base64Str) {
+            container.classList.remove('hidden');
+            container.innerHTML = `<div class="image-preview-card border rounded p-1 bg-white shadow-sm mt-1"><img src="${base64Str}"><p class="text-[9px] text-slate-500 mt-1 text-center font-semibold">Anexo/Evidência</p></div>`;
+        } else {
+            container.classList.add('hidden');
+            container.innerHTML = '';
+        }
+    }
+
+    // Cálculo da estaca (1 Estaca = 20m)
+    function calcularPead(tipo) {
+        const eInicio = parseFloat(getVal(`estacaInicio${tipo}`)) || 0;
+        const mInicio = parseFloat(getVal(`metroInicio${tipo}`)) || 0;
+        const eFim = parseFloat(getVal(`estacaFim${tipo}`)) || 0;
+        const mFim = parseFloat(getVal(`metroFim${tipo}`)) || 0;
+
+        const totalInicioM = (eInicio * 20) + mInicio;
+        const totalFimM = (eFim * 20) + mFim;
+
+        const diferenca = Math.max(0, totalFimM - totalInicioM);
+        setVal(`extensao${tipo}`, diferenca.toFixed(2));
+    }
+
     document.addEventListener('DOMContentLoaded', () => {
         updateHistoryBadge();
         renderHistory(rdoHistory);
+        togglePEAD('fieldsPEAD63', document.getElementById('checkPEAD63').checked);
+        togglePEAD('fieldsPEAD125', document.getElementById('checkPEAD125').checked);
+        initSignaturePad();
     });
 
     function switchTab(tabName) {
@@ -468,7 +704,7 @@
             "flex flex-col items-center justify-center p-3 rounded-xl border-2 border-red-500 bg-red-50 text-red-900" : 
             "flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200";
 
-        document.getElementById('typeIndicatorText').innerText = isInicial ? "Abertura / Edição de RDO" : "Encerramento de RDO";
+        document.getElementById('typeIndicatorText').innerText = isInicial ? "Abertura de RDO" : "Encerramento de RDO";
         document.getElementById('typeIndicatorIcon').className = isInicial ? "fa-solid fa-play text-emerald-400 text-lg" : "fa-solid fa-stop text-red-400 text-lg";
     }
 
@@ -477,9 +713,11 @@
         if (field) field.classList.toggle('hidden', !show);
     }
 
-    function togglePEAD(id) {
+    function togglePEAD(id, isChecked) {
         const field = document.getElementById(id);
-        if (field) field.classList.toggle('hidden');
+        if (field) {
+            field.classList.toggle('hidden', !isChecked);
+        }
     }
 
     function previewImage(input, previewId, key) {
@@ -494,8 +732,7 @@
                 if (key === 'seg2') currentBase64Seg2 = e.target.result;
                 if (key === 'seg3') currentBase64Seg3 = e.target.result;
 
-                container.classList.remove('hidden');
-                container.innerHTML = `<div class="image-preview-card border rounded p-1 bg-white shadow-sm mt-1"><img src="${e.target.result}"><p class="text-[9px] text-slate-500 mt-1 text-center font-semibold">Foto Anexada</p></div>`;
+                renderBase64Preview(previewId, e.target.result);
             }
             reader.readAsDataURL(input.files[0]);
         }
@@ -511,20 +748,55 @@
     function handleFormSubmit(e) {
         e.preventDefault();
 
-        const newRecord = {
-            id: Date.now(),
-            data: new Date().toISOString().split('T')[0],
+        const editingId = getVal('editingRecordId');
+        const isEdit = !!editingId;
+        const recordId = isEdit ? editingId : 'RDO-' + Date.now();
+        const existingRecord = isEdit ? rdoHistory.find(item => String(item.id) === String(editingId)) : null;
+
+        const radioVal = (name) => {
+            const el = document.querySelector(`input[name="${name}"]:checked`);
+            return el ? el.value : '';
+        };
+
+        // Captura da assinatura do Canvas
+        let sigData = currentBase64Signature;
+        if (canvas) {
+            const blank = document.createElement('canvas');
+            blank.width = canvas.width;
+            blank.height = canvas.height;
+            if (canvas.toDataURL() !== blank.toDataURL()) {
+                sigData = canvas.toDataURL();
+            }
+        }
+
+        const recordData = {
+            id: recordId,
+            data: existingRecord ? existingRecord.data : new Date().toISOString().split('T')[0],
             dataHora: new Date().toLocaleString('pt-BR'),
-            tipo: currentReportType,
+            tipo: currentReportType === 'encerramento' ? 'encerramento' : 'inicial',
             projeto: getVal('selectProjeto'),
             tecnico: getVal('selectTecnico'),
             engenheiro: getVal('selectEngenheiro'),
             tipoObra: getVal('selectTipoObra'),
+            faltaEfetivo: {
+                houve: radioVal('faltaEfetivo'),
+                descricao: getVal('descFaltaEfetivo')
+            },
+            faltaEquipamento: {
+                houve: radioVal('faltaEquipamento'),
+                descricao: getVal('descFaltaEquipamento')
+            },
+            seguranca: {
+                condicoesTrabalho: { houve: radioVal('condicoesTrabalho'), descricao: getVal('descCondicoes') },
+                caminhaoOrganizado: { houve: radioVal('caminhaoOrganizado'), descricao: getVal('descCaminhao') },
+                sinalizacaoAdequada: { houve: radioVal('sinalizacaoAdequada'), descricao: getVal('descSinalizacao') }
+            },
             fotos: {
-                canteiro: currentBase64Canteiro,
-                seguranca1: currentBase64Seg1,
-                seguranca2: currentBase64Seg2,
-                seguranca3: currentBase64Seg3
+                canteiro: currentBase64Canteiro || existingRecord?.fotos?.canteiro || '',
+                seguranca1: currentBase64Seg1 || existingRecord?.fotos?.seguranca1 || '',
+                seguranca2: currentBase64Seg2 || existingRecord?.fotos?.seguranca2 || '',
+                seguranca3: currentBase64Seg3 || existingRecord?.fotos?.seguranca3 || '',
+                assinatura: sigData || existingRecord?.fotos?.assinatura || ''
             },
             horarios: {
                 empreiteira: getVal('nomeEmpreiteira'),
@@ -540,37 +812,170 @@
             atividadesRealizadas: getVal('atividadesRealizadas'),
             producao: {
                 pead63: {
-                    ativo: document.getElementById('checkPEAD63') ? document.getElementById('checkPEAD63').checked : false,
-                    extensao: getVal('extensao63'),
-                    estaca: getVal('estaca63')
+                    ativo: document.getElementById('checkPEAD63')?.checked || false,
+                    estacaInicio: getVal('estacaInicio63'),
+                    metroInicio: getVal('metroInicio63'),
+                    estacaFim: getVal('estacaFim63'),
+                    metroFim: getVal('metroFim63'),
+                    extensao: getVal('extensao63')
                 },
                 pead125: {
-                    ativo: document.getElementById('checkPEAD125') ? document.getElementById('checkPEAD125').checked : false,
-                    extensao: getVal('extensao125'),
-                    estaca: getVal('estaca125')
+                    ativo: document.getElementById('checkPEAD125')?.checked || false,
+                    estacaInicio: getVal('estacaInicio125'),
+                    metroInicio: getVal('metroInicio125'),
+                    estacaFim: getVal('estacaFim125'),
+                    metroFim: getVal('metroFim125'),
+                    extensao: getVal('extensao125')
                 }
             }
         };
 
-        rdoHistory.unshift(newRecord);
-        localStorage.setItem('rdo_history_data', JSON.stringify(rdoHistory));
+        if (isEdit) {
+            const index = rdoHistory.findIndex(item => String(item.id) === String(recordId));
+            if (index !== -1) {
+                rdoHistory[index] = { ...rdoHistory[index], ...recordData };
+            }
+        } else {
+            rdoHistory.unshift(recordData);
+        }
 
-        updateHistoryBadge();
-        renderHistory(rdoHistory);
+        try {
+            localStorage.setItem('rdo_history_data', JSON.stringify(rdoHistory));
+            updateHistoryBadge();
+            renderHistory(rdoHistory);
+            alert('Relatório salvo com sucesso!');
+            resetForm();
+            switchTab('historyTab');
+        } catch (err) {
+            console.error('Erro ao salvar no LocalStorage:', err);
+            alert('Atenção: Espaço de armazenamento do navegador esgotado. Tente remover imagens pesadas ou relatórios antigos antes de salvar novamente.');
+        }
+    }
 
-        alert('Relatório salvo com sucesso!');
+    function resetForm() {
         document.getElementById('rdoForm').reset();
+        document.getElementById('editingRecordId').value = '';
         
         ['previewCanteiro', 'previewSeg1', 'previewSeg2', 'previewSeg3'].forEach(id => {
             const el = document.getElementById(id);
-            if (el) el.classList.add('hidden');
+            if (el) {
+                el.classList.add('hidden');
+                el.innerHTML = '';
+            }
         });
+
         currentBase64Canteiro = '';
         currentBase64Seg1 = '';
         currentBase64Seg2 = '';
         currentBase64Seg3 = '';
+        clearSignature();
 
-        switchTab('historyTab');
+        toggleNC('descFaltaEfetivo', false);
+        toggleNC('descFaltaEquipamento', false);
+        toggleNC('descCondicoes', false);
+        toggleNC('descCaminhao', false);
+        toggleNC('descSinalizacao', false);
+
+        togglePEAD('fieldsPEAD63', false);
+        togglePEAD('fieldsPEAD125', false);
+        setReportType('inicial');
+    }
+
+    function continueReport(id) {
+        const item = rdoHistory.find(r => String(r.id) === String(id));
+        if (!item) return;
+
+        resetForm();
+
+        document.getElementById('editingRecordId').value = item.id;
+        setVal('selectProjeto', item.projeto);
+        setVal('selectTecnico', item.tecnico);
+        setVal('selectEngenheiro', item.engenheiro);
+        setVal('nomeEmpreiteira', item.horarios?.empreiteira);
+        setVal('horarioPrevistoEmpreiteira', item.horarios?.previstoEmpreiteira);
+        setVal('atividadesPrevistas', item.atividadesPrevistas);
+
+        // Falta Efetivo / Equipamento
+        if (item.faltaEfetivo?.houve) {
+            setRadioVal('faltaEfetivo', item.faltaEfetivo.houve);
+            toggleNC('descFaltaEfetivo', item.faltaEfetivo.houve === 'Sim');
+            setVal('descFaltaEfetivo', item.faltaEfetivo.descricao);
+        }
+        if (item.faltaEquipamento?.houve) {
+            setRadioVal('faltaEquipamento', item.faltaEquipamento.houve);
+            toggleNC('descFaltaEquipamento', item.faltaEquipamento.houve === 'Sim');
+            setVal('descFaltaEquipamento', item.faltaEquipamento.descricao);
+        }
+
+        // Segurança do trabalho
+        if (item.seguranca?.condicoesTrabalho?.houve) {
+            setRadioVal('condicoesTrabalho', item.seguranca.condicoesTrabalho.houve);
+            toggleNC('descCondicoes', item.seguranca.condicoesTrabalho.houve === 'Não');
+            setVal('descCondicoes', item.seguranca.condicoesTrabalho.descricao);
+        }
+        if (item.seguranca?.caminhaoOrganizado?.houve) {
+            setRadioVal('caminhaoOrganizado', item.seguranca.caminhaoOrganizado.houve);
+            toggleNC('descCaminhao', item.seguranca.caminhaoOrganizado.houve === 'Não');
+            setVal('descCaminhao', item.seguranca.caminhaoOrganizado.descricao);
+        }
+        if (item.seguranca?.sinalizacaoAdequada?.houve) {
+            setRadioVal('sinalizacaoAdequada', item.seguranca.sinalizacaoAdequada.houve);
+            toggleNC('descSinalizacao', item.seguranca.sinalizacaoAdequada.houve === 'Não');
+            setVal('descSinalizacao', item.seguranca.sinalizacaoAdequada.descricao);
+        }
+
+        // Fotos e Assinatura
+        currentBase64Canteiro = item.fotos?.canteiro || '';
+        currentBase64Seg1 = item.fotos?.seguranca1 || '';
+        currentBase64Seg2 = item.fotos?.seguranca2 || '';
+        currentBase64Seg3 = item.fotos?.seguranca3 || '';
+        currentBase64Signature = item.fotos?.assinatura || '';
+
+        renderBase64Preview('previewCanteiro', currentBase64Canteiro);
+        renderBase64Preview('previewSeg1', currentBase64Seg1);
+        renderBase64Preview('previewSeg2', currentBase64Seg2);
+        renderBase64Preview('previewSeg3', currentBase64Seg3);
+
+        if (currentBase64Signature) {
+            const img = new Image();
+            img.onload = () => { ctx.drawImage(img, 0, 0); };
+            img.src = currentBase64Signature;
+        }
+
+        // Produção PEAD
+        if (item.producao?.pead63) {
+            const chk = document.getElementById('checkPEAD63');
+            if (chk) chk.checked = !!item.producao.pead63.ativo;
+            togglePEAD('fieldsPEAD63', !!item.producao.pead63.ativo);
+            setVal('estacaInicio63', item.producao.pead63.estacaInicio);
+            setVal('metroInicio63', item.producao.pead63.metroInicio);
+            setVal('estacaFim63', item.producao.pead63.estacaFim);
+            setVal('metroFim63', item.producao.pead63.metroFim);
+            setVal('extensao63', item.producao.pead63.extensao);
+        }
+
+        if (item.producao?.pead125) {
+            const chk = document.getElementById('checkPEAD125');
+            if (chk) chk.checked = !!item.producao.pead125.ativo;
+            togglePEAD('fieldsPEAD125', !!item.producao.pead125.ativo);
+            setVal('estacaInicio125', item.producao.pead125.estacaInicio);
+            setVal('metroInicio125', item.producao.pead125.metroInicio);
+            setVal('estacaFim125', item.producao.pead125.estacaFim);
+            setVal('metroFim125', item.producao.pead125.metroFim);
+            setVal('extensao125', item.producao.pead125.extensao);
+        }
+
+        // Dados de Encerramento (se houver)
+        setVal('horarioRealChegadaEmpreiteira', item.horarios?.realEmpreiteira);
+        setVal('horarioInicioAtividades', item.horarios?.inicioAtividades);
+        setVal('justificativaAtrasoInicio', item.horarios?.justAtrasoInicio);
+        setVal('horarioPrevistoEncerramento', item.horarios?.previstoEncerrar);
+        setVal('horarioRealEncerramento', item.horarios?.realEncerrar);
+        setVal('justificativaEncerramentoAntecipado', item.horarios?.justEncerrarAntes);
+        setVal('atividadesRealizadas', item.atividadesRealizadas);
+
+        setReportType('encerramento');
+        switchTab('formTab');
     }
 
     function updateHistoryBadge() {
@@ -590,23 +995,42 @@
 
         container.innerHTML = data.map(item => `
             <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
-                <div>
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.tipo === 'inicial' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
-                            ${item.tipo === 'inicial' ? 'Abertura' : 'Encerramento'}
-                        </span>
-                        <span class="text-xs font-bold text-slate-800">${item.projeto}</span>
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" class="history-checkbox rounded cursor-pointer" value="${item.id}">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.tipo === 'inicial' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
+                                ${item.tipo === 'inicial' ? 'Aberto / Em Andamento' : 'Encerrado'}
+                            </span>
+                            <span class="text-xs font-bold text-slate-800">${item.projeto}</span>
+                        </div>
+                        <p class="text-xs text-slate-600"><i class="fa-solid fa-user text-slate-400 mr-1"></i> Técnico: ${item.tecnico}</p>
+                        <p class="text-[11px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i> ${item.dataHora}</p>
                     </div>
-                    <p class="text-xs text-slate-600"><i class="fa-solid fa-user text-slate-400 mr-1"></i> Técnico: ${item.tecnico}</p>
-                    <p class="text-[11px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i> ${item.dataHora}</p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button onclick="deleteRecord(${item.id})" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
+                    ${item.tipo === 'inicial' ? `
+                        <button onclick="continueReport('${item.id}')" class="px-3 py-1.5 bg-gas-50 hover:bg-gas-100 text-gas-700 rounded-lg text-xs font-bold transition">
+                            <i class="fa-solid fa-play mr-1"></i> Continuar / Encerrar RDO
+                        </button>
+                    ` : ''}
+                    <button onclick="deleteRecord('${item.id}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
                         <i class="fa-solid fa-trash"></i> Excluir
                     </button>
                 </div>
             </div>
         `).join('');
+    }
+
+    function toggleSelectAll(master) {
+        const checkboxes = document.querySelectorAll('.history-checkbox');
+        checkboxes.forEach(cb => cb.checked = master.checked);
+    }
+
+    function getSelectedRecords() {
+        const selectedIds = Array.from(document.querySelectorAll('.history-checkbox:checked')).map(cb => String(cb.value));
+        if (selectedIds.length === 0) return rdoHistory;
+        return rdoHistory.filter(item => selectedIds.includes(String(item.id)));
     }
 
     function applyHistoryFilter() {
@@ -636,34 +1060,112 @@
 
     function deleteRecord(id) {
         if (confirm('Deseja realmente excluir este registro?')) {
-            rdoHistory = rdoHistory.filter(item => item.id !== id);
-            localStorage.setItem('rdo_history_data', JSON.stringify(rdoHistory));
+            rdoHistory = rdoHistory.filter(item => String(item.id) !== String(id));
+            try {
+                localStorage.setItem('rdo_history_data', JSON.stringify(rdoHistory));
+            } catch(e) {}
             updateHistoryBadge();
             applyHistoryFilter();
         }
     }
 
-    function exportToCSV() {
-        if (rdoHistory.length === 0) {
-            alert('Não há dados salvos no histórico para exportar.');
+    /* Modal Exportação Customizada */
+    function openExportModal() {
+        const recordsToExport = getSelectedRecords();
+        if (recordsToExport.length === 0) {
+            alert('Não há dados salvos para exportar.');
             return;
         }
+        document.getElementById('exportModal').classList.remove('hidden');
+    }
 
-        let csv = 'ID;Data/Hora;Tipo;Projeto;Tecnico;Engenheiro;Tipo Obra;Empreiteira;Atividades Previstas;Atividades Realizadas\n';
+    function closeExportModal() {
+        document.getElementById('exportModal').classList.add('hidden');
+    }
 
-        rdoHistory.forEach(item => {
-            const row = [
-                item.id,
-                `"${item.dataHora || ''}"`,
-                `"${item.tipo || ''}"`,
-                `"${item.projeto || ''}"`,
-                `"${item.tecnico || ''}"`,
-                `"${item.engenheiro || ''}"`,
-                `"${item.tipoObra || ''}"`,
-                `"${item.horarios.empreiteira || ''}"`,
-                `"${(item.atividadesPrevistas || '').replace(/\n/g, ' ')}"`,
-                `"${(item.atividadesRealizadas || '').replace(/\n/g, ' ')}"`
-            ];
+    function processCustomCSVExport() {
+        const recordsToExport = getSelectedRecords();
+        
+        // Mapeamento de colunas selecionadas
+        const cols = {
+            id: document.getElementById('col_id').checked,
+            dataHora: document.getElementById('col_dataHora').checked,
+            status: document.getElementById('col_status').checked,
+            projeto: document.getElementById('col_projeto').checked,
+            tecnico: document.getElementById('col_tecnico').checked,
+            engenheiro: document.getElementById('col_engenheiro').checked,
+            empreiteira: document.getElementById('col_empreiteira').checked,
+            faltaEfetivo: document.getElementById('col_faltaEfetivo').checked,
+            faltaEquipamento: document.getElementById('col_faltaEquipamento').checked,
+            seguranca: document.getElementById('col_seguranca').checked,
+            pead63: document.getElementById('col_pead63').checked,
+            pead125: document.getElementById('col_pead125').checked,
+            atividadesPrevistas: document.getElementById('col_atividadesPrevistas').checked,
+            atividadesRealizadas: document.getElementById('col_atividadesRealizadas').checked
+        };
+
+        let headerArr = [];
+        if (cols.id) headerArr.push('ID');
+        if (cols.dataHora) headerArr.push('Data/Hora');
+        if (cols.status) headerArr.push('Status');
+        if (cols.projeto) headerArr.push('Projeto');
+        if (cols.tecnico) headerArr.push('Tecnico');
+        if (cols.engenheiro) headerArr.push('Engenheiro');
+        if (cols.empreiteira) headerArr.push('Empreiteira');
+        if (cols.faltaEfetivo) headerArr.push('Falta Efetivo');
+        if (cols.faltaEquipamento) headerArr.push('Falta Equipamento');
+        if (cols.seguranca) headerArr.push('Cond. Trabalho', 'Caminhao Org.', 'Sinalizacao');
+        if (cols.pead63) headerArr.push('PEAD 63mm Inicio', 'PEAD 63mm Fim', 'PEAD 63mm Total(m)');
+        if (cols.pead125) headerArr.push('PEAD 125mm Inicio', 'PEAD 125mm Fim', 'PEAD 125mm Total(m)');
+        if (cols.atividadesPrevistas) headerArr.push('Atividades Previstas');
+        if (cols.atividadesRealizadas) headerArr.push('Atividades Realizadas');
+
+        let csv = 'sep=;\n' + headerArr.join(';') + '\n';
+
+        recordsToExport.forEach(item => {
+            let row = [];
+
+            if (cols.id) row.push(`"${item.id}"`);
+            if (cols.dataHora) row.push(`"${item.dataHora || ''}"`);
+            if (cols.status) row.push(`"${item.tipo === 'encerramento' ? 'Encerrado' : 'Aberto'}"`);
+            if (cols.projeto) row.push(`"${item.projeto || ''}"`);
+            if (cols.tecnico) row.push(`"${item.tecnico || ''}"`);
+            if (cols.engenheiro) row.push(`"${item.engenheiro || ''}"`);
+            if (cols.empreiteira) row.push(`"${item.horarios?.empreiteira || ''}"`);
+            
+            if (cols.faltaEfetivo) {
+                const fEf = item.faltaEfetivo?.houve === 'Sim' ? item.faltaEfetivo.descricao : 'Nao';
+                row.push(`"${fEf.replace(/"/g, '""')}"`);
+            }
+            if (cols.faltaEquipamento) {
+                const fEq = item.faltaEquipamento?.houve === 'Sim' ? item.faltaEquipamento.descricao : 'Nao';
+                row.push(`"${fEq.replace(/"/g, '""')}"`);
+            }
+            if (cols.seguranca) {
+                const cond = item.seguranca?.condicoesTrabalho?.houve === 'Não' ? item.seguranca.condicoesTrabalho.descricao : 'Sim';
+                const cam = item.seguranca?.caminhaoOrganizado?.houve === 'Não' ? item.seguranca.caminhaoOrganizado.descricao : 'Sim';
+                const sin = item.seguranca?.sinalizacaoAdequada?.houve === 'Não' ? item.seguranca.sinalizacaoAdequada.descricao : 'Sim';
+                row.push(`"${cond.replace(/"/g, '""')}"`, `"${cam.replace(/"/g, '""')}"`, `"${sin.replace(/"/g, '""')}"`);
+            }
+            if (cols.pead63) {
+                const p63 = item.producao?.pead63;
+                if (p63?.ativo) {
+                    row.push(`"E${p63.estacaInicio || 0}+${p63.metroInicio || 0}m"`, `"E${p63.estacaFim || 0}+${p63.metroFim || 0}m"`, `"${p63.extensao || 0}"`);
+                } else {
+                    row.push(`"N/A"`, `"N/A"`, `"0"`);
+                }
+            }
+            if (cols.pead125) {
+                const p125 = item.producao?.pead125;
+                if (p125?.ativo) {
+                    row.push(`"E${p125.estacaInicio || 0}+${p125.metroInicio || 0}m"`, `"E${p125.estacaFim || 0}+${p125.metroFim || 0}m"`, `"${p125.extensao || 0}"`);
+                } else {
+                    row.push(`"N/A"`, `"N/A"`, `"0"`);
+                }
+            }
+            if (cols.atividadesPrevistas) row.push(`"${(item.atividadesPrevistas || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`);
+            if (cols.atividadesRealizadas) row.push(`"${(item.atividadesRealizadas || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`);
+
             csv += row.join(';') + '\n';
         });
 
@@ -672,13 +1174,48 @@
         link.href = URL.createObjectURL(blob);
         link.download = `Relatorios_RDO_${new Date().toISOString().split('T')[0]}.csv`;
         link.click();
+
+        closeExportModal();
     }
 
     function exportToPDF() {
-        switchTab('formTab');
-        setTimeout(() => {
+        const recordsToExport = getSelectedRecords();
+        if (recordsToExport.length === 0) return;
+
+        if (recordsToExport.length === 1) {
+            continueReport(recordsToExport[0].id);
+            setTimeout(() => { window.print(); }, 300);
+        } else {
+            const printContainer = document.createElement('div');
+            printContainer.id = 'batchPrintContainer';
+            printContainer.className = 'space-y-6';
+
+            recordsToExport.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-6 rounded-xl border border-slate-300 print-card mb-4';
+                card.innerHTML = `
+                    <h2 class="font-bold text-sm border-b pb-2 mb-3">RDO: ${item.id} - ${item.projeto}</h2>
+                    <p class="text-xs"><strong>Técnico:</strong> ${item.tecnico} | <strong>Data:</strong> ${item.dataHora}</p>
+                    <p class="text-xs"><strong>Status:</strong> ${item.tipo === 'encerramento' ? 'Encerrado' : 'Em Aberto'}</p>
+                    <p class="text-xs mt-2"><strong>Atividades Previstas:</strong> ${item.atividadesPrevistas || 'N/A'}</p>
+                    <p class="text-xs"><strong>Atividades Realizadas:</strong> ${item.atividadesRealizadas || 'N/A'}</p>
+                    <p class="text-xs mt-2"><strong>Produção PEAD 63mm:</strong> ${item.producao?.pead63?.ativo ? item.producao.pead63.extensao + 'm' : 'N/A'}</p>
+                    <p class="text-xs"><strong>Produção PEAD 125mm:</strong> ${item.producao?.pead125?.ativo ? item.producao.pead125.extensao + 'm' : 'N/A'}</p>
+                    ${item.fotos?.assinatura ? `<div class="mt-4 border-t pt-2"><p class="text-[10px] font-bold">Assinatura:</p><img src="${item.fotos.assinatura}" class="h-12"></div>` : ''}
+                `;
+                printContainer.appendChild(card);
+            });
+
+            const main = document.querySelector('main');
+            const formTab = document.getElementById('formTab');
+            formTab.classList.add('hidden');
+            main.appendChild(printContainer);
+
             window.print();
-        }, 300);
+
+            main.removeChild(printContainer);
+            formTab.classList.remove('hidden');
+        }
     }
 </script>
 
