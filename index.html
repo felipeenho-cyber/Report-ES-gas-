@@ -42,15 +42,12 @@
         body { font-family: 'Inter', sans-serif; }
         .image-preview-card img { width: 100%; height: 120px; object-fit: cover; display: block; border-radius: 0.375rem; }
         
-        /* CSS ESPECÍFICO PARA TESTE E GERADOR DE PDF/IMPRESSÃO */
         @media print { 
             .no-print { display: none !important; } 
             body { background: white !important; color: black !important; }
             main { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
             #formTab { display: block !important; }
             #historyTab { display: none !important; }
-            
-            /* Forçar exibição das seções no PDF */
             #sectionInicial, #sectionEncerramento { display: block !important; }
             
             .print-card { 
@@ -117,13 +114,13 @@
         <div class="grid grid-cols-2 gap-3 max-w-xl mx-auto">
             <button type="button" id="btnReportInicial" onclick="setReportType('inicial')" class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gas-500 bg-gas-50 text-gas-900">
                 <i class="fa-solid fa-play text-emerald-500 text-xl mb-1"></i>
-                <span class="font-bold text-xs">Abrir / Editar RDO</span>
-                <span class="text-[10px] text-slate-500">Iniciar ou continuar</span>
+                <span class="font-bold text-xs">Abertura de RDO</span>
+                <span class="text-[10px] text-slate-500">Iniciar no começo do dia</span>
             </button>
             <button type="button" id="btnReportEncerramento" onclick="setReportType('encerramento')" class="flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200">
                 <i class="fa-solid fa-stop text-red-500 text-xl mb-1"></i>
-                <span class="font-bold text-xs">Encerrar RDO</span>
-                <span class="text-[10px] text-slate-500">Finalizar o serviço</span>
+                <span class="font-bold text-xs">Encerramento de RDO</span>
+                <span class="text-[10px] text-slate-500">Finalizar o dia de serviço</span>
             </button>
         </div>
     </section>
@@ -142,6 +139,7 @@
 
     <!-- FORM -->
     <form id="rdoForm" onsubmit="handleFormSubmit(event)" class="space-y-6">
+        <input type="hidden" id="editingRecordId" value="">
 
         <!-- IDENTIFICAÇÃO DA OBRA -->
         <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
@@ -197,12 +195,12 @@
         <!-- SEÇÃO: RELATÓRIO INICIAL -->
         <section id="sectionInicial" class="space-y-6">
 
-            <!-- INFORMAÇÕES DA EMPREITEIRA -->
+            <!-- INFORMAÇÕES DA EMPREITEIRA E RECURSOS -->
             <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
                 <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4 text-slate-700">
-                    <i class="fa-solid fa-clock text-gas-500 mr-1"></i> Horários e Empreiteira (Inicial)
+                    <i class="fa-solid fa-users text-gas-500 mr-1"></i> Equipe, Equipamentos e Horários
                 </h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-xs font-semibold mb-1">Empreiteira</label>
                         <input type="text" id="nomeEmpreiteira" placeholder="Nome da empreiteira" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
@@ -210,6 +208,33 @@
                     <div>
                         <label class="block text-xs font-semibold mb-1">Horário Previsto Chegada Equipe Empreiteira</label>
                         <input type="time" id="horarioPrevistoEmpreiteira" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                    </div>
+                </div>
+
+                <!-- CONTROLE DE EFETIVO E EQUIPAMENTOS -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4">
+                    <!-- FALTA DE EFETIVO -->
+                    <div class="bg-slate-50 p-3.5 rounded-xl border">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-slate-700">Houve falta de efetivo?</span>
+                            <div class="flex gap-3">
+                                <label class="text-xs font-semibold"><input type="radio" name="faltaEfetivo" value="Não" checked onchange="toggleNC('descFaltaEfetivo', false)"> Não</label>
+                                <label class="text-xs font-semibold"><input type="radio" name="faltaEfetivo" value="Sim" onchange="toggleNC('descFaltaEfetivo', true)"> Sim</label>
+                            </div>
+                        </div>
+                        <input type="text" id="descFaltaEfetivo" placeholder="Descreva quais profissionais faltaram..." class="hidden w-full text-xs bg-red-50 border border-red-300 rounded-lg p-2">
+                    </div>
+
+                    <!-- FALTA DE EQUIPAMENTO -->
+                    <div class="bg-slate-50 p-3.5 rounded-xl border">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-bold text-slate-700">Houve falta de equipamento?</span>
+                            <div class="flex gap-3">
+                                <label class="text-xs font-semibold"><input type="radio" name="faltaEquipamento" value="Não" checked onchange="toggleNC('descFaltaEquipamento', false)"> Não</label>
+                                <label class="text-xs font-semibold"><input type="radio" name="faltaEquipamento" value="Sim" onchange="toggleNC('descFaltaEquipamento', true)"> Sim</label>
+                            </div>
+                        </div>
+                        <input type="text" id="descFaltaEquipamento" placeholder="Descreva quais equipamentos faltaram..." class="hidden w-full text-xs bg-red-50 border border-red-300 rounded-lg p-2">
                     </div>
                 </div>
 
@@ -222,14 +247,12 @@
                 </div>
             </section>
 
-            <!-- SEGURANÇA DO TRABALHO (3 OPCÕES COM FOTO INDIVIDUAL) -->
+            <!-- SEGURANÇA DO TRABALHO -->
             <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
                 <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
                     <i class="fa-solid fa-shield-halved text-emerald-600 mr-1"></i> Segurança do Trabalho
                 </h2>
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    
-                    <!-- OPÇÃO 1 -->
                     <div class="bg-slate-50 p-3.5 rounded-xl border flex flex-col justify-between">
                         <div>
                             <span class="text-xs font-medium block mb-2">1. Condições de trabalho adequadas?</span>
@@ -248,7 +271,6 @@
                         </div>
                     </div>
 
-                    <!-- OPÇÃO 2 -->
                     <div class="bg-slate-50 p-3.5 rounded-xl border flex flex-col justify-between">
                         <div>
                             <span class="text-xs font-medium block mb-2">2. Ferramental / caminhão adequado?</span>
@@ -267,7 +289,6 @@
                         </div>
                     </div>
 
-                    <!-- OPÇÃO 3 -->
                     <div class="bg-slate-50 p-3.5 rounded-xl border flex flex-col justify-between">
                         <div>
                             <span class="text-xs font-medium block mb-2">3. Sinalização de via adequada?</span>
@@ -285,7 +306,6 @@
                             <div id="previewSeg3" class="mt-2 hidden"></div>
                         </div>
                     </div>
-
                 </div>
             </section>
 
@@ -379,12 +399,17 @@
 <div id="historyTab" class="hidden space-y-4">
     <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
         <div class="flex flex-wrap justify-between items-center gap-3 border-b pb-3 mb-3">
-            <h2 class="text-xs font-bold uppercase text-slate-700">
-                <i class="fa-solid fa-filter text-gas-500 mr-1"></i> Filtrar Histórico
-            </h2>
+            <div class="flex items-center gap-3">
+                <h2 class="text-xs font-bold uppercase text-slate-700">
+                    <i class="fa-solid fa-filter text-gas-500 mr-1"></i> Filtrar Histórico
+                </h2>
+                <label class="text-xs text-slate-500 flex items-center gap-1 cursor-pointer">
+                    <input type="checkbox" id="selectAllHistory" onchange="toggleSelectAll(this)" class="rounded"> Selecionar Todos
+                </label>
+            </div>
             <div class="flex gap-2">
                 <button type="button" onclick="exportToCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition">
-                    <i class="fa-solid fa-file-excel mr-1"></i> Exportar CSV
+                    <i class="fa-solid fa-file-excel mr-1"></i> Exportar Selecionados (CSV)
                 </button>
                 <button type="button" onclick="exportToPDF()" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow-sm transition">
                     <i class="fa-solid fa-file-pdf mr-1"></i> Imprimir / PDF
@@ -405,7 +430,7 @@
                 <label class="block text-[11px] font-medium text-slate-500 mb-1">Tipo de RDO</label>
                 <select id="filterType" onchange="applyHistoryFilter()" class="w-full text-xs p-2 border border-slate-300 rounded-lg">
                     <option value="">Todos</option>
-                    <option value="inicial">Inicial / Em Andamento</option>
+                    <option value="inicial">Em Aberto</option>
                     <option value="encerramento">Encerrado</option>
                 </select>
             </div>
@@ -434,6 +459,11 @@
     function getVal(id) {
         const el = document.getElementById(id);
         return el ? el.value : '';
+    }
+
+    function setVal(id, val) {
+        const el = document.getElementById(id);
+        if (el) el.value = val || '';
     }
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -468,7 +498,7 @@
             "flex flex-col items-center justify-center p-3 rounded-xl border-2 border-red-500 bg-red-50 text-red-900" : 
             "flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200";
 
-        document.getElementById('typeIndicatorText').innerText = isInicial ? "Abertura / Edição de RDO" : "Encerramento de RDO";
+        document.getElementById('typeIndicatorText').innerText = isInicial ? "Abertura de RDO" : "Encerramento de RDO";
         document.getElementById('typeIndicatorIcon').className = isInicial ? "fa-solid fa-play text-emerald-400 text-lg" : "fa-solid fa-stop text-red-400 text-lg";
     }
 
@@ -511,15 +541,33 @@
     function handleFormSubmit(e) {
         e.preventDefault();
 
-        const newRecord = {
-            id: Date.now(),
+        const editingId = getVal('editingRecordId');
+        const isEdit = !!editingId;
+
+        const recordId = isEdit ? Number(editingId) : Date.now();
+
+        const radioVal = (name) => {
+            const el = document.querySelector(`input[name="${name}"]:checked`);
+            return el ? el.value : '';
+        };
+
+        const recordData = {
+            id: recordId,
             data: new Date().toISOString().split('T')[0],
             dataHora: new Date().toLocaleString('pt-BR'),
-            tipo: currentReportType,
+            tipo: currentReportType === 'encerramento' ? 'encerramento' : 'inicial',
             projeto: getVal('selectProjeto'),
             tecnico: getVal('selectTecnico'),
             engenheiro: getVal('selectEngenheiro'),
             tipoObra: getVal('selectTipoObra'),
+            faltaEfetivo: {
+                houve: radioVal('faltaEfetivo'),
+                descricao: getVal('descFaltaEfetivo')
+            },
+            faltaEquipamento: {
+                houve: radioVal('faltaEquipamento'),
+                descricao: getVal('descFaltaEquipamento')
+            },
             fotos: {
                 canteiro: currentBase64Canteiro,
                 seguranca1: currentBase64Seg1,
@@ -552,15 +600,28 @@
             }
         };
 
-        rdoHistory.unshift(newRecord);
+        if (isEdit) {
+            const index = rdoHistory.findIndex(item => item.id === recordId);
+            if (index !== -1) {
+                rdoHistory[index] = { ...rdoHistory[index], ...recordData };
+            }
+        } else {
+            rdoHistory.unshift(recordData);
+        }
+
         localStorage.setItem('rdo_history_data', JSON.stringify(rdoHistory));
 
         updateHistoryBadge();
         renderHistory(rdoHistory);
 
         alert('Relatório salvo com sucesso!');
+        resetForm();
+        switchTab('historyTab');
+    }
+
+    function resetForm() {
         document.getElementById('rdoForm').reset();
-        
+        document.getElementById('editingRecordId').value = '';
         ['previewCanteiro', 'previewSeg1', 'previewSeg2', 'previewSeg3'].forEach(id => {
             const el = document.getElementById(id);
             if (el) el.classList.add('hidden');
@@ -569,8 +630,35 @@
         currentBase64Seg1 = '';
         currentBase64Seg2 = '';
         currentBase64Seg3 = '';
+        setReportType('inicial');
+    }
 
-        switchTab('historyTab');
+    function continueReport(id) {
+        const item = rdoHistory.find(r => r.id === id);
+        if (!item) return;
+
+        document.getElementById('editingRecordId').value = item.id;
+        setVal('selectProjeto', item.projeto);
+        setVal('selectTecnico', item.tecnico);
+        setVal('selectEngenheiro', item.engenheiro);
+        setVal('nomeEmpreiteira', item.horarios?.empreiteira);
+        setVal('horarioPrevistoEmpreiteira', item.horarios?.previstoEmpreiteira);
+        setVal('atividadesPrevistas', item.atividadesPrevistas);
+
+        if (item.faltaEfetivo?.houve === 'Sim') {
+            document.querySelector('input[name="faltaEfetivo"][value="Sim"]').checked = true;
+            toggleNC('descFaltaEfetivo', true);
+            setVal('descFaltaEfetivo', item.faltaEfetivo.descricao);
+        }
+
+        if (item.faltaEquipamento?.houve === 'Sim') {
+            document.querySelector('input[name="faltaEquipamento"][value="Sim"]').checked = true;
+            toggleNC('descFaltaEquipamento', true);
+            setVal('descFaltaEquipamento', item.faltaEquipamento.descricao);
+        }
+
+        setReportType('encerramento');
+        switchTab('formTab');
     }
 
     function updateHistoryBadge() {
@@ -590,23 +678,42 @@
 
         container.innerHTML = data.map(item => `
             <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
-                <div>
-                    <div class="flex items-center gap-2 mb-1">
-                        <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.tipo === 'inicial' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
-                            ${item.tipo === 'inicial' ? 'Abertura' : 'Encerramento'}
-                        </span>
-                        <span class="text-xs font-bold text-slate-800">${item.projeto}</span>
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" class="history-checkbox rounded cursor-pointer" value="${item.id}">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.tipo === 'inicial' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
+                                ${item.tipo === 'inicial' ? 'Aberto / Em Andamento' : 'Encerrado'}
+                            </span>
+                            <span class="text-xs font-bold text-slate-800">${item.projeto}</span>
+                        </div>
+                        <p class="text-xs text-slate-600"><i class="fa-solid fa-user text-slate-400 mr-1"></i> Técnico: ${item.tecnico}</p>
+                        <p class="text-[11px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i> ${item.dataHora}</p>
                     </div>
-                    <p class="text-xs text-slate-600"><i class="fa-solid fa-user text-slate-400 mr-1"></i> Técnico: ${item.tecnico}</p>
-                    <p class="text-[11px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i> ${item.dataHora}</p>
                 </div>
                 <div class="flex items-center gap-2">
+                    ${item.tipo === 'inicial' ? `
+                        <button onclick="continueReport(${item.id})" class="px-3 py-1.5 bg-gas-50 hover:bg-gas-100 text-gas-700 rounded-lg text-xs font-bold transition">
+                            <i class="fa-solid fa-play mr-1"></i> Continuar / Encerrar RDO
+                        </button>
+                    ` : ''}
                     <button onclick="deleteRecord(${item.id})" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
                         <i class="fa-solid fa-trash"></i> Excluir
                     </button>
                 </div>
             </div>
         `).join('');
+    }
+
+    function toggleSelectAll(master) {
+        const checkboxes = document.querySelectorAll('.history-checkbox');
+        checkboxes.forEach(cb => cb.checked = master.checked);
+    }
+
+    function getSelectedRecords() {
+        const selectedIds = Array.from(document.querySelectorAll('.history-checkbox:checked')).map(cb => Number(cb.value));
+        if (selectedIds.length === 0) return rdoHistory;
+        return rdoHistory.filter(item => selectedIds.includes(item.id));
     }
 
     function applyHistoryFilter() {
@@ -644,25 +751,27 @@
     }
 
     function exportToCSV() {
-        if (rdoHistory.length === 0) {
-            alert('Não há dados salvos no histórico para exportar.');
+        const recordsToExport = getSelectedRecords();
+        if (recordsToExport.length === 0) {
+            alert('Não há dados salvos para exportar.');
             return;
         }
 
-        let csv = 'ID;Data/Hora;Tipo;Projeto;Tecnico;Engenheiro;Tipo Obra;Empreiteira;Atividades Previstas;Atividades Realizadas\n';
+        let csv = 'sep=;\nID;Data/Hora;Status;Projeto;Tecnico;Engenheiro;Empreiteira;Falta Efetivo;Falta Equipamento;Atividades Previstas;Atividades Realizadas\n';
 
-        rdoHistory.forEach(item => {
+        recordsToExport.forEach(item => {
             const row = [
                 item.id,
                 `"${item.dataHora || ''}"`,
-                `"${item.tipo || ''}"`,
+                `"${item.tipo === 'encerramento' ? 'Encerrado' : 'Aberto'}"`,
                 `"${item.projeto || ''}"`,
                 `"${item.tecnico || ''}"`,
                 `"${item.engenheiro || ''}"`,
-                `"${item.tipoObra || ''}"`,
-                `"${item.horarios.empreiteira || ''}"`,
-                `"${(item.atividadesPrevistas || '').replace(/\n/g, ' ')}"`,
-                `"${(item.atividadesRealizadas || '').replace(/\n/g, ' ')}"`
+                `"${item.horarios?.empreiteira || ''}"`,
+                `"${item.faltaEfetivo?.houve === 'Sim' ? item.faltaEfetivo.descricao : 'Não'}"`,
+                `"${item.faltaEquipamento?.houve === 'Sim' ? item.faltaEquipamento.descricao : 'Não'}"`,
+                `"${(item.atividadesPrevistas || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
+                `"${(item.atividadesRealizadas || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`
             ];
             csv += row.join(';') + '\n';
         });
@@ -675,7 +784,15 @@
     }
 
     function exportToPDF() {
-        switchTab('formTab');
+        const recordsToExport = getSelectedRecords();
+        if (recordsToExport.length === 0) return;
+
+        if (recordsToExport.length === 1) {
+            continueReport(recordsToExport[0].id);
+        } else {
+            switchTab('formTab');
+        }
+
         setTimeout(() => {
             window.print();
         }, 300);
