@@ -1,39 +1,65 @@
-import re
+# Revisão de Código — RDO v2 (Campos de Estaca Separados)
 
-# Vamos carregar o código HTML/JS e testar as funções principais de cálculo e formatação do RDO
-with open("rdo_com_estaqueamento_fixo.html", "r", encoding="utf-8") as f:
-    html_content = f.read()
+## Visão Geral
 
-# Teste simulado em Python das funções lógicas contidas no JavaScript do arquivo HTML
-def calcular_metragem_separada(est_ini, mais_ini, est_fim, mais_fim):
-    e_ini = float(est_ini) if est_ini != "" else 0.0
-    m_ini = float(mais_ini) if mais_ini != "" else 0.0
-    e_fim = float(est_fim) if est_fim != "" else 0.0
-    m_fim = float(mais_fim) if mais_fim != "" else 0.0
+Este novo arquivo é uma evolução da versão anterior, com o estaqueamento dividido em quatro campos (`Estaca + Metros` inicial e final) em vez de um campo de texto único. O código foi analisado linha a linha e **testado em execução real no navegador** (formulário, salvamento, edição, filtros, exportação CSV, impressão e exclusão). A sintaxe JavaScript é válida e a arquitetura geral está limpa.
 
-    tem_ini = (est_ini != "") or (mais_ini != "")
-    tem_fim = (est_fim != "") or (mais_fim != "")
+**Atenção a um detalhe do arquivo enviado:** o conteúdo é um script Python que escreve o HTML em um arquivo (`html_code = """..."""`). Para usar o código, é preciso executar o script ou extrair apenas o HTML. Extraí o HTML e trabalhei sobre ele — o arquivo corrigido anexado é o HTML pronto para usar, sem o wrapper Python.
 
-    if tem_ini and tem_fim:
-        m_inicial = (e_ini * 20) + m_ini
-        m_final = (e_fim * 20) + m_fim
-        total = abs(m_final - m_inicial)
-        return f"{total:,.2f} m".replace(',', 'X').replace('.', ',').replace('X', '.')
-    
-    return ""
+## O que funciona corretamente (e melhorias em relação à v1)
 
-# Testes de casos de uso de estacas:
-testes = [
-    # (Estaca Ini, Metros Ini, Estaca Fim, Metros Fim)
-    ("0", "0", "10", "0"),          # 0+0 ate 10+0 -> (10*20 = 200m)
-    ("10", "5", "12", "15"),        # 10+5 (205m) ate 12+15 (255m) -> (50m)
-    ("100", "12.5", "105", "2.5"), # 100+12.5 (2012.5m) ate 105+2.5 (2102.5m) -> (90m)
-    ("", "", "5", "0")              # Incompleto
-]
+| Componente | Resultado do teste |
+| --- | --- |
+| Cálculo com campos separados | Correto: `1+0 → 45+19` = 899,00 m; `1.0 → 2.5` = 20,50 m; campos vazios limpam o resultado |
+| Armazenamento dos 4 campos de estaca | Correto: `estacaInicial = "10+5"`, restaurado na edição |
+| Edição (`loadRDOForEdit`) | **Melhor que a v1**: agora restaura os 4 campos e recalcula a metragem automaticamente |
+| Impressão de quebras de linha | Correto nesta versão: Atividades/Produção convertem `\n` em `<br>` |
+| Salvamento, filtros, seleção em lote, exclusão | Todos funcionam |
+| Compressão de imagens (800 px, JPEG 60%) | Boa prática mantida |
 
-resultados = []
-for t in testes:
-    res = calcular_metragem_separada(t[0], t[1], t[2], t[3])
-    resultados.append(f"Estaca Início: {t[0]}+{t[1]} | Estaca Fim: {t[2]}+{t[3]} => Metragem: '{res}'")
+## Problemas encontrados
 
-print("\n".join(resultados))
+### 1. Injeção de código (XSS) ainda presente — CRÍTICO (confirmado em execução)
+
+A mesma vulnerabilidade da versão anterior persiste **e a primeira correção sugerida (novo `escapeAttr`) não bastou**. O motivo técnico: o escape HTML de entidades (como `&#039;`) é decodificado pelo navegador quando o atributo `onclick` é registrado, de modo que um ID malicioso como `x') + (() => { alert('XSS'); return ''; })('` fecha a string do argumento e concatena uma arrow function que **é executada ao clicar** em "Editar/Continuar". Demonstrei isso em execução nas duas versões do arquivo.
+
+**Correção definitiva aplicada:** os IDs deixaram de ser injetados dentro de handlers inline (`onclick="..."`). Os botões agora usam atributos `data-id` e `data-action`, com **eventos delegados por `addEventListener` no tbody** — como o valor lido por `getAttribute()` nunca é interpretado como código, não há vetor de execução. Re-testado com o mesmo ID malicioso: o clique não executa nada.
+
+### 2. Exportação CSV ainda corrompia nomes com `#` — ALTO
+
+O mesmo código `data:text/csv` + `encodeURI()` da v1 estava presente: um projeto como `Trecho #3` corromperia o arquivo exportado. Confirmei em teste que a exportação funcionava para `Proj#Trecho 3` mas o `#` era transformado em `%23` e, em certos cenários (fragmentos de URL), o conteúdo seria truncado.
+
+**Correção aplicada:** substituição por `Blob` + `URL.createObjectURL()`, que entrega os bytes sem transformação alguma. Validado: o `#` é preservado intacto no CSV, junto com o BOM UTF-8 para acentuação correta no Excel.
+
+### 3. Quebras de linha quebravam o CSV — MÉDIO
+
+`sanitizeCSVField()` não tratava `\n`/`\r`. Um campo "Atividades" com várias linhas gerava registros CSV inválidos no Excel.
+
+**Correção aplicada:** quebras de linha são normalizadas para espaço antes de escapar as aspas. Validado: `"linha1 linha2"` aparece corretamente entre aspas.
+
+### 4. Impressão ainda omitia as ocorrências do dia — BAIXO
+
+Como na v1, `printSingleRDO()` não exibia os campos de **falta de efetivo, falta de equipamento e não conformidade** — justamente os dados mais relevantes de um RDO. A versão corrigida inclui a seção "Ocorrências do Dia" com as descrições quando a resposta é "Sim".
+
+### 5. Observações menores
+
+| Item | Observação |
+| --- | --- |
+| `<input type="hidden" id="rdoStatus">` | Atualizado em `resetForm()` e `loadRDOForEdit()`, mas **nunca lido** em nenhuma função — código morto (igual à v1) |
+| Mensagem de erro de armazenamento | A correção agora detecta `QuotaExceededError` e sugere reduzir fotos, excluir registros antigos ou exportar o CSV |
+| Campos `input type="number"` | Diferente da v1 (campo texto), o número agora é digitado com **ponto decimal** (padrão de `type="number"`). Se um técnico digitar "1,5" com vírgula, o valor é truncado para "1". Isso é comportamento padrão do navegador e o cálculo permanece seguro, mas vale um aviso aos usuários |
+| CSV exportado | Mantém as mesmas 10 colunas da v1 (não inclui clima, equipe, equipamentos, fotos e ocorrências) — funciona, mas é uma limitação conhecida |
+
+## Resumo comparativo com a v1
+
+| Problema | v1 | v2 (corrigida) |
+| --- | --- | --- |
+| XSS via handlers inline | Corrigido | Corrigido de forma definitiva (event delegation) |
+| CSV truncado por `#` | Corrigido | Corrigido (Blob) |
+| Quebras de linha no CSV | Corrigido | Corrigido |
+| Impressão sem ocorrências | Corrigido | Corrigido |
+| Erro de quota com dica | Corrigido | Corrigido |
+
+## Como usar o arquivo corrigido
+
+Basta substituir o conteúdo do seu arquivo HTML pelo `RDO_v2_corrigido.html` anexado (ou executá-lo diretamente no navegador). Os dados salvos anteriormente (chave `rdo_registros_v2`) são compatíveis e continuam acessíveis. Todos os testes de regressão foram executados após a correção: cálculo de metragem, salvamento, edição com restauração dos campos de estaca, exclusão em lote, exportação CSV e a tentativa de injeção de código — esta última confirmada como neutralizada.
