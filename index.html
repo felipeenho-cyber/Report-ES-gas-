@@ -57,6 +57,12 @@
                 margin-bottom: 1rem !important;
             }
 
+            /* Força a seção de assinatura para a página 2 na impressão */
+            .print-page-2 {
+                page-break-before: always !important;
+                break-before: page !important;
+            }
+
             input, select, textarea {
                 border: none !important;
                 background: transparent !important;
@@ -158,7 +164,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold mb-1">Técnico <span class="text-red-500">*</span></label>
+                    <label class="block text-xs font-semibold mb-1">Técnico Responsável <span class="text-red-500">*</span></label>
                     <select id="selectTecnico" required class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
                         <option value="">Selecione...</option>
                         <option>Akilah Daher Alves Fernandes Pires</option>
@@ -400,29 +406,30 @@
                     </div>
                 </div>
             </section>
-        </section>
 
-        <!-- SEÇÃO: ASSINATURA -->
-        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
-            <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4 text-slate-700">
-                <i class="fa-solid fa-signature text-gas-500 mr-1"></i> Assinatura do Responsável
-            </h2>
-            <div class="max-w-md">
-                <label class="block text-xs font-semibold mb-1">Assine no campo abaixo:</label>
-                <div class="border-2 border-dashed border-slate-300 rounded-lg p-1 bg-slate-50 relative">
-                    <canvas id="signaturePad" width="400" height="150" class="w-full touch-none bg-white rounded cursor-crosshair"></canvas>
-                    <button type="button" onclick="clearSignature()" class="absolute top-2 right-2 px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-[10px] font-bold no-print">
-                        <i class="fa-solid fa-eraser"></i> Limpar
-                    </button>
+            <!-- SEÇÃO: ASSINATURA DE ENCERRAMENTO (FORÇADA PARA A PÁGINA 2 NA IMPRESSÃO) -->
+            <section id="sectionAssinatura" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card print-page-2">
+                <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4 text-slate-700">
+                    <i class="fa-solid fa-signature text-gas-500 mr-1"></i> Assinatura do Técnico Responsável (Finalização) <span class="text-red-500">*</span>
+                </h2>
+                <div class="max-w-md">
+                    <label class="block text-xs font-semibold mb-1">Assine no campo abaixo para encerrar o relatório:</label>
+                    <div class="border-2 border-dashed border-slate-300 rounded-lg p-1 bg-slate-50 relative">
+                        <canvas id="signaturePad" width="400" height="150" class="w-full touch-none bg-white rounded cursor-crosshair"></canvas>
+                        <button type="button" onclick="clearSignature()" class="absolute top-2 right-2 px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-[10px] font-bold no-print">
+                            <i class="fa-solid fa-eraser"></i> Limpar
+                        </button>
+                    </div>
+                    <div id="previewSignaturePrint" class="hidden mt-2"></div>
                 </div>
-                <div id="previewSignaturePrint" class="hidden mt-2"></div>
-            </div>
+            </section>
         </section>
 
         <!-- BOTÃO SALVAR -->
         <div class="flex justify-end gap-3 pt-4 border-t no-print">
-            <button type="submit" class="px-6 py-2.5 bg-gas-orange hover:bg-orange-600 text-white rounded-xl font-bold text-xs shadow-md">
-                <i class="fa-solid fa-floppy-disk mr-2"></i> Salvar Relatório
+            <button type="submit" class="px-6 py-2.5 bg-gas-orange hover:bg-orange-600 text-white rounded-xl font-bold text-xs shadow-md flex items-center gap-2">
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span id="btnSaveText">Salvar Abertura de RDO</span>
             </button>
         </div>
     </form>
@@ -502,7 +509,7 @@
                 <input type="checkbox" id="col_projeto" checked> Projeto
             </label>
             <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
-                <input type="checkbox" id="col_tecnico" checked> Técnico
+                <input type="checkbox" id="col_tecnico" checked> Técnico Responsável
             </label>
             <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
                 <input type="checkbox" id="col_engenheiro" checked> Engenheiro
@@ -554,6 +561,7 @@
     let currentBase64Seg2 = '';
     let currentBase64Seg3 = '';
     let currentBase64Signature = '';
+    let isSignatureProvided = false;
 
     // Canvas Signature Logic
     let canvas, ctx, isDrawing = false;
@@ -574,6 +582,7 @@
 
         const startDrawing = (e) => {
             isDrawing = true;
+            isSignatureProvided = true;
             const pos = getPos(e);
             ctx.beginPath();
             ctx.moveTo(pos.x, pos.y);
@@ -601,6 +610,7 @@
         if (ctx && canvas) {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             currentBase64Signature = '';
+            isSignatureProvided = false;
             document.getElementById('previewSignaturePrint').innerHTML = '';
         }
     }
@@ -780,6 +790,7 @@
 
         document.getElementById('typeIndicatorText').innerText = isInicial ? "Abertura de RDO" : "Encerramento de RDO";
         document.getElementById('typeIndicatorIcon').className = isInicial ? "fa-solid fa-play text-emerald-400 text-lg" : "fa-solid fa-stop text-red-400 text-lg";
+        document.getElementById('btnSaveText').innerText = isInicial ? "Salvar Abertura de RDO" : "Finalizar e Salvar Encerramento";
     }
 
     function toggleNC(id, show) {
@@ -822,6 +833,15 @@
     function handleFormSubmit(e) {
         e.preventDefault();
 
+        // Validação da assinatura para encerramento
+        if (currentReportType === 'encerramento') {
+            if (!isSignatureProvided && !currentBase64Signature) {
+                alert('A assinatura do técnico responsável é obrigatória na 2ª página para finalizar o RDO!');
+                document.getElementById('sectionAssinatura').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+        }
+
         const editingId = getVal('editingRecordId');
         const isEdit = !!editingId;
         const recordId = isEdit ? editingId : 'RDO-' + Date.now();
@@ -833,13 +853,8 @@
         };
 
         let sigData = currentBase64Signature;
-        if (canvas) {
-            const blank = document.createElement('canvas');
-            blank.width = canvas.width;
-            blank.height = canvas.height;
-            if (canvas.toDataURL() !== blank.toDataURL()) {
-                sigData = canvas.toDataURL();
-            }
+        if (canvas && isSignatureProvided) {
+            sigData = canvas.toDataURL();
         }
 
         const recordData = {
@@ -869,7 +884,7 @@
                 seguranca1: currentBase64Seg1 || existingRecord?.fotos?.seguranca1 || '',
                 seguranca2: currentBase64Seg2 || existingRecord?.fotos?.seguranca2 || '',
                 seguranca3: currentBase64Seg3 || existingRecord?.fotos?.seguranca3 || '',
-                assinatura: sigData || existingRecord?.fotos?.assinatura || ''
+                assinatura: currentReportType === 'encerramento' ? (sigData || existingRecord?.fotos?.assinatura || '') : ''
             },
             horarios: {
                 empreiteira: getVal('nomeEmpreiteira'),
@@ -910,7 +925,7 @@
             localStorage.setItem('rdo_history_data', JSON.stringify(rdoHistory));
             updateHistoryBadge();
             renderHistory(rdoHistory);
-            alert('Relatório salvo com sucesso!');
+            alert(currentReportType === 'encerramento' ? 'Relatório FINALIZADO com assinatura e salvo com sucesso!' : 'Abertura de RDO salva com sucesso!');
             resetForm();
             switchTab('historyTab');
         } catch (err) {
@@ -1008,6 +1023,7 @@
         renderBase64Preview('previewSeg3', currentBase64Seg3);
 
         if (currentBase64Signature) {
+            isSignatureProvided = true;
             const img = new Image();
             img.onload = () => { ctx.drawImage(img, 0, 0); };
             img.src = currentBase64Signature;
@@ -1063,7 +1079,7 @@
                     <div>
                         <div class="flex items-center gap-2 mb-1">
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.tipo === 'inicial' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
-                                ${item.tipo === 'inicial' ? 'Aberto / Em Andamento' : 'Encerrado'}
+                                ${item.tipo === 'inicial' ? 'Aberto / Em Andamento' : 'Encerrado & Assinado'}
                             </span>
                             <span class="text-xs font-bold text-slate-800">${item.projeto}</span>
                         </div>
@@ -1171,7 +1187,7 @@
         if (cols.dataHora) headerArr.push('Data/Hora');
         if (cols.status) headerArr.push('Status');
         if (cols.projeto) headerArr.push('Projeto');
-        if (cols.tecnico) headerArr.push('Tecnico');
+        if (cols.tecnico) headerArr.push('Tecnico Responsavel');
         if (cols.engenheiro) headerArr.push('Engenheiro');
         if (cols.empreiteira) headerArr.push('Empreiteira');
         if (cols.faltaEfetivo) headerArr.push('Falta Efetivo');
@@ -1262,16 +1278,16 @@
                 const p125 = item.producao?.pead125;
 
                 const txt63 = p63?.ativo && p63?.trechos?.length > 0
-                    ? p63.trechos.map((t, idx) => `Trecho ${idx+1}: Estaca ${t.estacaInicio || 0}+${t.metroInicio || 0}m ate ${t.estacaFim || 0}+${t.metroFim || 0}m (${t.extensao}m)`).join('<br>')
+                    ? p63.trechos.map((t, idx) => `Trecho ${idx+1}: Estaca ${t.estacaInicio || 0}+${t.metroInicio || 0}m até ${t.estacaFim || 0}+${t.metroFim || 0}m (${t.extensao}m)`).join('<br>')
                     : 'N/A';
 
                 const txt125 = p125?.ativo && p125?.trechos?.length > 0
-                    ? p125.trechos.map((t, idx) => `Trecho ${idx+1}: Estaca ${t.estacaInicio || 0}+${t.metroInicio || 0}m ate ${t.estacaFim || 0}+${t.metroFim || 0}m (${t.extensao}m)`).join('<br>')
+                    ? p125.trechos.map((t, idx) => `Trecho ${idx+1}: Estaca ${t.estacaInicio || 0}+${t.metroInicio || 0}m até ${t.estacaFim || 0}+${t.metroFim || 0}m (${t.extensao}m)`).join('<br>')
                     : 'N/A';
 
                 card.innerHTML = `
                     <h2 class="font-bold text-sm border-b pb-2 mb-3">RDO: ${item.id} - ${item.projeto}</h2>
-                    <p class="text-xs"><strong>Técnico:</strong> ${item.tecnico} | <strong>Data:</strong> ${item.dataHora}</p>
+                    <p class="text-xs"><strong>Técnico Responsável:</strong> ${item.tecnico} | <strong>Data:</strong> ${item.dataHora}</p>
                     <p class="text-xs"><strong>Status:</strong> ${item.tipo === 'encerramento' ? 'Encerrado' : 'Em Aberto'}</p>
                     <p class="text-xs mt-2"><strong>Atividades Previstas:</strong> ${item.atividadesPrevistas || 'N/A'}</p>
                     <p class="text-xs"><strong>Atividades Realizadas:</strong> ${item.atividadesRealizadas || 'N/A'}</p>
@@ -1286,7 +1302,13 @@
                         <div class="text-xs text-slate-600 pl-2">${txt125}</div>
                     </div>
 
-                    ${item.fotos?.assinatura ? `<div class="mt-4 border-t pt-2"><p class="text-[10px] font-bold">Assinatura:</p><img src="${item.fotos.assinatura}" class="h-12"></div>` : ''}
+                    ${item.fotos?.assinatura ? `
+                        <div class="mt-6 border-t pt-4 print-page-2">
+                            <p class="text-xs font-bold uppercase mb-2">Assinatura do Técnico Responsável (Finalização):</p>
+                            <img src="${item.fotos.assinatura}" class="h-16 border rounded p-1">
+                            <p class="text-[10px] text-slate-500 mt-1">${item.tecnico}</p>
+                        </div>
+                    ` : ''}
                 `;
                 printContainer.appendChild(card);
             });
