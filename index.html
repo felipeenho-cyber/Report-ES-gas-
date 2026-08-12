@@ -1,139 +1,273 @@
-<div class="card-planejamento" style="display: flex; gap: 20px; align-items: flex-start; background: #fff; padding: 20px; border-radius: 8px;">
-  
-  <!-- Lado Esquerdo: Campo de Planejamento -->
-  <div style="flex: 1;">
-    <label style="font-weight: bold; color: #1e3a8a; display: flex; align-items: center; gap: 8px; margin-bottom: 8px;">
-      <span style="font-size: 1.2rem;">☰</span> PLANEJAMENTO DO DIA
-    </label>
-    <textarea placeholder="Descreva o planejamento do serviço..." style="width: 100%; height: 100px; padding: 10px; border: 1px solid #d1d5db; border-radius: 6px; resize: vertical;"></textarea>
-  </div>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formulário de Planejamento</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
 
-  <!-- Lado Direito: Botão para abrir o Seletor de Equipe -->
-  <div style="width: 250px; position: relative;">
-    <label style="font-weight: bold; color: #1e3a8a; display: block; margin-bottom: 8px;">
-      👥 EQUIPE ENVOLVIDA
-    </label>
+    body {
+      background-color: #f3f4f6;
+      padding: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    /* CARD PRINCIPAL DE PLANEJAMENTO */
+    .card-planejamento {
+      background: #ffffff;
+      width: 100%;
+      max-width: 900px;
+      padding: 20px;
+      border-radius: 12px;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+    }
+
+    /* CAMPO DE PLANEJAMENTO DO DIA */
+    .field-planejamento {
+      flex: 1;
+      min-width: 300px;
+    }
+
+    .field-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+      color: #1e3a8a;
+      font-size: 0.95rem;
+      margin-bottom: 10px;
+    }
+
+    .field-planejamento textarea {
+      width: 100%;
+      height: 90px;
+      padding: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      font-family: inherit;
+      font-size: 0.9rem;
+      resize: vertical;
+      outline: none;
+      transition: border 0.2s;
+    }
+
+    .field-planejamento textarea:focus {
+      border-color: #2563eb;
+    }
+
+    /* SEÇÃO DA EQUIPE ENVOLVIDA */
+    .field-equipe {
+      width: 250px;
+      position: relative;
+    }
+
+    .btn-select-equipe {
+      width: 100%;
+      height: 42px;
+      padding: 0 12px;
+      background: #f8fafc;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-weight: 500;
+      color: #374151;
+      font-size: 0.88rem;
+    }
+
+    .btn-select-equipe:hover {
+      background-color: #f1f5f9;
+    }
+
+    .badge-qtd {
+      background: #e2e8f0;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+      color: #1e293b;
+    }
+
+    /* MENU FLUTUANTE (POPOVER) */
+    .popover-equipe {
+      display: none;
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      width: 280px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15);
+      border-radius: 10px;
+      padding: 14px;
+      z-index: 50;
+    }
+
+    .popover-header {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #475569;
+      margin-bottom: 10px;
+      border-bottom: 1px solid #f1f5f9;
+      padding-bottom: 6px;
+    }
+
+    .cargo-list {
+      max-height: 220px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding-right: 4px;
+    }
+
+    .cargo-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .cargo-item label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      color: #334155;
+    }
+
+    .cargo-item input[type="number"] {
+      width: 48px;
+      padding: 2px 4px;
+      text-align: center;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      font-size: 0.85rem;
+    }
+
+    .cargo-item input[type="number"]:disabled {
+      background-color: #f1f5f9;
+      color: #94a3b8;
+    }
+
+    .btn-confirm {
+      width: 100%;
+      margin-top: 12px;
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    .btn-confirm:hover {
+      background: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- CARD DO PLANEJAMENTO DO DIA -->
+  <div class="card-planejamento">
     
-    <button id="btn-equipe" onclick="togglePopover()" style="width: 100%; padding: 10px; background: #f3f4f6; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; text-align: left; font-size: 0.9rem;">
-      ➕ Selecionar Equipe <b id="qtd-total">(0 pessoas)</b>
-    </button>
+    <!-- LADO ESQUERDO: TEXTAREA -->
+    <div class="field-planejamento">
+      <label class="field-title">
+        <span>☰</span> PLANEJAMENTO DO DIA
+      </label>
+      <textarea placeholder="Descreva o planejamento do serviço..."></textarea>
+    </div>
 
-    <!-- POPOVER / MODAL SUSPENSO (Inicia Oculto) -->
-    <div id="popover-equipe" style="display: none; position: absolute; top: 100%; right: 0; width: 320px; background: white; border: 1px solid #ccc; box-shadow: 0px 4px 12px rgba(0,0,0,0.15); border-radius: 8px; padding: 12px; z-index: 10; margin-top: 5px;">
+    <!-- LADO DIREITO: SELEÇÃO DA EQUIPE -->
+    <div class="field-equipe">
+      <label class="field-title">
+        <span>👥</span> EQUIPE ENVOLVIDA
+      </label>
       
-      <div style="font-weight: bold; margin-bottom: 8px; border-bottom: 1px solid #eee; padding-bottom: 5px;">
-        Selecione e informe as quantidades:
-      </div>
-
-      <!-- Lista de Cargos com Scroll Interno -->
-      <div style="max-height: 250px; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; padding-right: 5px;">
-        
-        <!-- Modelo de Item (Repita para todos os 14 cargos) -->
-        <div class="cargo-item" style="display: flex; align-items: center; justify-content: space-between;">
-          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-            <input type="checkbox" onchange="toggleQtd(this)"> Engenheiro
-          </label>
-          <input type="number" min="1" value="1" disabled onchange="atualizarTotal()" style="width: 50px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
-        </div>
-
-        <div class="cargo-item" style="display: flex; align-items: center; justify-content: space-between;">
-          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-            <input type="checkbox" onchange="toggleQtd(this)"> Supervisor
-          </label>
-          <input type="number" min="1" value="1" disabled onchange="atualizarTotal()" style="width: 50px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
-        </div>
-
-        <div class="cargo-item" style="display: flex; align-items: center; justify-content: space-between;">
-          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-            <input type="checkbox" onchange="toggleQtd(this)"> Encarregado
-          </label>
-          <input type="number" min="1" value="1" disabled onchange="atualizarTotal()" style="width: 50px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
-        </div>
-
-        <div class="cargo-item" style="display: flex; align-items: center; justify-content: space-between;">
-          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-            <input type="checkbox" onchange="toggleQtd(this)"> Pedreiro
-          </label>
-          <input type="number" min="1" value="1" disabled onchange="atualizarTotal()" style="width: 50px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
-        </div>
-
-        <div class="cargo-item" style="display: flex; align-items: center; justify-content: space-between;">
-          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-            <input type="checkbox" onchange="toggleQtd(this)"> Auxiliar
-          </label>
-          <input type="number" min="1" value="1" disabled onchange="atualizarTotal()" style="width: 50px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
-        </div>
-
-        <div class="cargo-item" style="display: flex; align-items: center; justify-content: space-between;">
-          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-            <input type="checkbox" onchange="toggleQtd(this)"> Motorista Munck
-          </label>
-          <input type="number" min="1" value="1" disabled onchange="atualizarTotal()" style="width: 50px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
-        </div>
-
-        <div class="cargo-item" style="display: flex; align-items: center; justify-content: space-between;">
-          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-            <input type="checkbox" onchange="toggleQtd(this)"> Lixador
-          </label>
-          <input type="number" min="1" value="1" disabled onchange="atualizarTotal()" style="width: 50px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
-        </div>
-
-        <div class="cargo-item" style="display: flex; align-items: center; justify-content: space-between;">
-          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-            <input type="checkbox" onchange="toggleQtd(this)"> Soldador
-          </label>
-          <input type="number" min="1" value="1" disabled onchange="atualizarTotal()" style="width: 50px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
-        </div>
-
-        <div class="cargo-item" style="display: flex; align-items: center; justify-content: space-between;">
-          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-            <input type="checkbox" onchange="toggleQtd(this)"> Pintor
-          </label>
-          <input type="number" min="1" value="1" disabled onchange="atualizarTotal()" style="width: 50px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
-        </div>
-
-        <div class="cargo-item" style="display: flex; align-items: center; justify-content: space-between;">
-          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-            <input type="checkbox" onchange="toggleQtd(this)"> Inspetor
-          </label>
-          <input type="number" min="1" value="1" disabled onchange="atualizarTotal()" style="width: 50px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
-        </div>
-
-        <div class="cargo-item" style="display: flex; align-items: center; justify-content: space-between;">
-          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-            <input type="checkbox" onchange="toggleQtd(this)"> Navegador
-          </label>
-          <input type="number" min="1" value="1" disabled onchange="atualizarTotal()" style="width: 50px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
-        </div>
-
-        <div class="cargo-item" style="display: flex; align-items: center; justify-content: space-between;">
-          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-            <input type="checkbox" onchange="toggleQtd(this)"> Operador
-          </label>
-          <input type="number" min="1" value="1" disabled onchange="atualizarTotal()" style="width: 50px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
-        </div>
-
-        <div class="cargo-item" style="display: flex; align-items: center; justify-content: space-between;">
-          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-            <input type="checkbox" onchange="toggleQtd(this)"> Eletricista
-          </label>
-          <input type="number" min="1" value="1" disabled onchange="atualizarTotal()" style="width: 50px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
-        </div>
-
-        <div class="cargo-item" style="display: flex; align-items: center; justify-content: space-between;">
-          <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.85rem;">
-            <input type="checkbox" onchange="toggleQtd(this)"> Pipa
-          </label>
-          <input type="number" min="1" value="1" disabled onchange="atualizarTotal()" style="width: 50px; text-align: center; border: 1px solid #ccc; border-radius: 4px;">
-        </div>
-
-      </div>
-
-      <button onclick="togglePopover()" style="width: 100%; margin-top: 10px; background: #2563eb; color: white; border: none; padding: 6px; border-radius: 4px; cursor: pointer;">
-        Concluído
+      <button type="button" class="btn-select-equipe" onclick="togglePopover()">
+        <span>➕ Selecionar</span>
+        <b id="qtd-total" class="badge-qtd">0 pessoas</b>
       </button>
 
+      <!-- MENU FLUTUANTE DE CARGOS -->
+      <div id="popover-equipe" class="popover-equipe">
+        <div class="popover-header">Selecione a equipe do dia:</div>
+
+        <div class="cargo-list">
+          <div class="cargo-item"><label><input type="checkbox" onchange="toggleQtd(this)"> Engenheiro</label><input type="number" min="1" value="1" disabled onchange="atualizarTotal()"></div>
+          <div class="cargo-item"><label><input type="checkbox" onchange="toggleQtd(this)"> Supervisor</label><input type="number" min="1" value="1" disabled onchange="atualizarTotal()"></div>
+          <div class="cargo-item"><label><input type="checkbox" onchange="toggleQtd(this)"> Encarregado</label><input type="number" min="1" value="1" disabled onchange="atualizarTotal()"></div>
+          <div class="cargo-item"><label><input type="checkbox" onchange="toggleQtd(this)"> Pedreiro</label><input type="number" min="1" value="1" disabled onchange="atualizarTotal()"></div>
+          <div class="cargo-item"><label><input type="checkbox" onchange="toggleQtd(this)"> Auxiliar</label><input type="number" min="1" value="1" disabled onchange="atualizarTotal()"></div>
+          <div class="cargo-item"><label><input type="checkbox" onchange="toggleQtd(this)"> Motorista Munck</label><input type="number" min="1" value="1" disabled onchange="atualizarTotal()"></div>
+          <div class="cargo-item"><label><input type="checkbox" onchange="toggleQtd(this)"> Lixador</label><input type="number" min="1" value="1" disabled onchange="atualizarTotal()"></div>
+          <div class="cargo-item"><label><input type="checkbox" onchange="toggleQtd(this)"> Soldador</label><input type="number" min="1" value="1" disabled onchange="atualizarTotal()"></div>
+          <div class="cargo-item"><label><input type="checkbox" onchange="toggleQtd(this)"> Pintor</label><input type="number" min="1" value="1" disabled onchange="atualizarTotal()"></div>
+          <div class="cargo-item"><label><input type="checkbox" onchange="toggleQtd(this)"> Inspetor</label><input type="number" min="1" value="1" disabled onchange="atualizarTotal()"></div>
+          <div class="cargo-item"><label><input type="checkbox" onchange="toggleQtd(this)"> Navegador</label><input type="number" min="1" value="1" disabled onchange="atualizarTotal()"></div>
+          <div class="cargo-item"><label><input type="checkbox" onchange="toggleQtd(this)"> Operador</label><input type="number" min="1" value="1" disabled onchange="atualizarTotal()"></div>
+          <div class="cargo-item"><label><input type="checkbox" onchange="toggleQtd(this)"> Eletricista</label><input type="number" min="1" value="1" disabled onchange="atualizarTotal()"></div>
+          <div class="cargo-item"><label><input type="checkbox" onchange="toggleQtd(this)"> Pipa</label><input type="number" min="1" value="1" disabled onchange="atualizarTotal()"></div>
+        </div>
+
+        <button type="button" class="btn-confirm" onclick="togglePopover()">OK / Confirmar</button>
+      </div>
     </div>
+
   </div>
 
-</div>
+  <script>
+    // Alterna visibilidade do Popover
+    function togglePopover() {
+      const popover = document.getElementById('popover-equipe');
+      popover.style.display = popover.style.display === 'block' ? 'none' : 'block';
+    }
+
+    // Ativa/Desativa o campo de número ao flegar
+    function toggleQtd(checkbox) {
+      const inputQtd = checkbox.closest('.cargo-item').querySelector('input[type="number"]');
+      inputQtd.disabled = !checkbox.checked;
+      if (!checkbox.checked) inputQtd.value = 1;
+      atualizarTotal();
+    }
+
+    // Soma a quantidade total de profissionais
+    function atualizarTotal() {
+      let total = 0;
+      document.querySelectorAll('.cargo-item').forEach(item => {
+        const checkbox = item.querySelector('input[type="checkbox"]');
+        const inputQtd = item.querySelector('input[type="number"]');
+        if (checkbox.checked) {
+          total += parseInt(inputQtd.value) || 0;
+        }
+      });
+      document.getElementById('qtd-total').innerText = `${total} pessoas`;
+    }
+
+    // Fecha o menu se clicar fora dele
+    document.addEventListener('click', function(event) {
+      const field = document.querySelector('.field-equipe');
+      if (!field.contains(event.target)) {
+        document.getElementById('popover-equipe').style.display = 'none';
+      }
+    });
+  </script>
+
+</body>
+</html>
