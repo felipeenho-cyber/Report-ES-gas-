@@ -218,6 +218,86 @@
                     </div>
                 </div>
 
+                <!-- EFETIVO DA EQUIPE -->
+                <div class="mt-4 pt-4 border-t">
+                    <h3 class="text-xs font-bold text-slate-700 uppercase mb-3">
+                        <i class="fa-solid fa-user-group text-gas-500 mr-1"></i> Efetivo da Equipe Empreiteira
+                    </h3>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <!-- Auxiliar de Tubulação -->
+                        <div class="flex items-center justify-between p-2.5 bg-slate-50 border rounded-lg">
+                            <label class="flex items-center gap-2 text-xs font-medium cursor-pointer">
+                                <input type="checkbox" onchange="toggleEfetivoInput(this, 'qtd_auxiliar')" class="rounded border-slate-300 text-gas-500 focus:ring-gas-500">
+                                <span>Auxiliar de Tubulação</span>
+                            </label>
+                            <input type="number" id="qtd_auxiliar" min="1" disabled placeholder="Qtd" class="w-16 text-xs p-1.5 border border-slate-300 rounded bg-slate-100 disabled:opacity-50 text-center font-bold">
+                        </div>
+
+                        <!-- Encarregado -->
+                        <div class="flex items-center justify-between p-2.5 bg-slate-50 border rounded-lg">
+                            <label class="flex items-center gap-2 text-xs font-medium cursor-pointer">
+                                <input type="checkbox" onchange="toggleEfetivoInput(this, 'qtd_encarregado')" class="rounded border-slate-300 text-gas-500 focus:ring-gas-500">
+                                <span>Encarregado</span>
+                            </label>
+                            <input type="number" id="qtd_encarregado" min="1" disabled placeholder="Qtd" class="w-16 text-xs p-1.5 border border-slate-300 rounded bg-slate-100 disabled:opacity-50 text-center font-bold">
+                        </div>
+
+                        <!-- Encanador Industrial / Montador -->
+                        <div class="flex items-center justify-between p-2.5 bg-slate-50 border rounded-lg">
+                            <label class="flex items-center gap-2 text-xs font-medium cursor-pointer">
+                                <input type="checkbox" onchange="toggleEfetivoInput(this, 'qtd_encanador')" class="rounded border-slate-300 text-gas-500 focus:ring-gas-500">
+                                <span>Encanador Ind. / Montador</span>
+                            </label>
+                            <input type="number" id="qtd_encanador" min="1" disabled placeholder="Qtd" class="w-16 text-xs p-1.5 border border-slate-300 rounded bg-slate-100 disabled:opacity-50 text-center font-bold">
+                        </div>
+
+                        <!-- Inspetor -->
+                        <div class="flex items-center justify-between p-2.5 bg-slate-50 border rounded-lg">
+                            <label class="flex items-center gap-2 text-xs font-medium cursor-pointer">
+                                <input type="checkbox" onchange="toggleEfetivoInput(this, 'qtd_inspetor')" class="rounded border-slate-300 text-gas-500 focus:ring-gas-500">
+                                <span>Inspetor</span>
+                            </label>
+                            <input type="number" id="qtd_inspetor" min="1" disabled placeholder="Qtd" class="w-16 text-xs p-1.5 border border-slate-300 rounded bg-slate-100 disabled:opacity-50 text-center font-bold">
+                        </div>
+
+                        <!-- Inspetor de Qualidade -->
+                        <div class="flex items-center justify-between p-2.5 bg-slate-50 border rounded-lg">
+                            <label class="flex items-center gap-2 text-xs font-medium cursor-pointer">
+                                <input type="checkbox" onchange="toggleEfetivoInput(this, 'qtd_inspetor_qualidade')" class="rounded border-slate-300 text-gas-500 focus:ring-gas-500">
+                                <span>Inspetor de Qualidade</span>
+                            </label>
+                            <input type="number" id="qtd_inspetor_qualidade" min="1" disabled placeholder="Qtd" class="w-16 text-xs p-1.5 border border-slate-300 rounded bg-slate-100 disabled:opacity-50 text-center font-bold">
+                        </div>
+
+                        <!-- Operador de Retroescavadeira / Mini-Escavadeira -->
+                        <div class="flex items-center justify-between p-2.5 bg-slate-50 border rounded-lg">
+                            <label class="flex items-center gap-2 text-xs font-medium cursor-pointer">
+                                <input type="checkbox" onchange="toggleEfetivoInput(this, 'qtd_operador')" class="rounded border-slate-300 text-gas-500 focus:ring-gas-500">
+                                <span>Op. Retro / Mini-Escavadeira</span>
+                            </label>
+                            <input type="number" id="qtd_operador" min="1" disabled placeholder="Qtd" class="w-16 text-xs p-1.5 border border-slate-300 rounded bg-slate-100 disabled:opacity-50 text-center font-bold">
+                        </div>
+
+                        <!-- Soldador de PEAD / Tubista Especializado -->
+                        <div class="flex items-center justify-between p-2.5 bg-slate-50 border rounded-lg">
+                            <label class="flex items-center gap-2 text-xs font-medium cursor-pointer">
+                                <input type="checkbox" onchange="toggleEfetivoInput(this, 'qtd_soldador')" class="rounded border-slate-300 text-gas-500 focus:ring-gas-500">
+                                <span>Soldador PEAD / Tubista Esp.</span>
+                            </label>
+                            <input type="number" id="qtd_soldador" min="1" disabled placeholder="Qtd" class="w-16 text-xs p-1.5 border border-slate-300 rounded bg-slate-100 disabled:opacity-50 text-center font-bold">
+                        </div>
+
+                        <!-- Técnico de Segurança do Trabalho (TST) -->
+                        <div class="flex items-center justify-between p-2.5 bg-slate-50 border rounded-lg">
+                            <label class="flex items-center gap-2 text-xs font-medium cursor-pointer">
+                                <input type="checkbox" onchange="toggleEfetivoInput(this, 'qtd_tst')" class="rounded border-slate-300 text-gas-500 focus:ring-gas-500">
+                                <span>Técnico de Seg. Trabalho (TST)</span>
+                            </label>
+                            <input type="number" id="qtd_tst" min="1" disabled placeholder="Qtd" class="w-16 text-xs p-1.5 border border-slate-300 rounded bg-slate-100 disabled:opacity-50 text-center font-bold">
+                        </div>
+                    </div>
+                </div>
+
                 <div class="mt-4 pt-4 border-t">
                     <label class="block text-xs font-semibold mb-1">
                         <i class="fa-solid fa-camera text-gas-500 mr-1"></i> Enviar foto do canteiro (Time Stamp ESGas)
@@ -563,6 +643,24 @@
     let currentBase64Signature = '';
     let isSignatureProvided = false;
 
+    // Habilita/Desabilita o campo de quantidade do efetivo
+    function toggleEfetivoInput(checkbox, inputId) {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.disabled = !checkbox.checked;
+            if (checkbox.checked) {
+                if (!input.value) input.value = 1;
+                input.focus();
+                input.classList.remove('bg-slate-100');
+                input.classList.add('bg-white');
+            } else {
+                input.value = '';
+                input.classList.add('bg-slate-100');
+                input.classList.remove('bg-white');
+            }
+        }
+    }
+
     // Canvas Signature Logic
     let canvas, ctx, isDrawing = false;
 
@@ -866,6 +964,16 @@
             tecnico: getVal('selectTecnico'),
             engenheiro: getVal('selectEngenheiro'),
             tipoObra: getVal('selectTipoObra'),
+            efetivo: {
+                auxiliar: getVal('qtd_auxiliar'),
+                encarregado: getVal('qtd_encarregado'),
+                encanador: getVal('qtd_encanador'),
+                inspetor: getVal('qtd_inspetor'),
+                inspetorQualidade: getVal('qtd_inspetor_qualidade'),
+                operador: getVal('qtd_operador'),
+                soldador: getVal('qtd_soldador'),
+                tst: getVal('qtd_tst')
+            },
             faltaEfetivo: {
                 houve: radioVal('faltaEfetivo'),
                 descricao: getVal('descFaltaEfetivo')
@@ -938,6 +1046,17 @@
         document.getElementById('rdoForm').reset();
         document.getElementById('editingRecordId').value = '';
         
+        // Desabilita inputs de efetivo
+        ['qtd_auxiliar', 'qtd_encarregado', 'qtd_encanador', 'qtd_inspetor', 'qtd_inspetor_qualidade', 'qtd_operador', 'qtd_soldador', 'qtd_tst'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.disabled = true;
+                el.value = '';
+                el.classList.add('bg-slate-100');
+                el.classList.remove('bg-white');
+            }
+        });
+
         ['previewCanteiro', 'previewSeg1', 'previewSeg2', 'previewSeg3'].forEach(id => {
             const el = document.getElementById(id);
             if (el) {
@@ -980,6 +1099,35 @@
         setVal('nomeEmpreiteira', item.horarios?.empreiteira);
         setVal('horarioPrevistoEmpreiteira', item.horarios?.previstoEmpreiteira);
         setVal('atividadesPrevistas', item.atividadesPrevistas);
+
+        // Preenche Efetivo
+        if (item.efetivo) {
+            const mapEfetivo = {
+                auxiliar: 'qtd_auxiliar',
+                encarregado: 'qtd_encarregado',
+                encanador: 'qtd_encanador',
+                inspetor: 'qtd_inspetor',
+                inspetorQualidade: 'qtd_inspetor_qualidade',
+                operador: 'qtd_operador',
+                soldador: 'qtd_soldador',
+                tst: 'qtd_tst'
+            };
+
+            for (const [key, inputId] of Object.entries(mapEfetivo)) {
+                const val = item.efetivo[key];
+                if (val) {
+                    const input = document.getElementById(inputId);
+                    if (input) {
+                        const checkbox = input.parentElement.querySelector('input[type="checkbox"]');
+                        if (checkbox) checkbox.checked = true;
+                        input.disabled = false;
+                        input.value = val;
+                        input.classList.remove('bg-slate-100');
+                        input.classList.add('bg-white');
+                    }
+                }
+            }
+        }
 
         // Falta Efetivo / Equipamento
         if (item.faltaEfetivo?.houve) {
