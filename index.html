@@ -16,6 +16,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <script>
         tailwind.config = {
@@ -76,6 +77,198 @@
             canvas { border: none !important; }
         }
     </style>
+
+
+    <!-- MODERNIZAÇÃO VISUAL — IDENTIDADE ES GÁS -->
+    <style>
+        :root {
+            --es-blue: #135eab;
+            --es-blue-dark: #0658a5;
+            --es-green: #6cc72b;
+            --es-green-light: #afca1d;
+            --es-gray: #64748b;
+            --es-bg: #f4f8fb;
+            --es-border: #dce7ef;
+        }
+
+        html { scroll-behavior: smooth; }
+        body {
+            font-family: 'Montserrat', 'Inter', sans-serif !important;
+            background:
+                radial-gradient(circle at 8% 8%, rgba(108,199,43,.10), transparent 25%),
+                radial-gradient(circle at 92% 18%, rgba(19,94,171,.09), transparent 28%),
+                var(--es-bg) !important;
+        }
+
+        /* Cabeçalho */
+        header.bg-gradient-to-r {
+            background: linear-gradient(110deg, #0658a5 0%, #135eab 48%, #6cc72b 100%) !important;
+            border-bottom: 3px solid rgba(255,255,255,.18);
+            box-shadow: 0 8px 30px rgba(6,88,165,.20) !important;
+            backdrop-filter: blur(12px);
+        }
+
+        header .bg-gas-orange {
+            background: rgba(255,255,255,.16) !important;
+            border: 1px solid rgba(255,255,255,.28);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,.20), 0 8px 20px rgba(0,0,0,.10);
+        }
+
+        header h1 { letter-spacing: -.025em; }
+        header p { letter-spacing: .01em; }
+
+        /* Abas superiores */
+        #btnTabForm, #btnTabHistory {
+            border: 1px solid rgba(255,255,255,.16);
+            transition: .2s ease;
+        }
+        #btnTabForm:hover, #btnTabHistory:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0,0,0,.12);
+        }
+
+        /* Container principal */
+        main { padding-top: 2rem !important; padding-bottom: 3rem !important; }
+
+        /* Cards */
+        .print-card,
+        #historyTab > section,
+        #formTab > section:not(.no-print),
+        #sectionInicial > section,
+        #sectionEncerramento > section {
+            border-color: var(--es-border) !important;
+            border-radius: 20px !important;
+            box-shadow: 0 10px 30px rgba(15,61,90,.055) !important;
+            transition: box-shadow .2s ease, transform .2s ease, border-color .2s ease;
+        }
+
+        #sectionInicial > section:hover,
+        #sectionEncerramento > section:hover,
+        #formTab > section:not(.no-print):hover {
+            border-color: rgba(19,94,171,.24) !important;
+            box-shadow: 0 14px 36px rgba(15,61,90,.09) !important;
+        }
+
+        /* Títulos das seções */
+        section h2 {
+            position: relative;
+            padding-bottom: .75rem !important;
+            border-bottom-color: #e5edf3 !important;
+            letter-spacing: .035em;
+        }
+
+        section h2::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -1px;
+            width: 58px;
+            height: 3px;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--es-blue), var(--es-green));
+        }
+
+        section h2 i { filter: saturate(1.05); }
+
+        /* Campo Projeto e demais campos */
+        select, input, textarea {
+            border-color: #d5e1ea !important;
+            transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+        }
+
+        select:focus, input:focus, textarea:focus {
+            outline: none !important;
+            border-color: var(--es-blue) !important;
+            box-shadow: 0 0 0 4px rgba(19,94,171,.10) !important;
+            background: #fff !important;
+        }
+
+        #selectProjeto {
+            min-height: 44px;
+            font-weight: 600 !important;
+            color: #18364d;
+            background-color: #f8fbfd !important;
+            box-shadow: inset 0 1px 2px rgba(15,61,90,.03);
+        }
+
+        #selectProjeto:hover { border-color: rgba(19,94,171,.45) !important; }
+
+        /* Indicador de etapa */
+        #formTab > section.no-print.bg-white {
+            background: rgba(255,255,255,.88) !important;
+            backdrop-filter: blur(10px);
+        }
+
+        #btnReportInicial, #btnReportEncerramento {
+            min-height: 92px;
+            transition: all .2s ease;
+        }
+        #btnReportInicial:hover, #btnReportEncerramento:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 24px rgba(15,61,90,.09);
+        }
+
+        /* Barra de status */
+        #typeIndicatorText { letter-spacing: .01em; }
+
+        /* Botão salvar */
+        button[type="submit"] {
+            background: linear-gradient(100deg, #135eab 0%, #0658a5 45%, #6cc72b 100%) !important;
+            box-shadow: 0 10px 22px rgba(19,94,171,.20) !important;
+            border: 0 !important;
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+        button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 28px rgba(19,94,171,.28) !important;
+        }
+
+        /* Remove o protagonismo do laranja antigo da interface */
+        .bg-gas-orange {
+            background: linear-gradient(135deg, #135eab, #6cc72b) !important;
+        }
+        .text-gas-orange { color: var(--es-blue) !important; }
+
+        /* Botões de ação */
+        button:not([type="submit"]) { transition: all .18s ease; }
+        button:not([type="submit"]):hover { transform: translateY(-1px); }
+
+        /* Blocos internos */
+        .bg-slate-50 {
+            background-color: #f7fafc !important;
+        }
+
+        /* Scrollbar discreta */
+        ::-webkit-scrollbar { width: 9px; height: 9px; }
+        ::-webkit-scrollbar-track { background: #edf3f7; }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(var(--es-blue), var(--es-green));
+            border-radius: 999px;
+        }
+
+        /* Destaque visual para o título da identificação */
+        #selectProjeto { letter-spacing: .005em; }
+
+        @media (max-width: 640px) {
+            main { padding-left: .75rem !important; padding-right: .75rem !important; }
+            header h1 { font-size: .95rem !important; }
+            #btnReportInicial, #btnReportEncerramento { min-height: 82px; }
+        }
+
+        /* Impressão: mantém o visual limpo e profissional */
+        @media print {
+            body { font-family: 'Montserrat', 'Inter', sans-serif !important; background: white !important; }
+            .print-card,
+            #historyTab > section,
+            #sectionInicial > section,
+            #sectionEncerramento > section {
+                box-shadow: none !important;
+                border-radius: 10px !important;
+            }
+            section h2::after { background: #135eab !important; }
+        }
+    </style>
+
 </head>
 
 <body class="bg-slate-100 text-slate-800 min-h-screen">
@@ -85,7 +278,7 @@
     <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
         <div class="flex items-center gap-3">
             <div class="bg-gas-orange p-2.5 rounded-xl text-xl flex items-center justify-center">
-                <i class="fa-solid fa-fire-flame-curved"></i>
+                <i class="fa-solid fa-leaf"></i>
             </div>
             <div>
                 <h1 class="font-bold text-lg leading-tight">
