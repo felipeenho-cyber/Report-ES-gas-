@@ -485,30 +485,1017 @@
                             <button type="button" onclick="adicionarTrechoPead('63')" class="mt-2 flex items-center gap-1 bg-blue-50 text-blue-600 border border-blue-200 px-2.5 py-1 rounded text-xs font-semibold hover:bg-blue-100 transition no-print">
                                 <i class="fa-solid fa-plus text-[10px]"></i> Adicionar Trecho
                             </button>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1">Total Metragem (Calculado)</label>
+                                <input type="number" id="extensao63" readonly placeholder="Total em Metros" class="w-full text-xs p-2 border rounded bg-slate-100 font-bold text-gas-700" value="0.00">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PEAD 125 mm -->
+                    <div class="bg-slate-50 p-4 rounded-xl border">
+                        <label class="flex items-center gap-2 text-xs font-bold cursor-pointer">
+                            <input type="checkbox" id="checkPEAD125" onchange="togglePEAD('fieldsPEAD125', this.checked)"> PEAD 125 mm
+                        </label>
+                        <div id="fieldsPEAD125" class="mt-3 space-y-3 hidden">
+                            <div id="trechos-container-125" class="space-y-2"></div>
+                            <button type="button" onclick="adicionarTrechoPead('125')" class="mt-2 flex items-center gap-1 bg-blue-50 text-blue-600 border border-blue-200 px-2.5 py-1 rounded text-xs font-semibold hover:bg-blue-100 transition no-print">
+                                <i class="fa-solid fa-plus text-[10px]"></i> Adicionar Trecho
+                            </button>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-600 mb-1">Total Metragem (Calculado)</label>
+                                <input type="number" id="extensao125" readonly placeholder="Total em Metros" class="w-full text-xs p-2 border rounded bg-slate-100 font-bold text-gas-700" value="0.00">
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
+
+            <!-- SEÇÃO: ASSINATURA DE ENCERRAMENTO (FORÇADA PARA A PÁGINA 2 NA IMPRESSÃO) -->
+            <section id="sectionAssinatura" class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card print-page-2">
+                <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4 text-slate-700">
+                    <i class="fa-solid fa-signature text-gas-500 mr-1"></i> Assinatura do Técnico Responsável (Finalização) <span class="text-red-500">*</span>
+                </h2>
+                <div class="max-w-md">
+                    <label class="block text-xs font-semibold mb-1">Assine no campo abaixo para encerrar o relatório:</label>
+                    <div class="border-2 border-dashed border-slate-300 rounded-lg p-1 bg-slate-50 relative">
+                        <canvas id="signaturePad" width="400" height="150" class="w-full touch-none bg-white rounded cursor-crosshair"></canvas>
+                        <button type="button" onclick="clearSignature()" class="absolute top-2 right-2 px-2 py-1 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded text-[10px] font-bold no-print">
+                            <i class="fa-solid fa-eraser"></i> Limpar
+                        </button>
+                    </div>
+                    <div id="previewSignaturePrint" class="hidden mt-2"></div>
+                </div>
+            </section>
         </section>
+
+        <!-- BOTÃO SALVAR -->
+        <div class="flex justify-end gap-3 pt-4 border-t no-print">
+            <button type="submit" class="px-6 py-2.5 bg-gas-orange hover:bg-orange-600 text-white rounded-xl font-bold text-xs shadow-md flex items-center gap-2">
+                <i class="fa-solid fa-floppy-disk"></i>
+                <span id="btnSaveText">Salvar Abertura de RDO</span>
+            </button>
+        </div>
     </form>
 </div>
+
+<!-- ABA HISTÓRICO -->
+<div id="historyTab" class="hidden space-y-4">
+    <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+        <div class="flex flex-wrap justify-between items-center gap-3 border-b pb-3 mb-3">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xs font-bold uppercase text-slate-700">
+                    <i class="fa-solid fa-filter text-gas-500 mr-1"></i> Filtrar Histórico
+                </h2>
+                <label class="text-xs text-slate-500 flex items-center gap-1 cursor-pointer">
+                    <input type="checkbox" id="selectAllHistory" onchange="toggleSelectAll(this)" class="rounded"> Selecionar Todos
+                </label>
+            </div>
+            <div class="flex gap-2">
+                <button type="button" onclick="openExportModal()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition">
+                    <i class="fa-solid fa-file-excel mr-1"></i> Exportar Selecionados (CSV)
+                </button>
+                <button type="button" onclick="exportToPDF()" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow-sm transition">
+                    <i class="fa-solid fa-file-pdf mr-1"></i> Imprimir / PDF
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div>
+                <label class="block text-[11px] font-medium text-slate-500 mb-1">Buscar por texto</label>
+                <input type="text" id="filterSearch" oninput="applyHistoryFilter()" placeholder="Projeto, Técnico..." class="w-full text-xs p-2 border border-slate-300 rounded-lg">
+            </div>
+            <div>
+                <label class="block text-[11px] font-medium text-slate-500 mb-1">Data</label>
+                <input type="date" id="filterDate" onchange="applyHistoryFilter()" class="w-full text-xs p-2 border border-slate-300 rounded-lg">
+            </div>
+            <div>
+                <label class="block text-[11px] font-medium text-slate-500 mb-1">Tipo de RDO</label>
+                <select id="filterType" onchange="applyHistoryFilter()" class="w-full text-xs p-2 border border-slate-300 rounded-lg">
+                    <option value="">Todos</option>
+                    <option value="inicial">Em Aberto</option>
+                    <option value="encerramento">Encerrado</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button type="button" onclick="clearHistoryFilters()" class="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-lg">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Limpar Filtros
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <div id="historyContainer" class="space-y-3"></div>
+</div>
+
 </main>
 
-<!-- SCRIPT PARA ATUALIZAÇÃO AUTOMÁTICA DA DATA E HORA -->
+<!-- MODAL SELEÇÃO DE COLUNAS DE EXPORTAÇÃO -->
+<div id="exportModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden">
+    <div class="bg-white rounded-2xl p-6 max-w-md w-full mx-4 shadow-xl border">
+        <h3 class="text-sm font-bold text-slate-800 uppercase mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-sliders text-gas-500"></i> Escolha as colunas para exportar
+        </h3>
+        <p class="text-xs text-slate-500 mb-4">Marque os campos que deseja incluir no arquivo CSV de relatórios:</p>
+        
+        <div class="space-y-2 max-h-60 overflow-y-auto pr-2 text-xs">
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_id" checked> ID do Relatório
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_dataHora" checked> Data/Hora
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_status" checked> Status
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_projeto" checked> Projeto
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_tecnico" checked> Técnico Responsável
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_engenheiro" checked> Engenheiro
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_empreiteira" checked> Empreiteira
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_faltaEfetivo" checked> Falta de Efetivo
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_faltaEquipamento" checked> Falta de Equipamento
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_seguranca" checked> Segurança do Trabalho
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_pead63" checked> PEAD 63mm (Trechos e Total)
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_pead125" checked> PEAD 125mm (Trechos e Total)
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_atividadesPrevistas" checked> Atividades Previstas
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer border-b pb-1">
+                <input type="checkbox" id="col_atividadesRealizadas" checked> Atividades Realizadas
+            </label>
+        </div>
+
+        <div class="flex justify-end gap-2 mt-6">
+            <button type="button" onclick="closeExportModal()" class="px-4 py-2 bg-slate-200 text-slate-700 text-xs font-bold rounded-lg hover:bg-slate-300">
+                Cancelar
+            </button>
+            <button type="button" onclick="processCustomCSVExport()" class="px-4 py-2 bg-emerald-600 text-white text-xs font-bold rounded-lg hover:bg-emerald-700">
+                Exportar CSV
+            </button>
+        </div>
+    </div>
+</div>
+
 <script>
-    function updateClock() {
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('pt-BR');
-        const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-        const el = document.getElementById('autoDateTime');
-        if (el) {
-            el.innerText = `${dateStr} ${timeStr}`;
+    let currentReportType = 'inicial';
+    let rdoHistory = JSON.parse(localStorage.getItem('rdo_history_data') || '[]');
+    let trechoCounters = { '63': 0, '125': 0 };
+    
+    let currentBase64Canteiro = '';
+    let currentBase64Seg1 = '';
+    let currentBase64Seg2 = '';
+    let currentBase64Seg3 = '';
+    let currentBase64Signature = '';
+    let isSignatureProvided = false;
+
+    // Habilita/Desabilita o campo de quantidade do efetivo
+    function toggleEfetivoInput(checkbox, inputId) {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.disabled = !checkbox.checked;
+            if (checkbox.checked) {
+                if (!input.value) input.value = 1;
+                input.focus();
+                input.classList.remove('bg-slate-100');
+                input.classList.add('bg-white');
+            } else {
+                input.value = '';
+                input.classList.add('bg-slate-100');
+                input.classList.remove('bg-white');
+            }
         }
     }
 
-    // Atualiza imediatamente e configura para atualizar a cada 1 segundo
-    updateClock();
-    setInterval(updateClock, 1000);
+    // Canvas Signature Logic
+    let canvas, ctx, isDrawing = false;
+
+    function initSignaturePad() {
+        canvas = document.getElementById('signaturePad');
+        if (!canvas) return;
+        ctx = canvas.getContext('2d');
+        ctx.strokeStyle = '#0f172a';
+        ctx.lineWidth = 2;
+
+        const getPos = (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return { x: clientX - rect.left, y: clientY - rect.top };
+        };
+
+        const startDrawing = (e) => {
+            isDrawing = true;
+            isSignatureProvided = true;
+            const pos = getPos(e);
+            ctx.beginPath();
+            ctx.moveTo(pos.x, pos.y);
+        };
+
+        const draw = (e) => {
+            if (!isDrawing) return;
+            const pos = getPos(e);
+            ctx.lineTo(pos.x, pos.y);
+            ctx.stroke();
+        };
+
+        const stopDrawing = () => { isDrawing = false; };
+
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); }, { passive: false });
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); }, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+    }
+
+    function clearSignature() {
+        if (ctx && canvas) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            currentBase64Signature = '';
+            isSignatureProvided = false;
+            document.getElementById('previewSignaturePrint').innerHTML = '';
+        }
+    }
+
+    function getVal(id) {
+        const el = document.getElementById(id);
+        return el ? el.value : '';
+    }
+
+    function setVal(id, val) {
+        const el = document.getElementById(id);
+        if (el) el.value = val || '';
+    }
+
+    function setRadioVal(name, val) {
+        const el = document.querySelector(`input[name="${name}"][value="${val}"]`);
+        if (el) el.checked = true;
+    }
+
+    function renderBase64Preview(containerId, base64Str) {
+        const container = document.getElementById(containerId);
+        if (!container) return;
+        if (base64Str) {
+            container.classList.remove('hidden');
+            container.innerHTML = `<div class="image-preview-card border rounded p-1 bg-white shadow-sm mt-1"><img src="${base64Str}"><p class="text-[9px] text-slate-500 mt-1 text-center font-semibold">Anexo/Evidência</p></div>`;
+        } else {
+            container.classList.add('hidden');
+            container.innerHTML = '';
+        }
+    }
+
+    // --- GERENCIAMENTO DE MÚLTIPLOS TRECHOS PEAD ---
+    function adicionarTrechoPead(tipo, dados = null) {
+        trechoCounters[tipo]++;
+        const container = document.getElementById(`trechos-container-${tipo}`);
+        const idTrecho = `trecho-${tipo}-${trechoCounters[tipo]}`;
+        
+        const div = document.createElement('div');
+        div.id = idTrecho;
+        div.className = 'bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm relative space-y-2';
+
+        div.innerHTML = `
+            <div class="grid grid-cols-2 gap-2">
+                <div>
+                    <span class="text-[10px] font-semibold text-slate-500 block">Estaca Início (X)</span>
+                    <div class="flex gap-1">
+                        <input type="number" min="0" placeholder="Estaca" class="estaca-inicio w-1/2 text-xs p-1.5 border rounded" oninput="calcularPead('${tipo}')" value="${dados?.estacaInicio || ''}">
+                        <input type="number" min="0" max="19.99" step="0.01" placeholder="+ m" class="metro-inicio w-1/2 text-xs p-1.5 border rounded" oninput="calcularPead('${tipo}')" value="${dados?.metroInicio || ''}">
+                    </div>
+                </div>
+                <div>
+                    <span class="text-[10px] font-semibold text-slate-500 block">Estaca Final (Y)</span>
+                    <div class="flex gap-1">
+                        <input type="number" min="0" placeholder="Estaca" class="estaca-fim w-1/2 text-xs p-1.5 border rounded" oninput="calcularPead('${tipo}')" value="${dados?.estacaFim || ''}">
+                        <input type="number" min="0" max="19.99" step="0.01" placeholder="+ m" class="metro-fim w-1/2 text-xs p-1.5 border rounded" oninput="calcularPead('${tipo}')" value="${dados?.metroFim || ''}">
+                    </div>
+                </div>
+            </div>
+            <div class="flex items-center justify-between border-t pt-1.5">
+                <span class="text-[10px] text-slate-500 font-semibold">Subtotal: <strong class="subtotal-trecho text-slate-700">0.00</strong> m</span>
+                <button type="button" onclick="removerTrechoPead('${tipo}', '${idTrecho}')" class="text-red-500 hover:text-red-700 text-xs px-1.5 py-0.5 rounded border border-red-100 hover:bg-red-50 no-print" title="Remover Trecho">
+                    <i class="fa-solid fa-trash-can"></i>
+                </button>
+            </div>
+        `;
+
+        container.appendChild(div);
+        calcularPead(tipo);
+    }
+
+    function removerTrechoPead(tipo, idTrecho) {
+        const container = document.getElementById(`trechos-container-${tipo}`);
+        const el = document.getElementById(idTrecho);
+        if (container.children.length > 1) {
+            if (el) el.remove();
+            calcularPead(tipo);
+        } else {
+            alert("Mantenha ao menos um trecho no diâmetro ativo.");
+        }
+    }
+
+    function calcularPead(tipo) {
+        const container = document.getElementById(`trechos-container-${tipo}`);
+        if (!container) return;
+
+        let totalGeral = 0;
+        const trechos = container.querySelectorAll(':scope > div');
+
+        trechos.forEach(trecho => {
+            const eInicio = parseFloat(trecho.querySelector('.estaca-inicio')?.value) || 0;
+            const mInicio = parseFloat(trecho.querySelector('.metro-inicio')?.value) || 0;
+            const eFim = parseFloat(trecho.querySelector('.estaca-fim')?.value) || 0;
+            const mFim = parseFloat(trecho.querySelector('.metro-fim')?.value) || 0;
+
+            const totalInicioM = (eInicio * 20) + mInicio;
+            const totalFimM = (eFim * 20) + mFim;
+
+            const subtotal = Math.max(0, totalFimM - totalInicioM);
+            const subtotalEl = trecho.querySelector('.subtotal-trecho');
+            if (subtotalEl) subtotalEl.innerText = subtotal.toFixed(2);
+
+            totalGeral += subtotal;
+        });
+
+        setVal(`extensao${tipo}`, totalGeral.toFixed(2));
+    }
+
+    function getDadosTrechos(tipo) {
+        const container = document.getElementById(`trechos-container-${tipo}`);
+        if (!container) return [];
+
+        const trechosArr = [];
+        container.querySelectorAll(':scope > div').forEach(trecho => {
+            const eInicio = trecho.querySelector('.estaca-inicio')?.value || '';
+            const mInicio = trecho.querySelector('.metro-inicio')?.value || '';
+            const eFim = trecho.querySelector('.estaca-fim')?.value || '';
+            const mFim = trecho.querySelector('.metro-fim')?.value || '';
+            
+            const posIni = ((parseFloat(eInicio) || 0) * 20) + (parseFloat(mInicio) || 0);
+            const posFim = ((parseFloat(eFim) || 0) * 20) + (parseFloat(mFim) || 0);
+            const extensao = Math.max(0, posFim - posIni).toFixed(2);
+
+            trechosArr.push({ estacaInicio: eInicio, metroInicio: mInicio, estacaFim: eFim, metroFim: mFim, extensao });
+        });
+        return trechosArr;
+    }
+
+    function carregarTrechosNaInterface(tipo, trechosArr) {
+        const container = document.getElementById(`trechos-container-${tipo}`);
+        container.innerHTML = '';
+        if (trechosArr && trechosArr.length > 0) {
+            trechosArr.forEach(t => adicionarTrechoPead(tipo, t));
+        } else {
+            adicionarTrechoPead(tipo);
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        updateHistoryBadge();
+        renderHistory(rdoHistory);
+
+        // Inicializa trechos
+        adicionarTrechoPead('63');
+        adicionarTrechoPead('125');
+
+        togglePEAD('fieldsPEAD63', document.getElementById('checkPEAD63').checked);
+        togglePEAD('fieldsPEAD125', document.getElementById('checkPEAD125').checked);
+        initSignaturePad();
+    });
+
+    function switchTab(tabName) {
+        document.getElementById('formTab').classList.toggle('hidden', tabName !== 'formTab');
+        document.getElementById('historyTab').classList.toggle('hidden', tabName !== 'historyTab');
+        
+        document.getElementById('btnTabForm').className = tabName === 'formTab' ? 
+            "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/30 hover:bg-white/40" : 
+            "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20";
+            
+        document.getElementById('btnTabHistory').className = tabName === 'historyTab' ? 
+            "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/30 hover:bg-white/40" : 
+            "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20";
+    }
+
+    function setReportType(type) {
+        currentReportType = type;
+        const isInicial = type === 'inicial';
+        document.getElementById('sectionInicial').classList.toggle('hidden', !isInicial);
+        document.getElementById('sectionEncerramento').classList.toggle('hidden', isInicial);
+
+        document.getElementById('btnReportInicial').className = isInicial ? 
+            "flex flex-col items-center justify-center p-3 rounded-xl border-2 border-gas-500 bg-gas-50 text-gas-900" : 
+            "flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200";
+
+        document.getElementById('btnReportEncerramento').className = !isInicial ? 
+            "flex flex-col items-center justify-center p-3 rounded-xl border-2 border-red-500 bg-red-50 text-red-900" : 
+            "flex flex-col items-center justify-center p-3 rounded-xl border-2 border-slate-200";
+
+        document.getElementById('typeIndicatorText').innerText = isInicial ? "Abertura de RDO" : "Encerramento de RDO";
+        document.getElementById('typeIndicatorIcon').className = isInicial ? "fa-solid fa-play text-emerald-400 text-lg" : "fa-solid fa-stop text-red-400 text-lg";
+        document.getElementById('btnSaveText').innerText = isInicial ? "Salvar Abertura de RDO" : "Finalizar e Salvar Encerramento";
+    }
+
+    function toggleNC(id, show) {
+        const field = document.getElementById(id);
+        if (field) field.classList.toggle('hidden', !show);
+    }
+
+    function togglePEAD(id, isChecked) {
+        const field = document.getElementById(id);
+        if (field) {
+            field.classList.toggle('hidden', !isChecked);
+        }
+    }
+
+    function previewImage(input, previewId, key) {
+        const container = document.getElementById(previewId);
+        container.innerHTML = '';
+
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                if (key === 'canteiro') currentBase64Canteiro = e.target.result;
+                if (key === 'seg1') currentBase64Seg1 = e.target.result;
+                if (key === 'seg2') currentBase64Seg2 = e.target.result;
+                if (key === 'seg3') currentBase64Seg3 = e.target.result;
+
+                renderBase64Preview(previewId, e.target.result);
+            }
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function updateTime() {
+        const now = new Date();
+        document.getElementById('autoDateTime').innerText = now.toLocaleString('pt-BR');
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    function handleFormSubmit(e) {
+        e.preventDefault();
+
+        // Validação da assinatura para encerramento
+        if (currentReportType === 'encerramento') {
+            if (!isSignatureProvided && !currentBase64Signature) {
+                alert('A assinatura do técnico responsável é obrigatória na 2ª página para finalizar o RDO!');
+                document.getElementById('sectionAssinatura').scrollIntoView({ behavior: 'smooth' });
+                return;
+            }
+        }
+
+        const editingId = getVal('editingRecordId');
+        const isEdit = !!editingId;
+        const recordId = isEdit ? editingId : 'RDO-' + Date.now();
+        const existingRecord = isEdit ? rdoHistory.find(item => String(item.id) === String(editingId)) : null;
+
+        const radioVal = (name) => {
+            const el = document.querySelector(`input[name="${name}"]:checked`);
+            return el ? el.value : '';
+        };
+
+        let sigData = currentBase64Signature;
+        if (canvas && isSignatureProvided) {
+            sigData = canvas.toDataURL();
+        }
+
+        const recordData = {
+            id: recordId,
+            data: existingRecord ? existingRecord.data : new Date().toISOString().split('T')[0],
+            dataHora: new Date().toLocaleString('pt-BR'),
+            tipo: currentReportType === 'encerramento' ? 'encerramento' : 'inicial',
+            projeto: getVal('selectProjeto'),
+            tecnico: getVal('selectTecnico'),
+            engenheiro: getVal('selectEngenheiro'),
+            tipoObra: getVal('selectTipoObra'),
+            efetivo: {
+                auxiliar: getVal('qtd_auxiliar'),
+                encarregado: getVal('qtd_encarregado'),
+                encanador: getVal('qtd_encanador'),
+                inspetor: getVal('qtd_inspetor'),
+                inspetorQualidade: getVal('qtd_inspetor_qualidade'),
+                operador: getVal('qtd_operador'),
+                soldador: getVal('qtd_soldador'),
+                tst: getVal('qtd_tst')
+            },
+            faltaEfetivo: {
+                houve: radioVal('faltaEfetivo'),
+                descricao: getVal('descFaltaEfetivo')
+            },
+            faltaEquipamento: {
+                houve: radioVal('faltaEquipamento'),
+                descricao: getVal('descFaltaEquipamento')
+            },
+            seguranca: {
+                condicoesTrabalho: { houve: radioVal('condicoesTrabalho'), descricao: getVal('descCondicoes') },
+                caminhaoOrganizado: { houve: radioVal('caminhaoOrganizado'), descricao: getVal('descCaminhao') },
+                sinalizacaoAdequada: { houve: radioVal('sinalizacaoAdequada'), descricao: getVal('descSinalizacao') }
+            },
+            fotos: {
+                canteiro: currentBase64Canteiro || existingRecord?.fotos?.canteiro || '',
+                seguranca1: currentBase64Seg1 || existingRecord?.fotos?.seguranca1 || '',
+                seguranca2: currentBase64Seg2 || existingRecord?.fotos?.seguranca2 || '',
+                seguranca3: currentBase64Seg3 || existingRecord?.fotos?.seguranca3 || '',
+                assinatura: currentReportType === 'encerramento' ? (sigData || existingRecord?.fotos?.assinatura || '') : ''
+            },
+            horarios: {
+                empreiteira: getVal('nomeEmpreiteira'),
+                previstoEmpreiteira: getVal('horarioPrevistoEmpreiteira'),
+                realEmpreiteira: getVal('horarioRealChegadaEmpreiteira'),
+                inicioAtividades: getVal('horarioInicioAtividades'),
+                justAtrasoInicio: getVal('justificativaAtrasoInicio'),
+                previstoEncerrar: getVal('horarioPrevistoEncerramento'),
+                realEncerrar: getVal('horarioRealEncerramento'),
+                justEncerrarAntes: getVal('justificativaEncerramentoAntecipado')
+            },
+            atividadesPrevistas: getVal('atividadesPrevistas'),
+            atividadesRealizadas: getVal('atividadesRealizadas'),
+            producao: {
+                pead63: {
+                    ativo: document.getElementById('checkPEAD63')?.checked || false,
+                    trechos: getDadosTrechos('63'),
+                    extensao: getVal('extensao63')
+                },
+                pead125: {
+                    ativo: document.getElementById('checkPEAD125')?.checked || false,
+                    trechos: getDadosTrechos('125'),
+                    extensao: getVal('extensao125')
+                }
+            }
+        };
+
+        if (isEdit) {
+            const index = rdoHistory.findIndex(item => String(item.id) === String(recordId));
+            if (index !== -1) {
+                rdoHistory[index] = { ...rdoHistory[index], ...recordData };
+            }
+        } else {
+            rdoHistory.unshift(recordData);
+        }
+
+        try {
+            localStorage.setItem('rdo_history_data', JSON.stringify(rdoHistory));
+            updateHistoryBadge();
+            renderHistory(rdoHistory);
+            alert(currentReportType === 'encerramento' ? 'Relatório FINALIZADO com assinatura e salvo com sucesso!' : 'Abertura de RDO salva com sucesso!');
+            resetForm();
+            switchTab('historyTab');
+        } catch (err) {
+            console.error('Erro ao salvar no LocalStorage:', err);
+            alert('Atenção: Espaço de armazenamento do navegador esgotado. Tente remover imagens pesadas ou relatórios antigos antes de salvar novamente.');
+        }
+    }
+
+    function resetForm() {
+        document.getElementById('rdoForm').reset();
+        document.getElementById('editingRecordId').value = '';
+        
+        // Desabilita inputs de efetivo
+        ['qtd_auxiliar', 'qtd_encarregado', 'qtd_encanador', 'qtd_inspetor', 'qtd_inspetor_qualidade', 'qtd_operador', 'qtd_soldador', 'qtd_tst'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.disabled = true;
+                el.value = '';
+                el.classList.add('bg-slate-100');
+                el.classList.remove('bg-white');
+            }
+        });
+
+        ['previewCanteiro', 'previewSeg1', 'previewSeg2', 'previewSeg3'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) {
+                el.classList.add('hidden');
+                el.innerHTML = '';
+            }
+        });
+
+        currentBase64Canteiro = '';
+        currentBase64Seg1 = '';
+        currentBase64Seg2 = '';
+        currentBase64Seg3 = '';
+        clearSignature();
+
+        toggleNC('descFaltaEfetivo', false);
+        toggleNC('descFaltaEquipamento', false);
+        toggleNC('descCondicoes', false);
+        toggleNC('descCaminhao', false);
+        toggleNC('descSinalizacao', false);
+
+        togglePEAD('fieldsPEAD63', false);
+        togglePEAD('fieldsPEAD125', false);
+        
+        carregarTrechosNaInterface('63', []);
+        carregarTrechosNaInterface('125', []);
+
+        setReportType('inicial');
+    }
+
+    function continueReport(id) {
+        const item = rdoHistory.find(r => String(r.id) === String(id));
+        if (!item) return;
+
+        resetForm();
+
+        document.getElementById('editingRecordId').value = item.id;
+        setVal('selectProjeto', item.projeto);
+        setVal('selectTecnico', item.tecnico);
+        setVal('selectEngenheiro', item.engenheiro);
+        setVal('nomeEmpreiteira', item.horarios?.empreiteira);
+        setVal('horarioPrevistoEmpreiteira', item.horarios?.previstoEmpreiteira);
+        setVal('atividadesPrevistas', item.atividadesPrevistas);
+
+        // Preenche Efetivo
+        if (item.efetivo) {
+            const mapEfetivo = {
+                auxiliar: 'qtd_auxiliar',
+                encarregado: 'qtd_encarregado',
+                encanador: 'qtd_encanador',
+                inspetor: 'qtd_inspetor',
+                inspetorQualidade: 'qtd_inspetor_qualidade',
+                operador: 'qtd_operador',
+                soldador: 'qtd_soldador',
+                tst: 'qtd_tst'
+            };
+
+            for (const [key, inputId] of Object.entries(mapEfetivo)) {
+                const val = item.efetivo[key];
+                if (val) {
+                    const input = document.getElementById(inputId);
+                    if (input) {
+                        const checkbox = input.parentElement.querySelector('input[type="checkbox"]');
+                        if (checkbox) checkbox.checked = true;
+                        input.disabled = false;
+                        input.value = val;
+                        input.classList.remove('bg-slate-100');
+                        input.classList.add('bg-white');
+                    }
+                }
+            }
+        }
+
+        // Falta Efetivo / Equipamento
+        if (item.faltaEfetivo?.houve) {
+            setRadioVal('faltaEfetivo', item.faltaEfetivo.houve);
+            toggleNC('descFaltaEfetivo', item.faltaEfetivo.houve === 'Sim');
+            setVal('descFaltaEfetivo', item.faltaEfetivo.descricao);
+        }
+        if (item.faltaEquipamento?.houve) {
+            setRadioVal('faltaEquipamento', item.faltaEquipamento.houve);
+            toggleNC('descFaltaEquipamento', item.faltaEquipamento.houve === 'Sim');
+            setVal('descFaltaEquipamento', item.faltaEquipamento.descricao);
+        }
+
+        // Segurança
+        if (item.seguranca?.condicoesTrabalho?.houve) {
+            setRadioVal('condicoesTrabalho', item.seguranca.condicoesTrabalho.houve);
+            toggleNC('descCondicoes', item.seguranca.condicoesTrabalho.houve === 'Não');
+            setVal('descCondicoes', item.seguranca.condicoesTrabalho.descricao);
+        }
+        if (item.seguranca?.caminhaoOrganizado?.houve) {
+            setRadioVal('caminhaoOrganizado', item.seguranca.caminhaoOrganizado.houve);
+            toggleNC('descCaminhao', item.seguranca.caminhaoOrganizado.houve === 'Não');
+            setVal('descCaminhao', item.seguranca.caminhaoOrganizado.descricao);
+        }
+        if (item.seguranca?.sinalizacaoAdequada?.houve) {
+            setRadioVal('sinalizacaoAdequada', item.seguranca.sinalizacaoAdequada.houve);
+            toggleNC('descSinalizacao', item.seguranca.sinalizacaoAdequada.houve === 'Não');
+            setVal('descSinalizacao', item.seguranca.sinalizacaoAdequada.descricao);
+        }
+
+        // Fotos e Assinatura
+        currentBase64Canteiro = item.fotos?.canteiro || '';
+        currentBase64Seg1 = item.fotos?.seguranca1 || '';
+        currentBase64Seg2 = item.fotos?.seguranca2 || '';
+        currentBase64Seg3 = item.fotos?.seguranca3 || '';
+        currentBase64Signature = item.fotos?.assinatura || '';
+
+        renderBase64Preview('previewCanteiro', currentBase64Canteiro);
+        renderBase64Preview('previewSeg1', currentBase64Seg1);
+        renderBase64Preview('previewSeg2', currentBase64Seg2);
+        renderBase64Preview('previewSeg3', currentBase64Seg3);
+
+        if (currentBase64Signature) {
+            isSignatureProvided = true;
+            const img = new Image();
+            img.onload = () => { ctx.drawImage(img, 0, 0); };
+            img.src = currentBase64Signature;
+        }
+
+        // Produção PEAD
+        if (item.producao?.pead63) {
+            const chk = document.getElementById('checkPEAD63');
+            if (chk) chk.checked = !!item.producao.pead63.ativo;
+            togglePEAD('fieldsPEAD63', !!item.producao.pead63.ativo);
+            carregarTrechosNaInterface('63', item.producao.pead63.trechos);
+        }
+
+        if (item.producao?.pead125) {
+            const chk = document.getElementById('checkPEAD125');
+            if (chk) chk.checked = !!item.producao.pead125.ativo;
+            togglePEAD('fieldsPEAD125', !!item.producao.pead125.ativo);
+            carregarTrechosNaInterface('125', item.producao.pead125.trechos);
+        }
+
+        // Encerramento
+        setVal('horarioRealChegadaEmpreiteira', item.horarios?.realEmpreiteira);
+        setVal('horarioInicioAtividades', item.horarios?.inicioAtividades);
+        setVal('justificativaAtrasoInicio', item.horarios?.justAtrasoInicio);
+        setVal('horarioPrevistoEncerramento', item.horarios?.previstoEncerrar);
+        setVal('horarioRealEncerramento', item.horarios?.realEncerrar);
+        setVal('justificativaEncerramentoAntecipado', item.horarios?.justEncerrarAntes);
+        setVal('atividadesRealizadas', item.atividadesRealizadas);
+
+        setReportType('encerramento');
+        switchTab('formTab');
+    }
+
+    function updateHistoryBadge() {
+        document.getElementById('historyBadge').innerText = rdoHistory.length;
+    }
+
+    function renderHistory(data) {
+        const container = document.getElementById('historyContainer');
+        if (data.length === 0) {
+            container.innerHTML = `
+                <div class="bg-white rounded-2xl p-8 text-center text-slate-400 border border-slate-200">
+                    <i class="fa-solid fa-folder-open text-3xl mb-2"></i>
+                    <p class="text-xs">Nenhum registro encontrado.</p>
+                </div>`;
+            return;
+        }
+
+        container.innerHTML = data.map(item => `
+            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" class="history-checkbox rounded cursor-pointer" value="${item.id}">
+                    <div>
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${item.tipo === 'inicial' ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'}">
+                                ${item.tipo === 'inicial' ? 'Aberto / Em Andamento' : 'Encerrado & Assinado'}
+                            </span>
+                            <span class="text-xs font-bold text-slate-800">${item.projeto}</span>
+                        </div>
+                        <p class="text-xs text-slate-600"><i class="fa-solid fa-user text-slate-400 mr-1"></i> Técnico: ${item.tecnico}</p>
+                        <p class="text-[11px] text-slate-400"><i class="fa-regular fa-clock mr-1"></i> ${item.dataHora}</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    ${item.tipo === 'inicial' ? `
+                        <button onclick="continueReport('${item.id}')" class="px-3 py-1.5 bg-gas-50 hover:bg-gas-100 text-gas-700 rounded-lg text-xs font-bold transition">
+                            <i class="fa-solid fa-play mr-1"></i> Continuar / Encerrar RDO
+                        </button>
+                    ` : ''}
+                    <button onclick="deleteRecord('${item.id}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
+                        <i class="fa-solid fa-trash"></i> Excluir
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function toggleSelectAll(master) {
+        const checkboxes = document.querySelectorAll('.history-checkbox');
+        checkboxes.forEach(cb => cb.checked = master.checked);
+    }
+
+    function getSelectedRecords() {
+        const selectedIds = Array.from(document.querySelectorAll('.history-checkbox:checked')).map(cb => String(cb.value));
+        if (selectedIds.length === 0) return rdoHistory;
+        return rdoHistory.filter(item => selectedIds.includes(String(item.id)));
+    }
+
+    function applyHistoryFilter() {
+        const search = getVal('filterSearch').toLowerCase();
+        const date = getVal('filterDate');
+        const type = getVal('filterType');
+
+        const filtered = rdoHistory.filter(item => {
+            const matchesSearch = !search || 
+                item.projeto.toLowerCase().includes(search) || 
+                item.tecnico.toLowerCase().includes(search);
+            const matchesDate = !date || item.data === date;
+            const matchesType = !type || item.tipo === type;
+
+            return matchesSearch && matchesDate && matchesType;
+        });
+
+        renderHistory(filtered);
+    }
+
+    function clearHistoryFilters() {
+        document.getElementById('filterSearch').value = '';
+        document.getElementById('filterDate').value = '';
+        document.getElementById('filterType').value = '';
+        renderHistory(rdoHistory);
+    }
+
+    function deleteRecord(id) {
+        if (confirm('Deseja realmente excluir este registro?')) {
+            rdoHistory = rdoHistory.filter(item => String(item.id) !== String(id));
+            try {
+                localStorage.setItem('rdo_history_data', JSON.stringify(rdoHistory));
+            } catch(e) {}
+            updateHistoryBadge();
+            applyHistoryFilter();
+        }
+    }
+
+    /* Modal Exportação Customizada */
+    function openExportModal() {
+        const recordsToExport = getSelectedRecords();
+        if (recordsToExport.length === 0) {
+            alert('Não há dados salvos para exportar.');
+            return;
+        }
+        document.getElementById('exportModal').classList.remove('hidden');
+    }
+
+    function closeExportModal() {
+        document.getElementById('exportModal').classList.add('hidden');
+    }
+
+    function processCustomCSVExport() {
+        const recordsToExport = getSelectedRecords();
+        
+        const cols = {
+            id: document.getElementById('col_id').checked,
+            dataHora: document.getElementById('col_dataHora').checked,
+            status: document.getElementById('col_status').checked,
+            projeto: document.getElementById('col_projeto').checked,
+            tecnico: document.getElementById('col_tecnico').checked,
+            engenheiro: document.getElementById('col_engenheiro').checked,
+            empreiteira: document.getElementById('col_empreiteira').checked,
+            faltaEfetivo: document.getElementById('col_faltaEfetivo').checked,
+            faltaEquipamento: document.getElementById('col_faltaEquipamento').checked,
+            seguranca: document.getElementById('col_seguranca').checked,
+            pead63: document.getElementById('col_pead63').checked,
+            pead125: document.getElementById('col_pead125').checked,
+            atividadesPrevistas: document.getElementById('col_atividadesPrevistas').checked,
+            atividadesRealizadas: document.getElementById('col_atividadesRealizadas').checked
+        };
+
+        let headerArr = [];
+        if (cols.id) headerArr.push('ID');
+        if (cols.dataHora) headerArr.push('Data/Hora');
+        if (cols.status) headerArr.push('Status');
+        if (cols.projeto) headerArr.push('Projeto');
+        if (cols.tecnico) headerArr.push('Tecnico Responsavel');
+        if (cols.engenheiro) headerArr.push('Engenheiro');
+        if (cols.empreiteira) headerArr.push('Empreiteira');
+        if (cols.faltaEfetivo) headerArr.push('Falta Efetivo');
+        if (cols.faltaEquipamento) headerArr.push('Falta Equipamento');
+        if (cols.seguranca) headerArr.push('Cond. Trabalho', 'Caminhao Org.', 'Sinalizacao');
+        if (cols.pead63) headerArr.push('PEAD 63mm Detalhes Trechos', 'PEAD 63mm Total(m)');
+        if (cols.pead125) headerArr.push('PEAD 125mm Detalhes Trechos', 'PEAD 125mm Total(m)');
+        if (cols.atividadesPrevistas) headerArr.push('Atividades Previstas');
+        if (cols.atividadesRealizadas) headerArr.push('Atividades Realizadas');
+
+        let csv = 'sep=;\n' + headerArr.join(';') + '\n';
+
+        recordsToExport.forEach(item => {
+            let row = [];
+
+            if (cols.id) row.push(`"${item.id}"`);
+            if (cols.dataHora) row.push(`"${item.dataHora || ''}"`);
+            if (cols.status) row.push(`"${item.tipo === 'encerramento' ? 'Encerrado' : 'Aberto'}"`);
+            if (cols.projeto) row.push(`"${item.projeto || ''}"`);
+            if (cols.tecnico) row.push(`"${item.tecnico || ''}"`);
+            if (cols.engenheiro) row.push(`"${item.engenheiro || ''}"`);
+            if (cols.empreiteira) row.push(`"${item.horarios?.empreiteira || ''}"`);
+            
+            if (cols.faltaEfetivo) {
+                const fEf = item.faltaEfetivo?.houve === 'Sim' ? item.faltaEfetivo.descricao : 'Nao';
+                row.push(`"${fEf.replace(/"/g, '""')}"`);
+            }
+            if (cols.faltaEquipamento) {
+                const fEq = item.faltaEquipamento?.houve === 'Sim' ? item.faltaEquipamento.descricao : 'Nao';
+                row.push(`"${fEq.replace(/"/g, '""')}"`);
+            }
+            if (cols.seguranca) {
+                const cond = item.seguranca?.condicoesTrabalho?.houve === 'Não' ? item.seguranca.condicoesTrabalho.descricao : 'Sim';
+                const cam = item.seguranca?.caminhaoOrganizado?.houve === 'Não' ? item.seguranca.caminhaoOrganizado.descricao : 'Sim';
+                const sin = item.seguranca?.sinalizacaoAdequada?.houve === 'Não' ? item.seguranca.sinalizacaoAdequada.descricao : 'Sim';
+                row.push(`"${cond.replace(/"/g, '""')}"`, `"${cam.replace(/"/g, '""')}"`, `"${sin.replace(/"/g, '""')}"`);
+            }
+            if (cols.pead63) {
+                const p63 = item.producao?.pead63;
+                if (p63?.ativo && p63?.trechos?.length > 0) {
+                    const txtTrechos = p63.trechos.map((t, idx) => `T${idx+1}: Estaca ${t.estacaInicio || 0}+${t.metroInicio || 0}m ate ${t.estacaFim || 0}+${t.metroFim || 0}m (${t.extensao}m)`).join(' | ');
+                    row.push(`"${txtTrechos}"`, `"${p63.extensao || 0}"`);
+                } else {
+                    row.push(`"N/A"`, `"0"`);
+                }
+            }
+            if (cols.pead125) {
+                const p125 = item.producao?.pead125;
+                if (p125?.ativo && p125?.trechos?.length > 0) {
+                    const txtTrechos = p125.trechos.map((t, idx) => `T${idx+1}: Estaca ${t.estacaInicio || 0}+${t.metroInicio || 0}m ate ${t.estacaFim || 0}+${t.metroFim || 0}m (${t.extensao}m)`).join(' | ');
+                    row.push(`"${txtTrechos}"`, `"${p125.extensao || 0}"`);
+                } else {
+                    row.push(`"N/A"`, `"0"`);
+                }
+            }
+            if (cols.atividadesPrevistas) row.push(`"${(item.atividadesPrevistas || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`);
+            if (cols.atividadesRealizadas) row.push(`"${(item.atividadesRealizadas || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`);
+
+            csv += row.join(';') + '\n';
+        });
+
+        const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `Relatorios_RDO_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+
+        closeExportModal();
+    }
+
+    function exportToPDF() {
+        const recordsToExport = getSelectedRecords();
+        if (recordsToExport.length === 0) return;
+
+        if (recordsToExport.length === 1) {
+            continueReport(recordsToExport[0].id);
+            setTimeout(() => { window.print(); }, 300);
+        } else {
+            const printContainer = document.createElement('div');
+            printContainer.id = 'batchPrintContainer';
+            printContainer.className = 'space-y-6';
+
+            recordsToExport.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-6 rounded-xl border border-slate-300 print-card mb-4';
+
+                const p63 = item.producao?.pead63;
+                const p125 = item.producao?.pead125;
+
+                const txt63 = p63?.ativo && p63?.trechos?.length > 0
+                    ? p63.trechos.map((t, idx) => `Trecho ${idx+1}: Estaca ${t.estacaInicio || 0}+${t.metroInicio || 0}m até ${t.estacaFim || 0}+${t.metroFim || 0}m (${t.extensao}m)`).join('<br>')
+                    : 'N/A';
+
+                const txt125 = p125?.ativo && p125?.trechos?.length > 0
+                    ? p125.trechos.map((t, idx) => `Trecho ${idx+1}: Estaca ${t.estacaInicio || 0}+${t.metroInicio || 0}m até ${t.estacaFim || 0}+${t.metroFim || 0}m (${t.extensao}m)`).join('<br>')
+                    : 'N/A';
+
+                card.innerHTML = `
+                    <h2 class="font-bold text-sm border-b pb-2 mb-3">RDO: ${item.id} - ${item.projeto}</h2>
+                    <p class="text-xs"><strong>Técnico Responsável:</strong> ${item.tecnico} | <strong>Data:</strong> ${item.dataHora}</p>
+                    <p class="text-xs"><strong>Status:</strong> ${item.tipo === 'encerramento' ? 'Encerrado' : 'Em Aberto'}</p>
+                    <p class="text-xs mt-2"><strong>Atividades Previstas:</strong> ${item.atividadesPrevistas || 'N/A'}</p>
+                    <p class="text-xs"><strong>Atividades Realizadas:</strong> ${item.atividadesRealizadas || 'N/A'}</p>
+                    
+                    <div class="mt-2 border-t pt-2">
+                        <p class="text-xs font-bold">Produção PEAD 63mm (Total: ${p63?.ativo ? p63.extensao : '0'}m):</p>
+                        <div class="text-xs text-slate-600 pl-2">${txt63}</div>
+                    </div>
+
+                    <div class="mt-2 border-t pt-2">
+                        <p class="text-xs font-bold">Produção PEAD 125mm (Total: ${p125?.ativo ? p125.extensao : '0'}m):</p>
+                        <div class="text-xs text-slate-600 pl-2">${txt125}</div>
+                    </div>
+
+                    ${item.fotos?.assinatura ? `
+                        <div class="mt-6 border-t pt-4 print-page-2">
+                            <p class="text-xs font-bold uppercase mb-2">Assinatura do Técnico Responsável (Finalização):</p>
+                            <img src="${item.fotos.assinatura}" class="h-16 border rounded p-1">
+                            <p class="text-[10px] text-slate-500 mt-1">${item.tecnico}</p>
+                        </div>
+                    ` : ''}
+                `;
+                printContainer.appendChild(card);
+            });
+
+            const main = document.querySelector('main');
+            const formTab = document.getElementById('formTab');
+            formTab.classList.add('hidden');
+            main.appendChild(printContainer);
+
+            window.print();
+
+            main.removeChild(printContainer);
+            formTab.classList.remove('hidden');
+        }
+    }
 </script>
 
 </body>
