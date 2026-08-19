@@ -1455,7 +1455,7 @@
 
         const editingId = getVal('editingRecordId');
         const isEdit = !!editingId;
-        const recordId = isEdit ? editingId : 'RDO-' + Date.now();
+        const recordId = isEdit ? editingId : getNextRdoId();
         const existingRecord = isEdit ? rdoHistory.find(item => String(item.id) === String(editingId)) : null;
 
         const radioVal = (name) => {
@@ -1731,6 +1731,22 @@
 
     function updateHistoryBadge() {
         document.getElementById('historyBadge').innerText = rdoHistory.length;
+    }
+
+    // Gera o próximo ID sequencial no formato RDO-01, RDO-02, ...
+    function getNextRdoId() {
+        let maxNum = 0;
+        rdoHistory.forEach(item => {
+            // Só considera IDs curtos (até 4 dígitos) como parte da sequência;
+            // ignora IDs antigos no formato timestamp (ex: RDO-1787180896917)
+            const match = String(item.id).match(/^RDO-(\d{1,4})$/);
+            if (match) {
+                const num = parseInt(match[1], 10);
+                if (num > maxNum) maxNum = num;
+            }
+        });
+        const next = maxNum + 1;
+        return 'RDO-' + String(next).padStart(2, '0');
     }
 
     function updateDashboard() {
