@@ -191,18 +191,7 @@
             <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 mb-4">
                 <i class="fa-solid fa-users text-aco-500 mr-1"></i> 3. Equipe Presente
             </h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-xs border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50 text-left">
-                            <th class="p-2 border font-semibold">Função</th>
-                            <th class="p-2 border font-semibold w-24">Quantidade</th>
-                            <th class="p-2 border font-semibold">Observações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="equipeTableBody"></tbody>
-                </table>
-            </div>
+            <textarea id="textEquipePresente" rows="4" placeholder="Descreva a equipe presente, funções, quantidades e observações..." class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-3"></textarea>
         </section>
 
         <!-- 5. ATIVIDADES EXECUTADAS / TRECHOS DE TUBULAÇÃO -->
@@ -364,15 +353,6 @@
 
 <script>
     /* ==================== DADOS BASE / LISTAS FIXAS ==================== */
-    const EQUIPE_FUNCOES = [
-        'Encarregado / Mestre de obras',
-        'Soldadores qualificados (aço)',
-        'Tubistas / montadores',
-        'Serventes',
-        'Técnico de segurança (SESMT)',
-        'Engenheiro residente'
-    ];
-
     const TESTES_PRESSAO_TIPOS = [
         'Teste de estanqueidade',
         'Teste de resistência (pressão)',
@@ -415,7 +395,6 @@
 
     /* ==================== INICIALIZAÇÃO ==================== */
     document.addEventListener('DOMContentLoaded', () => {
-        renderEquipeTable();
         renderTestesTable();
         renderSegurancaCards();
         setDefaultDateAndNumero();
@@ -457,30 +436,12 @@
         setVal('inputNumeroRDO', nextNumero);
     }
 
-    /* ==================== 3. EQUIPE (tabela fixa) ==================== */
-    function renderEquipeTable() {
-        const tbody = document.getElementById('equipeTableBody');
-        tbody.innerHTML = EQUIPE_FUNCOES.map((funcao, i) => `
-            <tr>
-                <td class="p-2 border font-medium text-slate-700">${escapeHtml(funcao)}</td>
-                <td class="p-2 border"><input type="number" min="0" id="equipeQtd_${i}" class="w-full text-xs p-1.5 border rounded"></td>
-                <td class="p-2 border"><input type="text" id="equipeObs_${i}" placeholder="Observações" class="w-full text-xs p-1.5 border rounded"></td>
-            </tr>
-        `).join('');
-    }
+    /* ==================== 3. EQUIPE PRESENTE ==================== */
     function collectEquipe() {
-        return EQUIPE_FUNCOES.map((funcao, i) => ({
-            funcao,
-            quantidade: getVal(`equipeQtd_${i}`),
-            observacoes: getVal(`equipeObs_${i}`)
-        }));
+        return getVal('textEquipePresente');
     }
-    function restoreEquipe(list) {
-        if (!Array.isArray(list)) return;
-        list.forEach((item, i) => {
-            setVal(`equipeQtd_${i}`, item.quantidade);
-            setVal(`equipeObs_${i}`, item.observacoes);
-        });
+    function restoreEquipe(data) {
+        setVal('textEquipePresente', typeof data === 'string' ? data : '');
     }
 
     /* ==================== 5. ATIVIDADES / TRECHOS (dinâmico) ==================== */
@@ -608,279 +569,6 @@
             }
         });
     }
-
-    /* ==================== 11. FOTOS ==================== */
-    function addFotoRow(data) {
-        const container = document.getElementById('fotosContainer');
-        const rowId = 'foto_' + (rowIdCounter++);
-        const div = document.createElement('div');
-        div.className = 'bg-slate-50 p-3 rounded-xl border space-y-2 image-preview-card';
-        div.dataset.rowId = rowId;
-        div.innerHTML = `
-            <div class="flex justify-between items-center no-print">
-                <span class="text-xs font-bold text-slate-700">Foto</span>
-                <button type="button" onclick="removeFotoCard('${rowId}')" class="text-red-500 hover:text-red-700 text-xs"><i class="fa-solid fa-trash"></i></button>
-            </div>
-            <input type="file" accept="image/*" onchange="handleFotoChange(event, '${rowId}')" class="w-full text-xs border rounded p-1 bg-white">
-            <div id="preview_${rowId}" class="hidden"><img src="" alt="Preview"></div>
-            <input type="text" id="legenda_${rowId}" placeholder="Legenda da foto" class="w-full text-xs p-1.5 border rounded bg-white">
-        `;
-        container.appendChild(div);
-        if (data) {
-            setVal(`legenda_${rowId}`, data.legenda);
-            if (data.base64) {
-                fotoBase64Map[rowId] = data.base64;
-                const prev = document.getElementById(`preview_${rowId}`);
-                prev.querySelector('img').src = data.base64;
-                prev.classList.remove('hidden');
-            }
-        }
-        updateFotosEmptyState();
-    }
-    function handleFotoChange(event, rowId) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            fotoBase64Map[rowId] = e.target.result;
-            const prev = document.getElementById(`preview_${rowId}`);
-            prev.querySelector('img').src = e.target.result;
-            prev.classList.remove('hidden');
-        };
-        reader.readAsDataURL(file);
-    }
-    function removeFotoCard(rowId) {
-        const card = document.querySelector(`[data-row-id="${rowId}"]`);
-        if (card) card.remove();
-        delete fotoBase64Map[rowId];
-        updateFotosEmptyState();
-    }
-    function collectFotos() {
-        return Array.from(document.querySelectorAll('#fotosContainer > div')).map(div => {
-            const rowId = div.dataset.rowId;
-            return {
-                rowId,
-                base64: fotoBase64Map[rowId] || '',
-                legenda: getVal(`legenda_${rowId}`)
-            };
-        });
-    }
-    function restoreFotos(list) {
-        document.getElementById('fotosContainer').innerHTML = '';
-        for (const rowId in fotoBase64Map) delete fotoBase64Map[rowId];
-        if (Array.isArray(list)) {
-            list.forEach(item => addFotoRow(item));
-        }
-        updateFotosEmptyState();
-    }
-    function updateFotosEmptyState() {
-        const hasRows = document.querySelectorAll('#fotosContainer > div').length > 0;
-        document.getElementById('fotosEmptyMsg').classList.toggle('hidden', hasRows);
-    }
-
-    /* ==================== SALVAR / HISTÓRICO ==================== */
-    function handleFormSubmit(e) {
-        e.preventDefault();
-        const editingId = getVal('editingRecordId');
-        const record = {
-            id: editingId ? editingId : 'rdo_' + Date.now(),
-            createdAt: editingId ? (rdoHistory.find(r => r.id === editingId)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
-            identificacao: {
-                obra: getVal('inputObra'),
-                numeroRDO: getVal('inputNumeroRDO'),
-                data: getVal('inputData'),
-                endereco: getVal('inputEndereco'),
-                cliente: getVal('inputCliente'),
-                fiscalizacao: getVal('inputFiscalizacao')
-            },
-            clima: {
-                manha: getVal('inputClimaManha'),
-                tarde: getVal('inputClimaTarde'),
-                impacto: radioVal('impactoClima'),
-                descImpacto: getVal('descImpactoClima'),
-                paralisacao: getVal('inputParalisacaoClima')
-            },
-            equipe: collectEquipe(),
-            atividades: collectAtividades(),
-            testesPressao: collectTestesPressao(),
-            seguranca: collectSeguranca(),
-            ocorrencias: getVal('textOcorrencias'),
-            observacoesGerais: getVal('textObservacoesGerais'),
-            fotos: collectFotos(),
-            assinaturas: {
-                responsavel: getVal('inputAssinaturaResponsavel'),
-                fiscalizacao: getVal('inputAssinaturaFiscalizacao')
-            }
-        };
-
-        if (editingId) {
-            const idx = rdoHistory.findIndex(r => r.id === editingId);
-            if (idx >= 0) rdoHistory[idx] = record;
-        } else {
-            rdoHistory.unshift(record);
-        }
-
-        localStorage.setItem('rdo_aco_history_data', JSON.stringify(rdoHistory));
-        resetForm();
-        updateHistoryBadge();
-        renderHistory(rdoHistory);
-        switchTab('historyTab');
-    }
-
-    function resetForm() {
-        document.getElementById('rdoForm').reset();
-        setVal('editingRecordId', '');
-        toggleNC('descImpactoClima', false);
-        document.getElementById('atividadesTableBody').innerHTML = '';
-        addAtividadeRow();
-        document.getElementById('fotosContainer').innerHTML = '';
-        for (const k in fotoBase64Map) delete fotoBase64Map[k];
-        renderEquipeTable();
-        renderTestesTable();
-        renderSegurancaCards();
-        setDefaultDateAndNumero();
-        updateAtividadesEmptyState();
-        updateFotosEmptyState();
-    }
-
-    function renderHistory(list) {
-        const container = document.getElementById('historyContainer');
-        if (!list.length) {
-            container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6 bg-white rounded-2xl border">Nenhum RDO salvo no histórico.</p>';
-            return;
-        }
-        container.innerHTML = list.map(r => `
-            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-3">
-                <div class="flex items-center gap-3">
-                    <input type="checkbox" value="${r.id}" class="history-checkbox rounded">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <span class="font-bold text-xs text-aco-900">RDO Nº ${escapeHtml(r.identificacao.numeroRDO)}</span>
-                            <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full text-slate-600">${escapeHtml(r.identificacao.data)}</span>
-                        </div>
-                        <p class="text-xs text-slate-600">${escapeHtml(r.identificacao.obra)}</p>
-                    </div>
-                </div>
-                <div class="flex gap-2">
-                    <button type="button" onclick="viewRecord('${r.id}')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-eye mr-1"></i> Ver</button>
-                    <button type="button" onclick="editRecord('${r.id}')" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-pen mr-1"></i> Editar</button>
-                    <button type="button" onclick="deleteRecord('${r.id}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold"><i class="fa-solid fa-trash mr-1"></i> Excluir</button>
-                </div>
-            </div>
-        `).join('');
-    }
-
-    function editRecord(id) {
-        const r = rdoHistory.find(item => item.id === id);
-        if (!r) return;
-        switchTab('formTab');
-        setVal('editingRecordId', r.id);
-        setVal('inputObra', r.identificacao.obra);
-        setVal('inputNumeroRDO', r.identificacao.numeroRDO);
-        setVal('inputData', r.identificacao.data);
-        setVal('inputEndereco', r.identificacao.endereco);
-        setVal('inputCliente', r.identificacao.cliente);
-        setVal('inputFiscalizacao', r.identificacao.fiscalizacao);
-
-        setVal('inputClimaManha', r.clima.manha);
-        setVal('inputClimaTarde', r.clima.tarde);
-        setRadio('impactoClima', r.clima.impacto);
-        if (r.clima.impacto === 'Sim') {
-            toggleNC('descImpactoClima', true);
-            setVal('descImpactoClima', r.clima.descImpacto);
-        } else {
-            toggleNC('descImpactoClima', false);
-            setVal('descImpactoClima', '');
-        }
-        setVal('inputParalisacaoClima', r.clima.paralisacao);
-
-        restoreEquipe(r.equipe);
-
-        document.getElementById('atividadesTableBody').innerHTML = '';
-        if (Array.isArray(r.atividades)) {
-            r.atividades.forEach(item => addAtividadeRow(item));
-        }
-        updateAtividadesEmptyState();
-
-        restoreTestesPressao(r.testesPressao);
-        restoreSeguranca(r.seguranca);
-
-        setVal('textOcorrencias', r.ocorrencias);
-        setVal('textObservacoesGerais', r.observacoesGerais);
-
-        restoreFotos(r.fotos);
-
-        setVal('inputAssinaturaResponsavel', r.assinaturas?.responsavel);
-        setVal('inputAssinaturaFiscalizacao', r.assinaturas?.fiscalizacao);
-    }
-
-    function deleteRecord(id) {
-        if (!confirm('Deseja realmente excluir este RDO?')) return;
-        rdoHistory = rdoHistory.filter(r => r.id !== id);
-        localStorage.setItem('rdo_aco_history_data', JSON.stringify(rdoHistory));
-        updateHistoryBadge();
-        renderHistory(rdoHistory);
-    }
-
-    function viewRecord(id) {
-        editRecord(id);
-        setTimeout(() => window.print(), 300);
-    }
-
-    function toggleSelectAll(checkbox) {
-        document.querySelectorAll('.history-checkbox').forEach(cb => cb.checked = checkbox.checked);
-    }
-
-    function applyHistoryFilter() {
-        const text = document.getElementById('filterSearch').value.toLowerCase();
-        const date = document.getElementById('filterDate').value;
-        const filtered = rdoHistory.filter(r => {
-            const matchText = !text || (r.identificacao.obra + ' ' + r.identificacao.numeroRDO).toLowerCase().includes(text);
-            const matchDate = !date || r.identificacao.data === date;
-            return matchText && matchDate;
-        });
-        renderHistory(filtered);
-    }
-
-    function clearHistoryFilters() {
-        document.getElementById('filterSearch').value = '';
-        document.getElementById('filterDate').value = '';
-        renderHistory(rdoHistory);
-    }
-
-    function updateHistoryBadge() {
-        document.getElementById('historyBadge').innerText = rdoHistory.length;
-    }
-
-    function exportToCSV() {
-        const selectedIds = Array.from(document.querySelectorAll('.history-checkbox:checked')).map(cb => cb.value);
-        const listToExport = selectedIds.length ? rdoHistory.filter(r => selectedIds.includes(r.id)) : rdoHistory;
-        if (!listToExport.length) {
-            alert('Nenhum RDO selecionado para exportar.');
-            return;
-        }
-        let csv = 'ID,RDO,Data,Obra,Cliente\n';
-        listToExport.forEach(r => {
-            csv += `"${r.id}","${r.identificacao.numeroRDO}","${r.identificacao.data}","${r.identificacao.obra}","${r.identificacao.cliente}"\n`;
-        });
-        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = 'rdo_export.csv';
-        a.click();
-    }
-
-    function exportToPDF() {
-        const selectedIds = Array.from(document.querySelectorAll('.history-checkbox:checked')).map(cb => cb.value);
-        if (!selectedIds.length) {
-            alert('Selecione pelo menos um RDO no histórico para imprimir / gerar PDF.');
-            return;
-        }
-        editRecord(selectedIds[0]);
-        setTimeout(() => window.print(), 300);
-    }
 </script>
-
 </body>
 </html>
