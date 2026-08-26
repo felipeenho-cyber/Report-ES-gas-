@@ -152,18 +152,6 @@
                     <label class="block text-xs font-semibold mb-1">Fiscalização (contratante)</label>
                     <input type="text" id="inputFiscalizacao" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold mb-1">Responsável técnico</label>
-                    <input type="text" id="inputResponsavelTecnico" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold mb-1">CREA / Registro</label>
-                    <input type="text" id="inputCrea" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
-                </div>
-                <div class="lg:col-span-2">
-                    <label class="block text-xs font-semibold mb-1">Contrato / OS nº</label>
-                    <input type="text" id="inputContratoOS" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
-                </div>
             </div>
         </section>
 
@@ -198,11 +186,8 @@
             </div>
         </section>
 
-        <!-- 3. EQUIPE PRESENTE -->
+        <!-- EFETIVO PRESENTE -->
         <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
-            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 mb-4">
-                <i class="fa-solid fa-users text-aco-500 mr-1"></i> 3. Equipe Presente
-            </h2>
             <div class="overflow-x-auto">
                 <table class="w-full text-xs border-collapse">
                     <thead>
@@ -262,34 +247,6 @@
                 </table>
             </div>
             <p id="atividadesEmptyMsg" class="text-[11px] text-slate-400 text-center py-3 hidden">Nenhum trecho adicionado ainda.</p>
-        </section>
-
-        <!-- 6. CONTROLE DE SOLDAGEM -->
-        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
-            <div class="flex items-center justify-between border-b pb-2 mb-4">
-                <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide">
-                    <i class="fa-solid fa-fire-flame-simple text-aco-500 mr-1"></i> 6. Controle de Soldagem
-                </h2>
-                <button type="button" onclick="addSoldagemRow()" class="add-row-btn px-2.5 py-1 bg-aco-50 hover:bg-aco-100 text-aco-700 rounded-lg text-[11px] font-bold border border-aco-200">
-                    <i class="fa-solid fa-plus mr-1"></i> Adicionar junta
-                </button>
-            </div>
-            <div class="overflow-x-auto">
-                <table class="w-full text-xs border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50 text-left">
-                            <th class="p-2 border font-semibold w-24">Nº da junta</th>
-                            <th class="p-2 border font-semibold">Soldador (matrícula)</th>
-                            <th class="p-2 border font-semibold">Processo de solda</th>
-                            <th class="p-2 border font-semibold w-40">Inspeção visual / END</th>
-                            <th class="p-2 border font-semibold w-32">Resultado</th>
-                            <th class="p-2 border font-semibold w-10 no-print"></th>
-                        </tr>
-                    </thead>
-                    <tbody id="soldagemTableBody"></tbody>
-                </table>
-            </div>
-            <p id="soldagemEmptyMsg" class="text-[11px] text-slate-400 text-center py-3 hidden">Nenhuma junta adicionada ainda.</p>
         </section>
 
         <!-- 7. TESTES DE PRESSÃO E ESTANQUEIDADE -->
@@ -402,19 +359,11 @@
         <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
             <div>
                 <label class="block text-[11px] font-medium text-slate-500 mb-1">Buscar por texto</label>
-                <input type="text" id="filterSearch" oninput="applyHistoryFilter()" placeholder="Obra, Nº RDO, Responsável..." class="w-full text-xs p-2 border border-slate-300 rounded-lg">
+                <input type="text" id="filterSearch" oninput="applyHistoryFilter()" placeholder="Obra, Nº RDO..." class="w-full text-xs p-2 border border-slate-300 rounded-lg">
             </div>
             <div>
                 <label class="block text-[11px] font-medium text-slate-500 mb-1">Data</label>
                 <input type="date" id="filterDate" onchange="applyHistoryFilter()" class="w-full text-xs p-2 border border-slate-300 rounded-lg">
-            </div>
-            <div>
-                <label class="block text-[11px] font-medium text-slate-500 mb-1">Soldagem</label>
-                <select id="filterSolda" onchange="applyHistoryFilter()" class="w-full text-xs p-2 border border-slate-300 rounded-lg">
-                    <option value="">Todos</option>
-                    <option value="reprovado">Com junta reprovada</option>
-                    <option value="ok">Sem reprovação</option>
-                </select>
             </div>
             <div class="flex items-end">
                 <button type="button" onclick="clearHistoryFilters()" class="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-lg">
@@ -498,9 +447,7 @@
         renderSegurancaCards();
         setDefaultDateAndNumero();
         addAtividadeRow();
-        addSoldagemRow();
         updateAtividadesEmptyState();
-        updateSoldagemEmptyState();
         updateFotosEmptyState();
         updateHistoryBadge();
         renderHistory(rdoHistory);
@@ -632,57 +579,6 @@
     function updateAtividadesEmptyState() {
         const hasRows = document.querySelectorAll('#atividadesTableBody tr').length > 0;
         document.getElementById('atividadesEmptyMsg').classList.toggle('hidden', hasRows);
-    }
-
-    /* ==================== 6. SOLDAGEM (dinâmico) ==================== */
-    function addSoldagemRow(data) {
-        const tbody = document.getElementById('soldagemTableBody');
-        const rowId = 'sold_' + (rowIdCounter++);
-        const tr = document.createElement('tr');
-        tr.dataset.rowId = rowId;
-        tr.innerHTML = `
-            <td class="p-2 border"><input type="text" class="f-junta w-full text-xs p-1.5 border rounded" placeholder="Nº"></td>
-            <td class="p-2 border"><input type="text" class="f-soldador w-full text-xs p-1.5 border rounded" placeholder="Matrícula"></td>
-            <td class="p-2 border"><input type="text" class="f-processo w-full text-xs p-1.5 border rounded" placeholder="Ex.: Eletrodo revestido / TIG"></td>
-            <td class="p-2 border">
-                <select class="f-inspecao w-full text-xs p-1.5 border rounded">
-                    <option value="">Selecione...</option>
-                    <option value="Visual">Visual</option>
-                    <option value="Radiografia">Radiografia</option>
-                    <option value="Ultrassom">Ultrassom</option>
-                </select>
-            </td>
-            <td class="p-2 border">
-                <select class="f-resultado w-full text-xs p-1.5 border rounded">
-                    <option value="">Selecione...</option>
-                    <option value="Aprovado">Aprovado</option>
-                    <option value="Reprovado">Reprovado</option>
-                </select>
-            </td>
-            <td class="p-2 border text-center no-print"><button type="button" onclick="removeRow(this, 'soldagemTableBody', updateSoldagemEmptyState)" class="row-remove-btn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td>
-        `;
-        tbody.appendChild(tr);
-        if (data) {
-            tr.querySelector('.f-junta').value = data.numeroJunta || '';
-            tr.querySelector('.f-soldador').value = data.soldador || '';
-            tr.querySelector('.f-processo').value = data.processo || '';
-            tr.querySelector('.f-inspecao').value = data.inspecao || '';
-            tr.querySelector('.f-resultado').value = data.resultado || '';
-        }
-        updateSoldagemEmptyState();
-    }
-    function collectSoldagem() {
-        return Array.from(document.querySelectorAll('#soldagemTableBody tr')).map(tr => ({
-            numeroJunta: tr.querySelector('.f-junta').value,
-            soldador: tr.querySelector('.f-soldador').value,
-            processo: tr.querySelector('.f-processo').value,
-            inspecao: tr.querySelector('.f-inspecao').value,
-            resultado: tr.querySelector('.f-resultado').value
-        }));
-    }
-    function updateSoldagemEmptyState() {
-        const hasRows = document.querySelectorAll('#soldagemTableBody tr').length > 0;
-        document.getElementById('soldagemEmptyMsg').classList.toggle('hidden', hasRows);
     }
 
     /* ==================== ROW GENÉRICO (remover) ==================== */
@@ -854,10 +750,7 @@
                 data: getVal('inputData'),
                 endereco: getVal('inputEndereco'),
                 cliente: getVal('inputCliente'),
-                fiscalizacao: getVal('inputFiscalizacao'),
-                responsavelTecnico: getVal('inputResponsavelTecnico'),
-                crea: getVal('inputCrea'),
-                contratoOS: getVal('inputContratoOS')
+                fiscalizacao: getVal('inputFiscalizacao')
             },
             clima: {
                 manha: getVal('inputClimaManha'),
@@ -868,7 +761,6 @@
             equipe: collectEquipe(),
             equipamentos: collectEquipamentos(),
             atividades: collectAtividades(),
-            soldagem: collectSoldagem(),
             testesPressao: collectTestesPressao(),
             seguranca: collectSeguranca(),
             ocorrencias: getVal('textOcorrencias'),
@@ -912,16 +804,13 @@
         document.getElementById('editingRecordId').value = '';
 
         document.getElementById('atividadesTableBody').innerHTML = '';
-        document.getElementById('soldagemTableBody').innerHTML = '';
         document.getElementById('fotosContainer').innerHTML = '';
         Object.keys(fotoBase64Map).forEach(k => delete fotoBase64Map[k]);
 
         renderSegurancaCards();
         setDefaultDateAndNumero();
         addAtividadeRow();
-        addSoldagemRow();
         updateAtividadesEmptyState();
-        updateSoldagemEmptyState();
         updateFotosEmptyState();
         toggleNC('descImpactoClima', false);
     }
@@ -938,9 +827,6 @@
         setVal('inputEndereco', item.identificacao?.endereco);
         setVal('inputCliente', item.identificacao?.cliente);
         setVal('inputFiscalizacao', item.identificacao?.fiscalizacao);
-        setVal('inputResponsavelTecnico', item.identificacao?.responsavelTecnico);
-        setVal('inputCrea', item.identificacao?.crea);
-        setVal('inputContratoOS', item.identificacao?.contratoOS);
 
         setVal('inputClimaManha', item.clima?.manha);
         setVal('inputClimaTarde', item.clima?.tarde);
@@ -963,10 +849,6 @@
         (item.atividades || []).forEach(a => addAtividadeRow(a));
         if (!(item.atividades || []).length) addAtividadeRow();
 
-        document.getElementById('soldagemTableBody').innerHTML = '';
-        (item.soldagem || []).forEach(s => addSoldagemRow(s));
-        if (!(item.soldagem || []).length) addSoldagemRow();
-
         document.getElementById('fotosContainer').innerHTML = '';
         Object.keys(fotoBase64Map).forEach(k => delete fotoBase64Map[k]);
         (item.fotos || []).forEach(f => addFotoRow(f));
@@ -985,10 +867,6 @@
         document.getElementById('historyBadge').innerText = rdoHistory.length;
     }
 
-    function hasReprovacao(item) {
-        return (item.soldagem || []).some(s => s.resultado === 'Reprovado');
-    }
-
     function renderHistory(data) {
         const container = document.getElementById('historyContainer');
         if (data.length === 0) {
@@ -1001,7 +879,6 @@
         }
 
         container.innerHTML = data.map(item => {
-            const reprovado = hasReprovacao(item);
             return `
             <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
                 <div class="flex items-center gap-3">
@@ -1011,10 +888,8 @@
                             <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-aco-100 text-aco-900">
                                 RDO ${escapeHtml(item.identificacao?.numeroRDO || '-')}
                             </span>
-                            ${reprovado ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800">Junta reprovada</span>' : ''}
                             <span class="text-xs font-bold text-slate-800">${escapeHtml(item.identificacao?.obra || '')}</span>
                         </div>
-                        <p class="text-xs text-slate-600"><i class="fa-solid fa-user text-slate-400 mr-1"></i> Responsável: ${escapeHtml(item.identificacao?.responsavelTecnico || '-')}</p>
                         <p class="text-[11px] text-slate-400"><i class="fa-regular fa-calendar mr-1"></i> ${escapeHtml(item.identificacao?.data || '')} &nbsp; <i class="fa-regular fa-clock mr-1"></i> ${escapeHtml(item.dataHora || '')}</p>
                     </div>
                 </div>
@@ -1044,21 +919,17 @@
     function applyHistoryFilter() {
         const search = getVal('filterSearch').toLowerCase();
         const date = getVal('filterDate');
-        const solda = getVal('filterSolda');
 
         const filtered = rdoHistory.filter(item => {
             const haystack = [
                 item.identificacao?.obra,
-                item.identificacao?.numeroRDO,
-                item.identificacao?.responsavelTecnico
+                item.identificacao?.numeroRDO
             ].join(' ').toLowerCase();
 
             const matchesSearch = !search || haystack.includes(search);
             const matchesDate = !date || item.identificacao?.data === date;
-            const reprovado = hasReprovacao(item);
-            const matchesSolda = !solda || (solda === 'reprovado' ? reprovado : !reprovado);
 
-            return matchesSearch && matchesDate && matchesSolda;
+            return matchesSearch && matchesDate;
         });
 
         renderHistory(filtered);
@@ -1067,7 +938,6 @@
     function clearHistoryFilters() {
         document.getElementById('filterSearch').value = '';
         document.getElementById('filterDate').value = '';
-        document.getElementById('filterSolda').value = '';
         renderHistory(rdoHistory);
     }
 
@@ -1088,12 +958,10 @@
             return;
         }
 
-        let csv = 'sep=;\nNº RDO;Data;Obra;Cliente;Responsavel Tecnico;CREA;Contrato OS;Fiscalizacao;Clima Manha;Clima Tarde;Impacto Clima;Extensao Total (m);Juntas Soldadas;Juntas Reprovadas;Ocorrencias;Observacoes Gerais\n';
+        let csv = 'sep=;\nNº RDO;Data;Obra;Cliente;Fiscalizacao;Clima Manha;Clima Tarde;Impacto Clima;Extensao Total (m);Ocorrencias;Observacoes Gerais\n';
 
         recordsToExport.forEach(item => {
             const extensaoTotal = (item.atividades || []).reduce((sum, a) => sum + (parseFloat(a.extensao) || 0), 0);
-            const totalJuntas = (item.soldagem || []).length;
-            const juntasReprovadas = (item.soldagem || []).filter(s => s.resultado === 'Reprovado').length;
             const impacto = item.clima?.impacto?.houve === 'Sim' ? (item.clima.impacto.descricao || 'Sim') : 'Não';
 
             const row = [
@@ -1101,16 +969,11 @@
                 `"${item.identificacao?.data || ''}"`,
                 `"${item.identificacao?.obra || ''}"`,
                 `"${item.identificacao?.cliente || ''}"`,
-                `"${item.identificacao?.responsavelTecnico || ''}"`,
-                `"${item.identificacao?.crea || ''}"`,
-                `"${item.identificacao?.contratoOS || ''}"`,
                 `"${item.identificacao?.fiscalizacao || ''}"`,
                 `"${item.clima?.manha || ''}"`,
                 `"${item.clima?.tarde || ''}"`,
                 `"${impacto.replace(/"/g, '""')}"`,
                 `"${extensaoTotal}"`,
-                `"${totalJuntas}"`,
-                `"${juntasReprovadas}"`,
                 `"${(item.ocorrencias || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
                 `"${(item.observacoesGerais || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`
             ];
