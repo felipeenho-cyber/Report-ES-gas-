@@ -40,7 +40,7 @@
     <style>
         * { box-sizing: border-box; }
         body { font-family: 'Inter', sans-serif; }
-        .image-preview-card img { width: 100%; height: 120px; object-fit: cover; display: block; border-radius: 0.375rem; }
+        .image-preview-card img { width: 100%; height: 160px; object-fit: cover; display: block; border-radius: 0.5rem; }
 
         @media print {
             .no-print { display: none !important; }
@@ -278,7 +278,7 @@
                 </button>
             </div>
             <div id="fotosContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-            <p id="fotosEmptyMsg" class="text-[11px] text-slate-400 text-center py-3 hidden">Nenhuma foto adicionada ainda.</p>
+            <p id="fotosEmptyMsg" class="text-[11px] text-slate-400 text-center py-3">Nenhuma foto adicionada ainda.</p>
         </section>
 
         <!-- 12. ASSINATURAS -->
@@ -436,6 +436,105 @@
         setVal('inputNumeroRDO', nextNumero);
     }
 
+    /* ==================== 11. REGISTRO FOTOGRÁFICO (IMPLEMENTADO) ==================== */
+    function addFotoRow(data) {
+        const container = document.getElementById('fotosContainer');
+        const fotoId = 'foto_' + (rowIdCounter++);
+        
+        const card = document.createElement('div');
+        card.id = fotoId;
+        card.className = "bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2 image-preview-card relative";
+        
+        const initialSrc = (data && data.src) ? data.src : '';
+        if (initialSrc) {
+            fotoBase64Map[fotoId] = initialSrc;
+        }
+
+        card.innerHTML = `
+            <div class="flex justify-between items-center no-print">
+                <span class="text-[11px] font-bold text-slate-500">Foto</span>
+                <button type="button" onclick="removeFotoRow('${fotoId}')" class="text-red-500 hover:text-red-700 text-xs">
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+            </div>
+            
+            <div class="preview-area border border-dashed border-slate-300 rounded-lg p-2 text-center bg-white">
+                <img id="img_${fotoId}" src="${initialSrc}" class="${initialSrc ? '' : 'hidden'} w-full rounded-lg mb-2">
+                <div id="placeholder_${fotoId}" class="${initialSrc ? 'hidden' : ''} py-4 text-slate-400">
+                    <i class="fa-solid fa-image text-2xl mb-1"></i>
+                    <p class="text-[10px]">Nenhuma imagem selecionada</p>
+                </div>
+            </div>
+
+            <input type="file" accept="image/*" onchange="previewImage(event, '${fotoId}')" class="no-print block w-full text-xs text-slate-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-[11px] file:font-semibold file:bg-aco-50 file:text-aco-700 hover:file:bg-aco-100 cursor-pointer">
+            
+            <input type="text" id="desc_${fotoId}" value="${data && data.descricao ? escapeHtml(data.descricao) : ''}" placeholder="Descrição / legenda da foto" class="w-full text-xs bg-white border border-slate-300 rounded-lg p-2">
+        `;
+        
+        container.appendChild(card);
+        updateFotosEmptyState();
+    }
+
+    function previewImage(event, fotoId) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById(`img_${fotoId}`);
+                const placeholder = document.getElementById(`placeholder_${fotoId}`);
+                
+                img.src = e.target.result;
+                img.classList.remove('hidden');
+                placeholder.classList.add('hidden');
+                
+                fotoBase64Map[fotoId] = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function removeFotoRow(fotoId) {
+        const card = document.getElementById(fotoId);
+        if (card) card.remove();
+        delete fotoBase64Map[fotoId];
+        updateFotosEmptyState();
+    }
+
+    function collectFotos() {
+        const container = document.getElementById('fotosContainer');
+        const cards = container.querySelectorAll('.image-preview-card');
+        const fotos = [];
+        
+        cards.forEach(card => {
+            const fotoId = card.id;
+            const desc = card.querySelector(`#desc_${fotoId}`).value;
+            const src = fotoBase64Map[fotoId] || card.querySelector(`#img_${fotoId}`).src;
+            
+            if (src && !src.endsWith('null') && src !== window.location.href) {
+                fotos.push({ src, descricao: desc });
+            }
+        });
+        
+        return fotos;
+    }
+
+    function restoreFotos(fotos) {
+        const container = document.getElementById('fotosContainer');
+        container.innerHTML = '';
+        Object.keys(fotoBase64Map).forEach(k => delete fotoBase64Map[k]);
+        
+        if (Array.isArray(fotos) && fotos.length > 0) {
+            fotos.forEach(foto => addFotoRow(foto));
+        } else {
+            updateFotosEmptyState();
+        }
+    }
+
+    function updateFotosEmptyState() {
+        const hasRows = document.querySelectorAll('#fotosContainer .image-preview-card').length > 0;
+        document.getElementById('fotosEmptyMsg').classList.toggle('hidden', hasRows);
+    }
+
     /* ==================== 3. EQUIPE PRESENTE ==================== */
     function collectEquipe() {
         return getVal('textEquipePresente');
@@ -568,6 +667,180 @@
                 }
             }
         });
+    }
+
+    /* ==================== PERSISTÊNCIA E SUBMIT ==================== */
+    function handleFormSubmit(e) {
+        e.preventDefault();
+        
+        const record = {
+            id: getVal('editingRecordId') || ('rdo_' + Date.now()),
+            obra: getVal('inputObra'),
+            numeroRDO: getVal('inputNumeroRDO'),
+            data: getVal('inputData'),
+            endereco: getVal('inputEndereco'),
+            cliente: getVal('inputCliente'),
+            fiscalizacao: getVal('inputFiscalizacao'),
+            climaManha: getVal('inputClimaManha'),
+            climaTarde: getVal('inputClimaTarde'),
+            impactoClima: radioVal('impactoClima'),
+            descImpactoClima: getVal('descImpactoClima'),
+            paralisacaoClima: getVal('inputParalisacaoClima'),
+            equipe: collectEquipe(),
+            atividades: collectAtividades(),
+            testesPressao: collectTestesPressao(),
+            seguranca: collectSeguranca(),
+            ocorrencias: getVal('textOcorrencias'),
+            observacoesGerais: getVal('textObservacoesGerais'),
+            fotos: collectFotos(),
+            assinaturaResponsavel: getVal('inputAssinaturaResponsavel'),
+            assinaturaFiscalizacao: getVal('inputAssinaturaFiscalizacao'),
+            updatedAt: new Date().toISOString()
+        };
+
+        const idx = rdoHistory.findIndex(r => r.id === record.id);
+        if (idx >= 0) {
+            rdoHistory[idx] = record;
+        } else {
+            rdoHistory.unshift(record);
+        }
+
+        localStorage.setItem('rdo_aco_history_data', JSON.stringify(rdoHistory));
+        updateHistoryBadge();
+        renderHistory(rdoHistory);
+        alert('Relatório salvo com sucesso!');
+        setVal('editingRecordId', '');
+    }
+
+    function updateHistoryBadge() {
+        document.getElementById('historyBadge').innerText = rdoHistory.length;
+    }
+
+    function renderHistory(list) {
+        const container = document.getElementById('historyContainer');
+        if (list.length === 0) {
+            container.innerHTML = '<div class="bg-white p-6 rounded-2xl text-center text-xs text-slate-400">Nenhum relatório salvo no histórico.</div>';
+            return;
+        }
+
+        container.innerHTML = list.map(item => `
+            <div class="bg-white p-4 rounded-xl border border-slate-200 flex flex-wrap justify-between items-center gap-3">
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" value="${item.id}" class="history-select rounded">
+                    <div>
+                        <h3 class="font-bold text-xs text-slate-800">${escapeHtml(item.obra)} - RDO #${escapeHtml(item.numeroRDO)}</h3>
+                        <p class="text-[11px] text-slate-500">Data: ${escapeHtml(item.data)} | Atividades: ${item.atividades ? item.atividades.length : 0} | Fotos: ${item.fotos ? item.fotos.length : 0}</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="editRecord('${item.id}')" class="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold rounded-md">
+                        <i class="fa-solid fa-pen"></i> Editar
+                    </button>
+                    <button type="button" onclick="deleteRecord('${item.id}')" class="px-2.5 py-1 bg-red-50 hover:bg-red-100 text-red-600 text-xs font-semibold rounded-md">
+                        <i class="fa-solid fa-trash"></i> Excluir
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function editRecord(id) {
+        const item = rdoHistory.find(r => r.id === id);
+        if (!item) return;
+
+        setVal('editingRecordId', item.id);
+        setVal('inputObra', item.obra);
+        setVal('inputNumeroRDO', item.numeroRDO);
+        setVal('inputData', item.data);
+        setVal('inputEndereco', item.endereco);
+        setVal('inputCliente', item.cliente);
+        setVal('inputFiscalizacao', item.fiscalizacao);
+        setVal('inputClimaManha', item.climaManha);
+        setVal('inputClimaTarde', item.climaTarde);
+        setRadio('impactoClima', item.impactoClima || 'Não');
+        toggleNC('descImpactoClima', item.impactoClima === 'Sim');
+        setVal('descImpactoClima', item.descImpactoClima);
+        setVal('inputParalisacaoClima', item.paralisacaoClima);
+
+        restoreEquipe(item.equipe);
+
+        const tbody = document.getElementById('atividadesTableBody');
+        tbody.innerHTML = '';
+        if (Array.isArray(item.atividades)) {
+            item.atividades.forEach(ativ => addAtividadeRow(ativ));
+        }
+
+        restoreTestesPressao(item.testesPressao);
+        restoreSeguranca(item.seguranca);
+
+        setVal('textOcorrencias', item.ocorrencias);
+        setVal('textObservacoesGerais', item.observacoesGerais);
+        
+        restoreFotos(item.fotos);
+
+        setVal('inputAssinaturaResponsavel', item.assinaturaResponsavel);
+        setVal('inputAssinaturaFiscalizacao', item.assinaturaFiscalizacao);
+
+        switchTab('formTab');
+    }
+
+    function deleteRecord(id) {
+        if (confirm('Tem certeza que deseja excluir este relatório?')) {
+            rdoHistory = rdoHistory.filter(r => r.id !== id);
+            localStorage.setItem('rdo_aco_history_data', JSON.stringify(rdoHistory));
+            updateHistoryBadge();
+            renderHistory(rdoHistory);
+        }
+    }
+
+    function toggleSelectAll(master) {
+        document.querySelectorAll('.history-select').forEach(cb => cb.checked = master.checked);
+    }
+
+    function clearHistoryFilters() {
+        setVal('filterSearch', '');
+        setVal('filterDate', '');
+        renderHistory(rdoHistory);
+    }
+
+    function applyHistoryFilter() {
+        const search = getVal('filterSearch').toLowerCase();
+        const date = getVal('filterDate');
+
+        const filtered = rdoHistory.filter(item => {
+            const matchesSearch = !search || 
+                (item.obra && item.obra.toLowerCase().includes(search)) || 
+                (item.numeroRDO && item.numeroRDO.toLowerCase().includes(search));
+            const matchesDate = !date || item.data === date;
+            return matchesSearch && matchesDate;
+        });
+
+        renderHistory(filtered);
+    }
+
+    function exportToCSV() {
+        const selectedIds = Array.from(document.querySelectorAll('.history-select:checked')).map(cb => cb.value);
+        const dataToExport = selectedIds.length > 0 ? rdoHistory.filter(r => selectedIds.includes(r.id)) : rdoHistory;
+
+        if (dataToExport.length === 0) {
+            alert('Nenhum registro selecionado para exportação.');
+            return;
+        }
+
+        let csv = 'Data;Obra;RDO;Cliente;Impacto Clima;Ocorrencias\n';
+        dataToExport.forEach(item => {
+            csv += `"${item.data}";"${item.obra}";"${item.numeroRDO}";"${item.cliente || ''}";"${item.impactoClima || ''}";"${(item.ocorrencias || '').replace(/"/g, '""')}"\n`;
+        });
+
+        const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `relatorios_rdo_${Date.now()}.csv`;
+        link.click();
+    }
+
+    function exportToPDF() {
+        window.print();
     }
 </script>
 </body>
