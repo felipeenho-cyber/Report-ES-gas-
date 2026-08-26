@@ -186,8 +186,11 @@
             </div>
         </section>
 
-        <!-- EFETIVO PRESENTE -->
+        <!-- 3. EQUIPE PRESENTE -->
         <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 mb-4">
+                <i class="fa-solid fa-users text-aco-500 mr-1"></i> 3. Equipe Presente
+            </h2>
             <div class="overflow-x-auto">
                 <table class="w-full text-xs border-collapse">
                     <thead>
@@ -198,25 +201,6 @@
                         </tr>
                     </thead>
                     <tbody id="equipeTableBody"></tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- 4. EQUIPAMENTOS E MAQUINÁRIO -->
-        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
-            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 mb-4">
-                <i class="fa-solid fa-toolbox text-aco-500 mr-1"></i> 4. Equipamentos e Maquinário
-            </h2>
-            <div class="overflow-x-auto">
-                <table class="w-full text-xs border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50 text-left">
-                            <th class="p-2 border font-semibold">Equipamento</th>
-                            <th class="p-2 border font-semibold w-24">Quantidade</th>
-                            <th class="p-2 border font-semibold w-44">Situação</th>
-                        </tr>
-                    </thead>
-                    <tbody id="equipamentosTableBody"></tbody>
                 </table>
             </div>
         </section>
@@ -389,16 +373,6 @@
         'Engenheiro residente'
     ];
 
-    const EQUIPAMENTOS_LISTA = [
-        'Máquina de solda (topo/elétrodo)',
-        'Esmerilhadeira',
-        'Equipamento de corte',
-        'Bomba de teste de pressão / manômetro',
-        'Compressor / equipamento de ar',
-        'Guindaste / munck',
-        'Retroescavadeira'
-    ];
-
     const TESTES_PRESSAO_TIPOS = [
         'Teste de estanqueidade',
         'Teste de resistência (pressão)',
@@ -417,7 +391,7 @@
     /* ==================== ESTADO ==================== */
     let rdoHistory = JSON.parse(localStorage.getItem('rdo_aco_history_data') || '[]');
     let rowIdCounter = 0;
-    const fotoBase64Map = {}; // rowId -> base64
+    const fotoBase64Map = {};
 
     function getVal(id) {
         const el = document.getElementById(id);
@@ -442,7 +416,6 @@
     /* ==================== INICIALIZAÇÃO ==================== */
     document.addEventListener('DOMContentLoaded', () => {
         renderEquipeTable();
-        renderEquipamentosTable();
         renderTestesTable();
         renderSegurancaCards();
         setDefaultDateAndNumero();
@@ -507,39 +480,6 @@
         list.forEach((item, i) => {
             setVal(`equipeQtd_${i}`, item.quantidade);
             setVal(`equipeObs_${i}`, item.observacoes);
-        });
-    }
-
-    /* ==================== 4. EQUIPAMENTOS (tabela fixa) ==================== */
-    function renderEquipamentosTable() {
-        const tbody = document.getElementById('equipamentosTableBody');
-        tbody.innerHTML = EQUIPAMENTOS_LISTA.map((nome, i) => `
-            <tr>
-                <td class="p-2 border font-medium text-slate-700">${escapeHtml(nome)}</td>
-                <td class="p-2 border"><input type="number" min="0" id="equipQtd_${i}" class="w-full text-xs p-1.5 border rounded"></td>
-                <td class="p-2 border">
-                    <select id="equipSituacao_${i}" class="w-full text-xs p-1.5 border rounded">
-                        <option value="">Selecione...</option>
-                        <option value="Operante">Operante</option>
-                        <option value="Em manutenção">Em manutenção</option>
-                        <option value="Não aplicável">Não aplicável</option>
-                    </select>
-                </td>
-            </tr>
-        `).join('');
-    }
-    function collectEquipamentos() {
-        return EQUIPAMENTOS_LISTA.map((nome, i) => ({
-            nome,
-            quantidade: getVal(`equipQtd_${i}`),
-            situacao: getVal(`equipSituacao_${i}`)
-        }));
-    }
-    function restoreEquipamentos(list) {
-        if (!Array.isArray(list)) return;
-        list.forEach((item, i) => {
-            setVal(`equipQtd_${i}`, item.quantidade);
-            setVal(`equipSituacao_${i}`, item.situacao);
         });
     }
 
@@ -614,7 +554,7 @@
             parametro: getVal(`testeParametro_${i}`),
             duracao: getVal(`testeDuracao_${i}`),
             resultado: getVal(`testeResultado_${i}`),
-            obs: getVal(`testeObs_${i}`)
+            observacoes: getVal(`testeObs_${i}`)
         }));
     }
     function restoreTestesPressao(list) {
@@ -623,127 +563,128 @@
             setVal(`testeParametro_${i}`, item.parametro);
             setVal(`testeDuracao_${i}`, item.duracao);
             setVal(`testeResultado_${i}`, item.resultado);
-            setVal(`testeObs_${i}`, item.obs);
+            setVal(`testeObs_${i}`, item.observacoes);
         });
     }
 
-    /* ==================== 8. SEGURANÇA DO TRABALHO (cards fixos) ==================== */
+    /* ==================== 8. SEGURANÇA DO TRABALHO ==================== */
     function renderSegurancaCards() {
         const container = document.getElementById('segurancaContainer');
         container.innerHTML = SEGURANCA_ITENS.map(item => `
-            <div class="bg-slate-50 p-3.5 rounded-xl border">
-                <div class="flex items-center justify-between mb-2 gap-2">
-                    <span class="text-xs font-medium">${escapeHtml(item.label)}</span>
-                    <div class="flex gap-3 shrink-0">
-                        <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="seg_${item.id}" value="Conforme" checked onchange="toggleNC('segDesc_${item.id}', false)"> Conforme</label>
-                        <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="seg_${item.id}" value="Não conforme" onchange="toggleNC('segDesc_${item.id}', true)"> Não conforme</label>
+            <div class="bg-slate-50 p-3 rounded-xl border">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-slate-700">${escapeHtml(item.label)}</span>
+                    <div class="flex gap-3">
+                        <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="seg_${item.id}" value="Conforme" checked onchange="toggleNC('descSeg_${item.id}', false)"> Conforme</label>
+                        <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="seg_${item.id}" value="Não conforme" onchange="toggleNC('descSeg_${item.id}', true)"> Não conf.</label>
                     </div>
                 </div>
-                <input type="text" id="segDesc_${item.id}" placeholder="Descreva a observação..." class="hidden w-full text-xs bg-red-50 border border-red-300 rounded p-2 mt-1">
+                <input type="text" id="descSeg_${item.id}" placeholder="Descreva a não conformidade..." class="hidden w-full text-xs bg-red-50 border border-red-300 rounded-lg p-2">
             </div>
         `).join('');
     }
     function collectSeguranca() {
-        const result = {};
+        const obj = {};
         SEGURANCA_ITENS.forEach(item => {
-            result[item.id] = {
+            obj[item.id] = {
                 status: radioVal(`seg_${item.id}`),
-                descricao: getVal(`segDesc_${item.id}`)
+                observacao: getVal(`descSeg_${item.id}`)
             };
         });
-        return result;
+        return obj;
     }
     function restoreSeguranca(data) {
         if (!data) return;
         SEGURANCA_ITENS.forEach(item => {
-            const entry = data[item.id];
-            if (entry && entry.status === 'Não conforme') {
-                setRadio(`seg_${item.id}`, 'Não conforme');
-                toggleNC(`segDesc_${item.id}`, true);
-                setVal(`segDesc_${item.id}`, entry.descricao);
-            } else {
-                setRadio(`seg_${item.id}`, 'Conforme');
-                toggleNC(`segDesc_${item.id}`, false);
-                setVal(`segDesc_${item.id}`, '');
+            if (data[item.id]) {
+                setRadio(`seg_${item.id}`, data[item.id].status);
+                if (data[item.id].status === 'Não conforme') {
+                    toggleNC(`descSeg_${item.id}`, true);
+                    setVal(`descSeg_${item.id}`, data[item.id].observacao);
+                } else {
+                    toggleNC(`descSeg_${item.id}`, false);
+                    setVal(`descSeg_${item.id}`, '');
+                }
             }
         });
     }
 
-    /* ==================== 11. REGISTRO FOTOGRÁFICO (dinâmico) ==================== */
+    /* ==================== 11. FOTOS ==================== */
     function addFotoRow(data) {
         const container = document.getElementById('fotosContainer');
         const rowId = 'foto_' + (rowIdCounter++);
-        const card = document.createElement('div');
-        card.className = 'foto-item bg-slate-50 p-3 rounded-xl border';
-        card.dataset.rowId = rowId;
-        card.innerHTML = `
-            <div class="flex items-center justify-between mb-2">
-                <span class="text-[11px] font-bold text-slate-600">Foto</span>
-                <button type="button" onclick="removeFotoRow(this)" class="row-remove-btn text-red-500 hover:text-red-700 text-xs"><i class="fa-solid fa-trash"></i></button>
+        const div = document.createElement('div');
+        div.className = 'bg-slate-50 p-3 rounded-xl border space-y-2 image-preview-card';
+        div.dataset.rowId = rowId;
+        div.innerHTML = `
+            <div class="flex justify-between items-center no-print">
+                <span class="text-xs font-bold text-slate-700">Foto</span>
+                <button type="button" onclick="removeFotoCard('${rowId}')" class="text-red-500 hover:text-red-700 text-xs"><i class="fa-solid fa-trash"></i></button>
             </div>
-            <input type="file" accept="image/*" class="f-file w-full text-[11px] bg-white border border-slate-300 rounded p-1 mb-2" onchange="handleFotoFileChange(this, '${rowId}')">
-            <div class="f-preview hidden mb-2"></div>
-            <input type="text" class="f-desc w-full text-xs p-1.5 border rounded mb-2" placeholder="Descrição">
-            <input type="text" class="f-trecho-local w-full text-xs p-1.5 border rounded" placeholder="Trecho / Local">
+            <input type="file" accept="image/*" onchange="handleFotoChange(event, '${rowId}')" class="w-full text-xs border rounded p-1 bg-white">
+            <div id="preview_${rowId}" class="hidden"><img src="" alt="Preview"></div>
+            <input type="text" id="legenda_${rowId}" placeholder="Legenda da foto" class="w-full text-xs p-1.5 border rounded bg-white">
         `;
-        container.appendChild(card);
+        container.appendChild(div);
         if (data) {
-            card.querySelector('.f-desc').value = data.descricao || '';
-            card.querySelector('.f-trecho-local').value = data.trechoLocal || '';
+            setVal(`legenda_${rowId}`, data.legenda);
             if (data.base64) {
                 fotoBase64Map[rowId] = data.base64;
-                const preview = card.querySelector('.f-preview');
-                preview.classList.remove('hidden');
-                preview.innerHTML = `<div class="image-preview-card border rounded p-1 bg-white shadow-sm"><img src="${data.base64}"><p class="text-[9px] text-slate-500 mt-1 text-center font-semibold">Foto Anexada</p></div>`;
+                const prev = document.getElementById(`preview_${rowId}`);
+                prev.querySelector('img').src = data.base64;
+                prev.classList.remove('hidden');
             }
         }
         updateFotosEmptyState();
     }
-    function handleFotoFileChange(input, rowId) {
-        const card = input.closest('.foto-item');
-        const preview = card.querySelector('.f-preview');
-        preview.innerHTML = '';
-        if (input.files && input.files[0]) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                fotoBase64Map[rowId] = e.target.result;
-                preview.classList.remove('hidden');
-                preview.innerHTML = `<div class="image-preview-card border rounded p-1 bg-white shadow-sm"><img src="${e.target.result}"><p class="text-[9px] text-slate-500 mt-1 text-center font-semibold">Foto Anexada</p></div>`;
-            };
-            reader.readAsDataURL(input.files[0]);
-        }
+    function handleFotoChange(event, rowId) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            fotoBase64Map[rowId] = e.target.result;
+            const prev = document.getElementById(`preview_${rowId}`);
+            prev.querySelector('img').src = e.target.result;
+            prev.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
     }
-    function removeFotoRow(btn) {
-        const card = btn.closest('.foto-item');
-        if (card) {
-            delete fotoBase64Map[card.dataset.rowId];
-            card.remove();
-        }
+    function removeFotoCard(rowId) {
+        const card = document.querySelector(`[data-row-id="${rowId}"]`);
+        if (card) card.remove();
+        delete fotoBase64Map[rowId];
         updateFotosEmptyState();
     }
     function collectFotos() {
-        return Array.from(document.querySelectorAll('#fotosContainer .foto-item')).map(card => ({
-            descricao: card.querySelector('.f-desc').value,
-            trechoLocal: card.querySelector('.f-trecho-local').value,
-            base64: fotoBase64Map[card.dataset.rowId] || ''
-        }));
+        return Array.from(document.querySelectorAll('#fotosContainer > div')).map(div => {
+            const rowId = div.dataset.rowId;
+            return {
+                rowId,
+                base64: fotoBase64Map[rowId] || '',
+                legenda: getVal(`legenda_${rowId}`)
+            };
+        });
+    }
+    function restoreFotos(list) {
+        document.getElementById('fotosContainer').innerHTML = '';
+        for (const rowId in fotoBase64Map) delete fotoBase64Map[rowId];
+        if (Array.isArray(list)) {
+            list.forEach(item => addFotoRow(item));
+        }
+        updateFotosEmptyState();
     }
     function updateFotosEmptyState() {
-        const hasRows = document.querySelectorAll('#fotosContainer .foto-item').length > 0;
+        const hasRows = document.querySelectorAll('#fotosContainer > div').length > 0;
         document.getElementById('fotosEmptyMsg').classList.toggle('hidden', hasRows);
     }
 
-    /* ==================== SALVAR / EDITAR / RESETAR ==================== */
+    /* ==================== SALVAR / HISTÓRICO ==================== */
     function handleFormSubmit(e) {
         e.preventDefault();
-
         const editingId = getVal('editingRecordId');
-        const isEdit = !!editingId;
-        const recordId = isEdit ? editingId : 'RDOACO-' + Date.now();
-
-        const recordData = {
-            id: recordId,
-            dataHora: new Date().toLocaleString('pt-BR'),
+        const record = {
+            id: editingId ? editingId : 'rdo_' + Date.now(),
+            createdAt: editingId ? (rdoHistory.find(r => r.id === editingId)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
             identificacao: {
                 obra: getVal('inputObra'),
                 numeroRDO: getVal('inputNumeroRDO'),
@@ -755,11 +696,11 @@
             clima: {
                 manha: getVal('inputClimaManha'),
                 tarde: getVal('inputClimaTarde'),
-                impacto: { houve: radioVal('impactoClima'), descricao: getVal('descImpactoClima') },
+                impacto: radioVal('impactoClima'),
+                descImpacto: getVal('descImpactoClima'),
                 paralisacao: getVal('inputParalisacaoClima')
             },
             equipe: collectEquipe(),
-            equipamentos: collectEquipamentos(),
             atividades: collectAtividades(),
             testesPressao: collectTestesPressao(),
             seguranca: collectSeguranca(),
@@ -767,171 +708,137 @@
             observacoesGerais: getVal('textObservacoesGerais'),
             fotos: collectFotos(),
             assinaturas: {
-                responsavelTecnico: getVal('inputAssinaturaResponsavel'),
-                fiscalizacaoContratante: getVal('inputAssinaturaFiscalizacao')
+                responsavel: getVal('inputAssinaturaResponsavel'),
+                fiscalizacao: getVal('inputAssinaturaFiscalizacao')
             }
         };
 
-        if (isEdit) {
-            const index = rdoHistory.findIndex(item => String(item.id) === String(recordId));
-            if (index !== -1) {
-                rdoHistory[index] = recordData;
-            } else {
-                rdoHistory.unshift(recordData);
-            }
+        if (editingId) {
+            const idx = rdoHistory.findIndex(r => r.id === editingId);
+            if (idx >= 0) rdoHistory[idx] = record;
         } else {
-            rdoHistory.unshift(recordData);
+            rdoHistory.unshift(record);
         }
 
-        try {
-            localStorage.setItem('rdo_aco_history_data', JSON.stringify(rdoHistory));
-        } catch (err) {
-            console.error('Erro ao salvar no localStorage:', err);
-            alert('Não foi possível salvar o relatório: o armazenamento local está cheio (geralmente por causa das fotos anexadas). Tente remover fotos antigas ou registros antigos do histórico e tente novamente.');
-            return;
-        }
-
+        localStorage.setItem('rdo_aco_history_data', JSON.stringify(rdoHistory));
+        resetForm();
         updateHistoryBadge();
         renderHistory(rdoHistory);
-
-        alert('Relatório salvo com sucesso!');
-        resetForm();
         switchTab('historyTab');
     }
 
     function resetForm() {
         document.getElementById('rdoForm').reset();
-        document.getElementById('editingRecordId').value = '';
-
+        setVal('editingRecordId', '');
+        toggleNC('descImpactoClima', false);
         document.getElementById('atividadesTableBody').innerHTML = '';
+        addAtividadeRow();
         document.getElementById('fotosContainer').innerHTML = '';
-        Object.keys(fotoBase64Map).forEach(k => delete fotoBase64Map[k]);
-
+        for (const k in fotoBase64Map) delete fotoBase64Map[k];
+        renderEquipeTable();
+        renderTestesTable();
         renderSegurancaCards();
         setDefaultDateAndNumero();
-        addAtividadeRow();
         updateAtividadesEmptyState();
         updateFotosEmptyState();
-        toggleNC('descImpactoClima', false);
+    }
+
+    function renderHistory(list) {
+        const container = document.getElementById('historyContainer');
+        if (!list.length) {
+            container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6 bg-white rounded-2xl border">Nenhum RDO salvo no histórico.</p>';
+            return;
+        }
+        container.innerHTML = list.map(r => `
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-3">
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" value="${r.id}" class="history-checkbox rounded">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-xs text-aco-900">RDO Nº ${escapeHtml(r.identificacao.numeroRDO)}</span>
+                            <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full text-slate-600">${escapeHtml(r.identificacao.data)}</span>
+                        </div>
+                        <p class="text-xs text-slate-600">${escapeHtml(r.identificacao.obra)}</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="viewRecord('${r.id}')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-eye mr-1"></i> Ver</button>
+                    <button type="button" onclick="editRecord('${r.id}')" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-pen mr-1"></i> Editar</button>
+                    <button type="button" onclick="deleteRecord('${r.id}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold"><i class="fa-solid fa-trash mr-1"></i> Excluir</button>
+                </div>
+            </div>
+        `).join('');
     }
 
     function editRecord(id) {
-        const item = rdoHistory.find(r => String(r.id) === String(id));
-        if (!item) return;
+        const r = rdoHistory.find(item => item.id === id);
+        if (!r) return;
+        switchTab('formTab');
+        setVal('editingRecordId', r.id);
+        setVal('inputObra', r.identificacao.obra);
+        setVal('inputNumeroRDO', r.identificacao.numeroRDO);
+        setVal('inputData', r.identificacao.data);
+        setVal('inputEndereco', r.identificacao.endereco);
+        setVal('inputCliente', r.identificacao.cliente);
+        setVal('inputFiscalizacao', r.identificacao.fiscalizacao);
 
-        document.getElementById('editingRecordId').value = item.id;
-
-        setVal('inputObra', item.identificacao?.obra);
-        setVal('inputNumeroRDO', item.identificacao?.numeroRDO);
-        setVal('inputData', item.identificacao?.data);
-        setVal('inputEndereco', item.identificacao?.endereco);
-        setVal('inputCliente', item.identificacao?.cliente);
-        setVal('inputFiscalizacao', item.identificacao?.fiscalizacao);
-
-        setVal('inputClimaManha', item.clima?.manha);
-        setVal('inputClimaTarde', item.clima?.tarde);
-        setVal('inputParalisacaoClima', item.clima?.paralisacao);
-        if (item.clima?.impacto?.houve === 'Sim') {
-            setRadio('impactoClima', 'Sim');
+        setVal('inputClimaManha', r.clima.manha);
+        setVal('inputClimaTarde', r.clima.tarde);
+        setRadio('impactoClima', r.clima.impacto);
+        if (r.clima.impacto === 'Sim') {
             toggleNC('descImpactoClima', true);
-            setVal('descImpactoClima', item.clima.impacto.descricao);
+            setVal('descImpactoClima', r.clima.descImpacto);
         } else {
-            setRadio('impactoClima', 'Não');
             toggleNC('descImpactoClima', false);
+            setVal('descImpactoClima', '');
         }
+        setVal('inputParalisacaoClima', r.clima.paralisacao);
 
-        restoreEquipe(item.equipe);
-        restoreEquipamentos(item.equipamentos);
-        restoreTestesPressao(item.testesPressao);
-        restoreSeguranca(item.seguranca);
+        restoreEquipe(r.equipe);
 
         document.getElementById('atividadesTableBody').innerHTML = '';
-        (item.atividades || []).forEach(a => addAtividadeRow(a));
-        if (!(item.atividades || []).length) addAtividadeRow();
-
-        document.getElementById('fotosContainer').innerHTML = '';
-        Object.keys(fotoBase64Map).forEach(k => delete fotoBase64Map[k]);
-        (item.fotos || []).forEach(f => addFotoRow(f));
-        updateFotosEmptyState();
-
-        setVal('textOcorrencias', item.ocorrencias);
-        setVal('textObservacoesGerais', item.observacoesGerais);
-        setVal('inputAssinaturaResponsavel', item.assinaturas?.responsavelTecnico);
-        setVal('inputAssinaturaFiscalizacao', item.assinaturas?.fiscalizacaoContratante);
-
-        switchTab('formTab');
-    }
-
-    /* ==================== HISTÓRICO ==================== */
-    function updateHistoryBadge() {
-        document.getElementById('historyBadge').innerText = rdoHistory.length;
-    }
-
-    function renderHistory(data) {
-        const container = document.getElementById('historyContainer');
-        if (data.length === 0) {
-            container.innerHTML = `
-                <div class="bg-white rounded-2xl p-8 text-center text-slate-400 border border-slate-200">
-                    <i class="fa-solid fa-folder-open text-3xl mb-2"></i>
-                    <p class="text-xs">Nenhum registro encontrado.</p>
-                </div>`;
-            return;
+        if (Array.isArray(r.atividades)) {
+            r.atividades.forEach(item => addAtividadeRow(item));
         }
+        updateAtividadesEmptyState();
 
-        container.innerHTML = data.map(item => {
-            return `
-            <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-wrap justify-between items-center gap-4">
-                <div class="flex items-center gap-3">
-                    <input type="checkbox" class="history-checkbox rounded cursor-pointer" value="${escapeHtml(item.id)}">
-                    <div>
-                        <div class="flex items-center gap-2 mb-1">
-                            <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-aco-100 text-aco-900">
-                                RDO ${escapeHtml(item.identificacao?.numeroRDO || '-')}
-                            </span>
-                            <span class="text-xs font-bold text-slate-800">${escapeHtml(item.identificacao?.obra || '')}</span>
-                        </div>
-                        <p class="text-[11px] text-slate-400"><i class="fa-regular fa-calendar mr-1"></i> ${escapeHtml(item.identificacao?.data || '')} &nbsp; <i class="fa-regular fa-clock mr-1"></i> ${escapeHtml(item.dataHora || '')}</p>
-                    </div>
-                </div>
-                <div class="flex items-center gap-2">
-                    <button onclick="editRecord('${item.id}')" class="px-3 py-1.5 bg-aco-50 hover:bg-aco-100 text-aco-700 rounded-lg text-xs font-bold transition">
-                        <i class="fa-solid fa-pen mr-1"></i> Editar
-                    </button>
-                    <button onclick="deleteRecord('${item.id}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold transition">
-                        <i class="fa-solid fa-trash"></i> Excluir
-                    </button>
-                </div>
-            </div>
-        `; }).join('');
+        restoreTestesPressao(r.testesPressao);
+        restoreSeguranca(r.seguranca);
+
+        setVal('textOcorrencias', r.ocorrencias);
+        setVal('textObservacoesGerais', r.observacoesGerais);
+
+        restoreFotos(r.fotos);
+
+        setVal('inputAssinaturaResponsavel', r.assinaturas?.responsavel);
+        setVal('inputAssinaturaFiscalizacao', r.assinaturas?.fiscalizacao);
     }
 
-    function toggleSelectAll(master) {
-        const checkboxes = document.querySelectorAll('.history-checkbox');
-        checkboxes.forEach(cb => cb.checked = master.checked);
+    function deleteRecord(id) {
+        if (!confirm('Deseja realmente excluir este RDO?')) return;
+        rdoHistory = rdoHistory.filter(r => r.id !== id);
+        localStorage.setItem('rdo_aco_history_data', JSON.stringify(rdoHistory));
+        updateHistoryBadge();
+        renderHistory(rdoHistory);
     }
 
-    function getSelectedRecords() {
-        const selectedIds = Array.from(document.querySelectorAll('.history-checkbox:checked')).map(cb => String(cb.value));
-        if (selectedIds.length === 0) return rdoHistory;
-        return rdoHistory.filter(item => selectedIds.includes(String(item.id)));
+    function viewRecord(id) {
+        editRecord(id);
+        setTimeout(() => window.print(), 300);
+    }
+
+    function toggleSelectAll(checkbox) {
+        document.querySelectorAll('.history-checkbox').forEach(cb => cb.checked = checkbox.checked);
     }
 
     function applyHistoryFilter() {
-        const search = getVal('filterSearch').toLowerCase();
-        const date = getVal('filterDate');
-
-        const filtered = rdoHistory.filter(item => {
-            const haystack = [
-                item.identificacao?.obra,
-                item.identificacao?.numeroRDO
-            ].join(' ').toLowerCase();
-
-            const matchesSearch = !search || haystack.includes(search);
-            const matchesDate = !date || item.identificacao?.data === date;
-
-            return matchesSearch && matchesDate;
+        const text = document.getElementById('filterSearch').value.toLowerCase();
+        const date = document.getElementById('filterDate').value;
+        const filtered = rdoHistory.filter(r => {
+            const matchText = !text || (r.identificacao.obra + ' ' + r.identificacao.numeroRDO).toLowerCase().includes(text);
+            const matchDate = !date || r.identificacao.data === date;
+            return matchText && matchDate;
         });
-
         renderHistory(filtered);
     }
 
@@ -941,65 +848,37 @@
         renderHistory(rdoHistory);
     }
 
-    function deleteRecord(id) {
-        if (confirm('Deseja realmente excluir este registro?')) {
-            rdoHistory = rdoHistory.filter(item => String(item.id) !== String(id));
-            localStorage.setItem('rdo_aco_history_data', JSON.stringify(rdoHistory));
-            updateHistoryBadge();
-            applyHistoryFilter();
-        }
+    function updateHistoryBadge() {
+        document.getElementById('historyBadge').innerText = rdoHistory.length;
     }
 
-    /* ==================== EXPORTAÇÃO ==================== */
     function exportToCSV() {
-        const recordsToExport = getSelectedRecords();
-        if (recordsToExport.length === 0) {
-            alert('Não há dados salvos para exportar.');
+        const selectedIds = Array.from(document.querySelectorAll('.history-checkbox:checked')).map(cb => cb.value);
+        const listToExport = selectedIds.length ? rdoHistory.filter(r => selectedIds.includes(r.id)) : rdoHistory;
+        if (!listToExport.length) {
+            alert('Nenhum RDO selecionado para exportar.');
             return;
         }
-
-        let csv = 'sep=;\nNº RDO;Data;Obra;Cliente;Fiscalizacao;Clima Manha;Clima Tarde;Impacto Clima;Extensao Total (m);Ocorrencias;Observacoes Gerais\n';
-
-        recordsToExport.forEach(item => {
-            const extensaoTotal = (item.atividades || []).reduce((sum, a) => sum + (parseFloat(a.extensao) || 0), 0);
-            const impacto = item.clima?.impacto?.houve === 'Sim' ? (item.clima.impacto.descricao || 'Sim') : 'Não';
-
-            const row = [
-                `"${item.identificacao?.numeroRDO || ''}"`,
-                `"${item.identificacao?.data || ''}"`,
-                `"${item.identificacao?.obra || ''}"`,
-                `"${item.identificacao?.cliente || ''}"`,
-                `"${item.identificacao?.fiscalizacao || ''}"`,
-                `"${item.clima?.manha || ''}"`,
-                `"${item.clima?.tarde || ''}"`,
-                `"${impacto.replace(/"/g, '""')}"`,
-                `"${extensaoTotal}"`,
-                `"${(item.ocorrencias || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`,
-                `"${(item.observacoesGerais || '').replace(/"/g, '""').replace(/\n/g, ' ')}"`
-            ];
-            csv += row.join(';') + '\n';
+        let csv = 'ID,RDO,Data,Obra,Cliente\n';
+        listToExport.forEach(r => {
+            csv += `"${r.id}","${r.identificacao.numeroRDO}","${r.identificacao.data}","${r.identificacao.obra}","${r.identificacao.cliente}"\n`;
         });
-
-        const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(blob);
-        link.download = `Relatorios_RDO_Aco_${new Date().toISOString().split('T')[0]}.csv`;
-        link.click();
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'rdo_export.csv';
+        a.click();
     }
 
     function exportToPDF() {
-        const recordsToExport = getSelectedRecords();
-        if (recordsToExport.length === 0) return;
-
-        if (recordsToExport.length === 1) {
-            editRecord(recordsToExport[0].id);
-        } else {
-            switchTab('formTab');
+        const selectedIds = Array.from(document.querySelectorAll('.history-checkbox:checked')).map(cb => cb.value);
+        if (!selectedIds.length) {
+            alert('Selecione pelo menos um RDO no histórico para imprimir / gerar PDF.');
+            return;
         }
-
-        setTimeout(() => {
-            window.print();
-        }, 300);
+        editRecord(selectedIds[0]);
+        setTimeout(() => window.print(), 300);
     }
 </script>
 
