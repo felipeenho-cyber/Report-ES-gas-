@@ -104,6 +104,9 @@
 
 <main class="max-w-6xl mx-auto px-4 py-6">
 
+<!-- Aviso de carregamento -->
+<div id="storageStatus" class="hidden mb-4 px-4 py-2 rounded-lg text-xs font-semibold no-print"></div>
+
 <!-- FORMULÁRIO -->
 <div id="formTab">
 
@@ -300,7 +303,7 @@
 
         <!-- BOTÃO SALVAR -->
         <div class="flex justify-end gap-3 pt-4 border-t no-print">
-            <button type="submit" class="px-6 py-2.5 bg-aco-spark hover:bg-amber-600 text-white rounded-xl font-bold text-xs shadow-md">
+            <button type="submit" id="btnSalvar" class="px-6 py-2.5 bg-aco-spark hover:bg-amber-600 text-white rounded-xl font-bold text-xs shadow-md disabled:opacity-60">
                 <i class="fa-solid fa-floppy-disk mr-2"></i> Salvar Relatório
             </button>
         </div>
@@ -368,8 +371,10 @@
         { id: 'incidente', label: 'Ocorrência de incidente/acidente' }
     ];
 
+    const STORAGE_KEY = 'rdo_aco_history_data';
+
     /* ==================== ESTADO ==================== */
-    let rdoHistory = JSON.parse(localStorage.getItem('rdo_aco_history_data') || '[]');
+    let rdoHistory = [];
     let rowIdCounter = 0;
     const fotoBase64Map = {};
 
@@ -393,10 +398,56 @@
         return String(str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
     }
 
+    /* ==================== ARMAZENAMENTO PERSISTENTE ==================== */
+    function showStorageStatus(message, type) {
+        const el = document.getElementById('storageStatus');
+        if (!el) return;
+        el.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-emerald-100', 'text-emerald-700', 'bg-slate-200', 'text-slate-700');
+        if (type === 'error') {
+            el.classList.add('bg-red-100', 'text-red-700');
+        } else if (type === 'success') {
+            el.classList.add('bg-emerald-100', 'text-emerald-700');
+        } else {
+            el.classList.add('bg-slate-200', 'text-slate-700');
+        }
+        el.innerText = message;
+        if (type === 'success') {
+            setTimeout(() => el.classList.add('hidden'), 2000);
+        }
+    }
+
+    async function loadHistoryFromStorage() {
+        showStorageStatus('Carregando relatórios salvos...', 'info');
+        try {
+            const result = await window.storage.get(STORAGE_KEY, false);
+            rdoHistory = result && result.value ? JSON.parse(result.value) : [];
+            document.getElementById('storageStatus').classList.add('hidden');
+        } catch (error) {
+            // Chave ainda não existe (primeiro uso) -> não é erro
+            rdoHistory = [];
+            document.getElementById('storageStatus').classList.add('hidden');
+        }
+    }
+
+    async function saveHistoryToStorage() {
+        try {
+            const result = await window.storage.set(STORAGE_KEY, JSON.stringify(rdoHistory), false);
+            if (!result) {
+                throw new Error('Resultado vazio ao salvar');
+            }
+            return true;
+        } catch (error) {
+            console.error('Erro ao salvar no armazenamento:', error);
+            showStorageStatus('Erro ao salvar o relatório. Verifique sua conexão e tente novamente.', 'error');
+            return false;
+        }
+    }
+
     /* ==================== INICIALIZAÇÃO ==================== */
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
         renderTestesTable();
         renderSegurancaCards();
+        await loadHistoryFromStorage();
         setDefaultDateAndNumero();
         addAtividadeRow();
         updateAtividadesEmptyState();
@@ -632,8 +683,12 @@
     }
 
     /* ==================== SALVAR / HISTÓRICO ==================== */
-    function handleFormSubmit(e) {
+    async function handleFormSubmit(e) {
         e.preventDefault();
+        const btn = document.getElementById('btnSalvar');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Salvando...';
+
         const editingId = getVal('editingRecordId');
         const record = {
             id: editingId ? editingId : 'rdo_' + Date.now(),
@@ -666,6 +721,8 @@
             }
         };
 
+        const previousHistory = rdoHistory.slice();
+
         if (editingId) {
             const idx = rdoHistory.findIndex(r => r.id === editingId);
             if (idx >= 0) rdoHistory[idx] = record;
@@ -673,7 +730,18 @@
             rdoHistory.unshift(record);
         }
 
-        localStorage.setItem('rdo_aco_history_data', JSON.stringify(rdoHistory));
+        const ok = await saveHistoryToStorage();
+
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-floppy-disk mr-2"></i> Salvar Relatório';
+
+        if (!ok) {
+            // reverte em memória se não salvou de fato
+            rdoHistory = previousHistory;
+            return;
+        }
+
+        showStorageStatus('Relatório salvo com sucesso!', 'success');
         resetForm();
         updateHistoryBadge();
         renderHistory(rdoHistory);
@@ -766,10 +834,15 @@
         setVal('inputAssinaturaFiscalizacao', r.assinaturas?.fiscalizacao);
     }
 
-    function deleteRecord(id) {
+    async function deleteRecord(id) {
         if (!confirm('Deseja realmente excluir este RDO?')) return;
+        const previousHistory = rdoHistory.slice();
         rdoHistory = rdoHistory.filter(r => r.id !== id);
-        localStorage.setItem('rdo_aco_history_data', JSON.stringify(rdoHistory));
+        const ok = await saveHistoryToStorage();
+        if (!ok) {
+            rdoHistory = previousHistory;
+            return;
+        }
         updateHistoryBadge();
         renderHistory(rdoHistory);
     }
