@@ -104,9 +104,6 @@
 
 <main class="max-w-6xl mx-auto px-4 py-6">
 
-<!-- Aviso de carregamento -->
-<div id="storageStatus" class="hidden mb-4 px-4 py-2 rounded-lg text-xs font-semibold no-print"></div>
-
 <!-- FORMULÁRIO -->
 <div id="formTab">
 
@@ -122,7 +119,7 @@
         </div>
     </section>
 
-    <form id="rdoForm" onsubmit="handleFormSubmit(event)" class="space-y-6">
+    <div id="rdoForm" class="space-y-6">
         <input type="hidden" id="editingRecordId" value="">
 
         <!-- 1. IDENTIFICAÇÃO -->
@@ -133,15 +130,15 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="lg:col-span-2">
                     <label class="block text-xs font-semibold mb-1">Obra / Empreendimento <span class="text-red-500">*</span></label>
-                    <input type="text" id="inputObra" required placeholder="Ex.: Rede de gás — Loteamento Aurora" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                    <input type="text" id="inputObra" placeholder="Ex.: Rede de gás — Loteamento Aurora" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold mb-1">Nº do RDO <span class="text-red-500">*</span></label>
-                    <input type="text" id="inputNumeroRDO" required placeholder="Ex.: 001" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                    <input type="text" id="inputNumeroRDO" placeholder="Ex.: 001" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
                 </div>
                 <div>
                     <label class="block text-xs font-semibold mb-1">Data <span class="text-red-500">*</span></label>
-                    <input type="date" id="inputData" required class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                    <input type="date" id="inputData" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
                 </div>
                 <div class="lg:col-span-2">
                     <label class="block text-xs font-semibold mb-1">Endereço / Trecho</label>
@@ -303,11 +300,11 @@
 
         <!-- BOTÃO SALVAR -->
         <div class="flex justify-end gap-3 pt-4 border-t no-print">
-            <button type="submit" id="btnSalvar" class="px-6 py-2.5 bg-aco-spark hover:bg-amber-600 text-white rounded-xl font-bold text-xs shadow-md disabled:opacity-60">
+            <button type="button" onclick="executarSalvamento()" class="px-6 py-2.5 bg-aco-spark hover:bg-amber-600 text-white rounded-xl font-bold text-xs shadow-md">
                 <i class="fa-solid fa-floppy-disk mr-2"></i> Salvar Relatório
             </button>
         </div>
-    </form>
+    </div>
 </div>
 
 <!-- ABA HISTÓRICO -->
@@ -355,7 +352,6 @@
 </main>
 
 <script>
-    /* ==================== DADOS BASE / LISTAS FIXAS ==================== */
     const TESTES_PRESSAO_TIPOS = [
         'Teste de estanqueidade',
         'Teste de resistência (pressão)',
@@ -371,10 +367,13 @@
         { id: 'incidente', label: 'Ocorrência de incidente/acidente' }
     ];
 
-    const STORAGE_KEY = 'rdo_aco_history_data';
-
-    /* ==================== ESTADO ==================== */
     let rdoHistory = [];
+    try {
+        rdoHistory = JSON.parse(localStorage.getItem('rdo_aco_history_data') || '[]');
+    } catch(e) {
+        rdoHistory = [];
+    }
+
     let rowIdCounter = 0;
     const fotoBase64Map = {};
 
@@ -398,56 +397,9 @@
         return String(str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
     }
 
-    /* ==================== ARMAZENAMENTO PERSISTENTE ==================== */
-    function showStorageStatus(message, type) {
-        const el = document.getElementById('storageStatus');
-        if (!el) return;
-        el.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-emerald-100', 'text-emerald-700', 'bg-slate-200', 'text-slate-700');
-        if (type === 'error') {
-            el.classList.add('bg-red-100', 'text-red-700');
-        } else if (type === 'success') {
-            el.classList.add('bg-emerald-100', 'text-emerald-700');
-        } else {
-            el.classList.add('bg-slate-200', 'text-slate-700');
-        }
-        el.innerText = message;
-        if (type === 'success') {
-            setTimeout(() => el.classList.add('hidden'), 2000);
-        }
-    }
-
-    async function loadHistoryFromStorage() {
-        showStorageStatus('Carregando relatórios salvos...', 'info');
-        try {
-            const result = await window.storage.get(STORAGE_KEY, false);
-            rdoHistory = result && result.value ? JSON.parse(result.value) : [];
-            document.getElementById('storageStatus').classList.add('hidden');
-        } catch (error) {
-            // Chave ainda não existe (primeiro uso) -> não é erro
-            rdoHistory = [];
-            document.getElementById('storageStatus').classList.add('hidden');
-        }
-    }
-
-    async function saveHistoryToStorage() {
-        try {
-            const result = await window.storage.set(STORAGE_KEY, JSON.stringify(rdoHistory), false);
-            if (!result) {
-                throw new Error('Resultado vazio ao salvar');
-            }
-            return true;
-        } catch (error) {
-            console.error('Erro ao salvar no armazenamento:', error);
-            showStorageStatus('Erro ao salvar o relatório. Verifique sua conexão e tente novamente.', 'error');
-            return false;
-        }
-    }
-
-    /* ==================== INICIALIZAÇÃO ==================== */
-    document.addEventListener('DOMContentLoaded', async () => {
+    document.addEventListener('DOMContentLoaded', () => {
         renderTestesTable();
         renderSegurancaCards();
-        await loadHistoryFromStorage();
         setDefaultDateAndNumero();
         addAtividadeRow();
         updateAtividadesEmptyState();
@@ -487,7 +439,6 @@
         setVal('inputNumeroRDO', nextNumero);
     }
 
-    /* ==================== 5. ATIVIDADES / TRECHOS (dinâmico) ==================== */
     function addAtividadeRow(data) {
         const tbody = document.getElementById('atividadesTableBody');
         const rowId = 'ativ_' + (rowIdCounter++);
@@ -512,27 +463,29 @@
         updateAtividadesEmptyState();
     }
     function collectAtividades() {
-        return Array.from(document.querySelectorAll('#atividadesTableBody tr')).map(tr => ({
-            trecho: tr.querySelector('.f-trecho').value,
-            atividade: tr.querySelector('.f-atividade').value,
-            diametroMaterial: tr.querySelector('.f-diametro').value,
-            extensao: tr.querySelector('.f-extensao').value,
-            observacoes: tr.querySelector('.f-observacoes').value
-        }));
+        try {
+            return Array.from(document.querySelectorAll('#atividadesTableBody tr')).map(tr => ({
+                trecho: tr.querySelector('.f-trecho')?.value || '',
+                atividade: tr.querySelector('.f-atividade')?.value || '',
+                diametroMaterial: tr.querySelector('.f-diametro')?.value || '',
+                extensao: tr.querySelector('.f-extensao')?.value || '',
+                observacoes: tr.querySelector('.f-observacoes')?.value || ''
+            }));
+        } catch(e) {
+            return [];
+        }
     }
     function updateAtividadesEmptyState() {
         const hasRows = document.querySelectorAll('#atividadesTableBody tr').length > 0;
         document.getElementById('atividadesEmptyMsg').classList.toggle('hidden', hasRows);
     }
 
-    /* ==================== ROW GENÉRICO (remover) ==================== */
     function removeRow(btn, tbodyId, updateEmptyStateFn) {
         const tr = btn.closest('tr');
         if (tr) tr.remove();
         if (updateEmptyStateFn) updateEmptyStateFn();
     }
 
-    /* ==================== 7. TESTES DE PRESSÃO (tabela fixa) ==================== */
     function renderTestesTable() {
         const tbody = document.getElementById('testesTableBody');
         tbody.innerHTML = TESTES_PRESSAO_TIPOS.map((tipo, i) => `
@@ -553,13 +506,17 @@
         `).join('');
     }
     function collectTestesPressao() {
-        return TESTES_PRESSAO_TIPOS.map((tipo, i) => ({
-            tipo,
-            parametro: getVal(`testeParametro_${i}`),
-            duracao: getVal(`testeDuracao_${i}`),
-            resultado: getVal(`testeResultado_${i}`),
-            observacoes: getVal(`testeObs_${i}`)
-        }));
+        try {
+            return TESTES_PRESSAO_TIPOS.map((tipo, i) => ({
+                tipo,
+                parametro: getVal(`testeParametro_${i}`),
+                duracao: getVal(`testeDuracao_${i}`),
+                resultado: getVal(`testeResultado_${i}`),
+                observacoes: getVal(`testeObs_${i}`)
+            }));
+        } catch(e) {
+            return [];
+        }
     }
     function restoreTestesPressao(list) {
         if (!Array.isArray(list)) return;
@@ -571,7 +528,6 @@
         });
     }
 
-    /* ==================== 8. SEGURANÇA DO TRABALHO ==================== */
     function renderSegurancaCards() {
         const container = document.getElementById('segurancaContainer');
         container.innerHTML = SEGURANCA_ITENS.map(item => `
@@ -589,12 +545,14 @@
     }
     function collectSeguranca() {
         const obj = {};
-        SEGURANCA_ITENS.forEach(item => {
-            obj[item.id] = {
-                status: radioVal(`seg_${item.id}`),
-                observacao: getVal(`descSeg_${item.id}`)
-            };
-        });
+        try {
+            SEGURANCA_ITENS.forEach(item => {
+                obj[item.id] = {
+                    status: radioVal(`seg_${item.id}`),
+                    observacao: getVal(`descSeg_${item.id}`)
+                };
+            });
+        } catch(e) {}
         return obj;
     }
     function restoreSeguranca(data) {
@@ -613,7 +571,6 @@
         });
     }
 
-    /* ==================== 11. FOTOS ==================== */
     function addFotoRow(data) {
         const container = document.getElementById('fotosContainer');
         const rowId = 'foto_' + (rowIdCounter++);
@@ -635,8 +592,10 @@
             if (data.base64) {
                 fotoBase64Map[rowId] = data.base64;
                 const prev = document.getElementById(`preview_${rowId}`);
-                prev.querySelector('img').src = data.base64;
-                prev.classList.remove('hidden');
+                if (prev) {
+                    prev.querySelector('img').src = data.base64;
+                    prev.classList.remove('hidden');
+                }
             }
         }
         updateFotosEmptyState();
@@ -648,8 +607,10 @@
         reader.onload = function(e) {
             fotoBase64Map[rowId] = e.target.result;
             const prev = document.getElementById(`preview_${rowId}`);
-            prev.querySelector('img').src = e.target.result;
-            prev.classList.remove('hidden');
+            if (prev) {
+                prev.querySelector('img').src = e.target.result;
+                prev.classList.remove('hidden');
+            }
         };
         reader.readAsDataURL(file);
     }
@@ -660,14 +621,18 @@
         updateFotosEmptyState();
     }
     function collectFotos() {
-        return Array.from(document.querySelectorAll('#fotosContainer > div')).map(div => {
-            const rowId = div.dataset.rowId;
-            return {
-                rowId,
-                base64: fotoBase64Map[rowId] || '',
-                legenda: getVal(`legenda_${rowId}`)
-            };
-        });
+        try {
+            return Array.from(document.querySelectorAll('#fotosContainer > div')).map(div => {
+                const rowId = div.dataset.rowId;
+                return {
+                    rowId,
+                    base64: fotoBase64Map[rowId] || '',
+                    legenda: getVal(`legenda_${rowId}`)
+                };
+            });
+        } catch(e) {
+            return [];
+        }
     }
     function restoreFotos(list) {
         document.getElementById('fotosContainer').innerHTML = '';
@@ -682,21 +647,25 @@
         document.getElementById('fotosEmptyMsg').classList.toggle('hidden', hasRows);
     }
 
-    /* ==================== SALVAR / HISTÓRICO ==================== */
-    async function handleFormSubmit(e) {
-        e.preventDefault();
-        const btn = document.getElementById('btnSalvar');
-        btn.disabled = true;
-        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Salvando...';
+    /* ==================== SALVAR GARANTIDO ==================== */
+    function executarSalvamento() {
+        const obra = getVal('inputObra');
+        const num = getVal('inputNumeroRDO');
+        const dt = getVal('inputData');
+
+        if (!obra || !num || !dt) {
+            alert('Atenção: Preencha os campos obrigatórios em 1. Identificação (Obra, Nº do RDO e Data).');
+            return;
+        }
 
         const editingId = getVal('editingRecordId');
         const record = {
             id: editingId ? editingId : 'rdo_' + Date.now(),
             createdAt: editingId ? (rdoHistory.find(r => r.id === editingId)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
             identificacao: {
-                obra: getVal('inputObra'),
-                numeroRDO: getVal('inputNumeroRDO'),
-                data: getVal('inputData'),
+                obra: obra,
+                numeroRDO: num,
+                data: dt,
                 endereco: getVal('inputEndereco'),
                 cliente: getVal('inputCliente'),
                 fiscalizacao: getVal('inputFiscalizacao')
@@ -721,8 +690,6 @@
             }
         };
 
-        const previousHistory = rdoHistory.slice();
-
         if (editingId) {
             const idx = rdoHistory.findIndex(r => r.id === editingId);
             if (idx >= 0) rdoHistory[idx] = record;
@@ -730,18 +697,13 @@
             rdoHistory.unshift(record);
         }
 
-        const ok = await saveHistoryToStorage();
-
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-floppy-disk mr-2"></i> Salvar Relatório';
-
-        if (!ok) {
-            // reverte em memória se não salvou de fato
-            rdoHistory = previousHistory;
-            return;
+        try {
+            localStorage.setItem('rdo_aco_history_data', JSON.stringify(rdoHistory));
+        } catch(e) {
+            alert('Não foi possível salvar localmente. O histórico do navegador pode estar desabilitado ou lotado.');
         }
 
-        showStorageStatus('Relatório salvo com sucesso!', 'success');
+        alert('Relatório Salvo com Sucesso!');
         resetForm();
         updateHistoryBadge();
         renderHistory(rdoHistory);
@@ -749,9 +711,23 @@
     }
 
     function resetForm() {
-        document.getElementById('rdoForm').reset();
         setVal('editingRecordId', '');
+        setVal('inputObra', '');
+        setVal('inputEndereco', '');
+        setVal('inputCliente', '');
+        setVal('inputFiscalizacao', '');
+        setVal('inputClimaManha', '');
+        setVal('inputClimaTarde', '');
+        setRadio('impactoClima', 'Não');
         toggleNC('descImpactoClima', false);
+        setVal('descImpactoClima', '');
+        setVal('inputParalisacaoClima', '');
+        setVal('textEquipePresente', '');
+        setVal('textOcorrencias', '');
+        setVal('textObservacoesGerais', '');
+        setVal('inputAssinaturaResponsavel', '');
+        setVal('inputAssinaturaFiscalizacao', '');
+
         document.getElementById('atividadesTableBody').innerHTML = '';
         addAtividadeRow();
         document.getElementById('fotosContainer').innerHTML = '';
@@ -765,7 +741,7 @@
 
     function renderHistory(list) {
         const container = document.getElementById('historyContainer');
-        if (!list.length) {
+        if (!list || !list.length) {
             container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6 bg-white rounded-2xl border">Nenhum RDO salvo no histórico.</p>';
             return;
         }
@@ -775,10 +751,10 @@
                     <input type="checkbox" value="${r.id}" class="history-checkbox rounded">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="font-bold text-xs text-aco-900">RDO Nº ${escapeHtml(r.identificacao.numeroRDO)}</span>
-                            <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full text-slate-600">${escapeHtml(r.identificacao.data)}</span>
+                            <span class="font-bold text-xs text-aco-900">RDO Nº ${escapeHtml(r.identificacao?.numeroRDO)}</span>
+                            <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full text-slate-600">${escapeHtml(r.identificacao?.data)}</span>
                         </div>
-                        <p class="text-xs text-slate-600">${escapeHtml(r.identificacao.obra)}</p>
+                        <p class="text-xs text-slate-600">${escapeHtml(r.identificacao?.obra)}</p>
                     </div>
                 </div>
                 <div class="flex gap-2">
@@ -795,26 +771,26 @@
         if (!r) return;
         switchTab('formTab');
         setVal('editingRecordId', r.id);
-        setVal('inputObra', r.identificacao.obra);
-        setVal('inputNumeroRDO', r.identificacao.numeroRDO);
-        setVal('inputData', r.identificacao.data);
-        setVal('inputEndereco', r.identificacao.endereco);
-        setVal('inputCliente', r.identificacao.cliente);
-        setVal('inputFiscalizacao', r.identificacao.fiscalizacao);
+        setVal('inputObra', r.identificacao?.obra);
+        setVal('inputNumeroRDO', r.identificacao?.numeroRDO);
+        setVal('inputData', r.identificacao?.data);
+        setVal('inputEndereco', r.identificacao?.endereco);
+        setVal('inputCliente', r.identificacao?.cliente);
+        setVal('inputFiscalizacao', r.identificacao?.fiscalizacao);
 
-        setVal('inputClimaManha', r.clima.manha);
-        setVal('inputClimaTarde', r.clima.tarde);
-        setRadio('impactoClima', r.clima.impacto);
-        if (r.clima.impacto === 'Sim') {
+        setVal('inputClimaManha', r.clima?.manha);
+        setVal('inputClimaTarde', r.clima?.tarde);
+        if (r.clima?.impacto) setRadio('impactoClima', r.clima.impacto);
+        if (r.clima?.impacto === 'Sim') {
             toggleNC('descImpactoClima', true);
             setVal('descImpactoClima', r.clima.descImpacto);
         } else {
             toggleNC('descImpactoClima', false);
             setVal('descImpactoClima', '');
         }
-        setVal('inputParalisacaoClima', r.clima.paralisacao);
+        setVal('inputParalisacaoClima', r.clima?.paralisacao);
 
-        setVal('textEquipePresente', r.equipe || '');
+        setVal('textEquipePresente', typeof r.equipe === 'string' ? r.equipe : '');
 
         document.getElementById('atividadesTableBody').innerHTML = '';
         if (Array.isArray(r.atividades)) {
@@ -834,15 +810,12 @@
         setVal('inputAssinaturaFiscalizacao', r.assinaturas?.fiscalizacao);
     }
 
-    async function deleteRecord(id) {
+    function deleteRecord(id) {
         if (!confirm('Deseja realmente excluir este RDO?')) return;
-        const previousHistory = rdoHistory.slice();
         rdoHistory = rdoHistory.filter(r => r.id !== id);
-        const ok = await saveHistoryToStorage();
-        if (!ok) {
-            rdoHistory = previousHistory;
-            return;
-        }
+        try {
+            localStorage.setItem('rdo_aco_history_data', JSON.stringify(rdoHistory));
+        } catch(e) {}
         updateHistoryBadge();
         renderHistory(rdoHistory);
     }
@@ -860,8 +833,8 @@
         const text = document.getElementById('filterSearch').value.toLowerCase();
         const date = document.getElementById('filterDate').value;
         const filtered = rdoHistory.filter(r => {
-            const matchText = !text || (r.identificacao.obra + ' ' + r.identificacao.numeroRDO).toLowerCase().includes(text);
-            const matchDate = !date || r.identificacao.data === date;
+            const matchText = !text || (r.identificacao?.obra + ' ' + r.identificacao?.numeroRDO).toLowerCase().includes(text);
+            const matchDate = !date || r.identificacao?.data === date;
             return matchText && matchDate;
         });
         renderHistory(filtered);
@@ -886,7 +859,7 @@
         }
         let csv = 'ID,RDO,Data,Obra,Cliente\n';
         listToExport.forEach(r => {
-            csv += `"${r.id}","${r.identificacao.numeroRDO}","${r.identificacao.data}","${r.identificacao.obra}","${r.identificacao.cliente}"\n`;
+            csv += `"${r.id}","${r.identificacao?.numeroRDO || ''}","${r.identificacao?.data || ''}","${r.identificacao?.obra || ''}","${r.identificacao?.cliente || ''}"\n`;
         });
         const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
