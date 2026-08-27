@@ -301,10 +301,13 @@
             </div>
         </section>
 
-        <!-- BOTÃO SALVAR -->
+        <!-- BOTÕES DE AÇÃO -->
         <div class="flex justify-end gap-3 pt-4 border-t no-print">
+            <button type="button" onclick="imprimirDireto()" class="px-6 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-bold text-xs shadow-md">
+                <i class="fa-solid fa-file-pdf mr-2"></i> Imprimir / PDF
+            </button>
             <button type="submit" id="btnSalvar" class="px-6 py-2.5 bg-aco-spark hover:bg-amber-600 text-white rounded-xl font-bold text-xs shadow-md disabled:opacity-60">
-                <i class="fa-solid fa-floppy-disk mr-2"></i> Salvar Relatório
+                <i class="fa-solid fa-floppy-disk mr-2"></i> Salvar no Histórico
             </button>
         </div>
     </form>
@@ -398,7 +401,12 @@
         return String(str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
     }
 
-    /* ==================== ARMAZENAMENTO PERSISTENTE (CORRIGIDO) ==================== */
+    /* ==================== IMPRESSÃO DIRETA ==================== */
+    function imprimirDireto() {
+        window.print();
+    }
+
+    /* ==================== ARMAZENAMENTO PERSISTENTE ==================== */
     function showStorageStatus(message, type) {
         const el = document.getElementById('storageStatus');
         if (!el) return;
@@ -417,15 +425,11 @@
     }
 
     async function loadHistoryFromStorage() {
-        showStorageStatus('Carregando relatórios salvos...', 'info');
         try {
             const result = localStorage.getItem(STORAGE_KEY);
             rdoHistory = result ? JSON.parse(result) : [];
-            document.getElementById('storageStatus').classList.add('hidden');
         } catch (error) {
-            console.error('Erro ao carregar do localStorage:', error);
             rdoHistory = [];
-            document.getElementById('storageStatus').classList.add('hidden');
         }
     }
 
@@ -435,7 +439,7 @@
             return true;
         } catch (error) {
             console.error('Erro ao salvar no armazenamento:', error);
-            showStorageStatus('Erro ao salvar o relatório. O armazenamento pode estar cheio.', 'error');
+            showStorageStatus('Armazenamento cheio devido ao tamanho das fotos. Para exportar PDF, use o botão "Imprimir / PDF".', 'error');
             return false;
         }
     }
@@ -484,7 +488,7 @@
         setVal('inputNumeroRDO', nextNumero);
     }
 
-    /* ==================== 5. ATIVIDADES / TRECHOS (dinâmico) ==================== */
+    /* ==================== 5. ATIVIDADES / TRECHOS ==================== */
     function addAtividadeRow(data) {
         const tbody = document.getElementById('atividadesTableBody');
         const rowId = 'ativ_' + (rowIdCounter++);
@@ -522,14 +526,13 @@
         document.getElementById('atividadesEmptyMsg').classList.toggle('hidden', hasRows);
     }
 
-    /* ==================== ROW GENÉRICO (remover) ==================== */
     function removeRow(btn, tbodyId, updateEmptyStateFn) {
         const tr = btn.closest('tr');
         if (tr) tr.remove();
         if (updateEmptyStateFn) updateEmptyStateFn();
     }
 
-    /* ==================== 7. TESTES DE PRESSÃO (tabela fixa) ==================== */
+    /* ==================== 7. TESTES DE PRESSÃO ==================== */
     function renderTestesTable() {
         const tbody = document.getElementById('testesTableBody');
         tbody.innerHTML = TESTES_PRESSAO_TIPOS.map((tipo, i) => `
@@ -730,10 +733,9 @@
         const ok = await saveHistoryToStorage();
 
         btn.disabled = false;
-        btn.innerHTML = '<i class="fa-solid fa-floppy-disk mr-2"></i> Salvar Relatório';
+        btn.innerHTML = '<i class="fa-solid fa-floppy-disk mr-2"></i> Salvar no Histórico';
 
         if (!ok) {
-            // reverte em memória se não salvou de fato
             rdoHistory = previousHistory;
             return;
         }
