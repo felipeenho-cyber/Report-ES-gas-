@@ -1,152 +1,906 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RDO - Sistema de Salvamento Direto</title>
+    <title>Relatório Diário de Obra - RDO Aço</title>
+
+    <!-- Tailwind -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Fonte -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'sans-serif'] },
+                    colors: {
+                        aco: {
+                            50: '#f8fafc',
+                            100: '#f1f5f9',
+                            500: '#475569',
+                            700: '#334155',
+                            900: '#0f172a',
+                            spark: '#f59e0b'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+
     <style>
-        * { box-sizing: border-box; font-family: sans-serif; }
-        body { background-color: #f1f5f9; padding: 20px; color: #334155; }
-        .container { max-width: 800px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        h1 { font-size: 20px; border-bottom: 2px solid #e2e8f0; padding-bottom: 10px; margin-top: 0; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; font-size: 12px; margin-bottom: 5px; }
-        input, textarea, select { width: 100%; padding: 8px; border: 1px solid #cbd5e1; border-radius: 4px; font-size: 14px; }
-        .btn { background-color: #f59e0b; color: white; border: none; padding: 12px 20px; font-weight: bold; border-radius: 6px; cursor: pointer; font-size: 14px; }
-        .btn:hover { background-color: #d97706; }
-        .btn-tab { background-color: #64748b; margin-right: 5px; padding: 6px 12px; font-size: 12px; }
-        .card { border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; margin-bottom: 10px; }
-        .hidden { display: none; }
-    </style>
-</head>
-<body>
+        * { box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; }
+        .image-preview-card img { width: 100%; height: 120px; object-fit: cover; display: block; border-radius: 0.375rem; }
 
-<div class="container">
-    <div style="margin-bottom: 20px;">
-        <button type="button" class="btn btn-tab" onclick="abrirAba('formAba')">Formulário</button>
-        <button type="button" class="btn btn-tab" onclick="abrirAba('historicoAba')">Histórico (<span id="countHist">0</span>)</button>
-    </div>
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white !important; color: black !important; }
+            main { max-width: 100% !important; padding: 0 !important; margin: 0 !important; }
+            #formTab { display: block !important; }
+            #historyTab { display: none !important; }
 
-    <!-- ABA FORMULÁRIO -->
-    <div id="formAba">
-        <h1>Preenchimento do RDO</h1>
-        
-        <div class="form-group">
-            <label>Obra / Empreendimento *</label>
-            <input type="text" id="campoObra" placeholder="Ex: Rede de Gás">
-        </div>
-
-        <div style="display: flex; gap: 10px;">
-            <div class="form-group" style="flex: 1;">
-                <label>Nº do RDO *</label>
-                <input type="text" id="campoNumero" placeholder="001">
-            </div>
-            <div class="form-group" style="flex: 1;">
-                <label>Data *</label>
-                <input type="date" id="campoData">
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>Equipe / Colaboradores</label>
-            <textarea id="campoEquipe" rows="3"></textarea>
-        </div>
-
-        <div class="form-group">
-            <label>Observações Gerais / Atividades</label>
-            <textarea id="campoObs" rows="4"></textarea>
-        </div>
-
-        <button type="button" class="btn" onclick="salvarRDO()">SALVAR AGORA</button>
-    </div>
-
-    <!-- ABA HISTÓRICO -->
-    <div id="historicoAba" class="hidden">
-        <h1>Histórico de Relatórios</h1>
-        <div id="listaHistorico">Nenhum RDO salvo ainda.</div>
-    </div>
-</div>
-
-<script>
-    // Inicialização ao carregar a página
-    window.onload = function() {
-        document.getElementById('campoData').value = new Date().toISOString().split('T')[0];
-        atualizarLista();
-    };
-
-    function abrirAba(nomeAba) {
-        document.getElementById('formAba').classList.add('hidden');
-        document.getElementById('historicoAba').classList.add('hidden');
-        document.getElementById(nomeAba).classList.remove('hidden');
-        if(nomeAba === 'historicoAba') atualizarLista();
-    }
-
-    function salvarRDO() {
-        try {
-            var obra = document.getElementById('campoObra').value;
-            var numero = document.getElementById('campoNumero').value;
-            var data = document.getElementById('campoData').value;
-
-            if (!obra || !numero || !data) {
-                alert('PREENCHA OS CAMPOS OBRIGATÓRIOS: Obra, Nº do RDO e Data!');
-                return;
+            .print-card {
+                border: 1px solid #cbd5e1 !important;
+                box-shadow: none !important;
+                page-break-inside: avoid;
+                margin-bottom: 1rem !important;
             }
 
-            var novoRDO = {
-                id: 'rdo_' + Date.now(),
-                obra: obra,
-                numero: numero,
-                data: data,
-                equipe: document.getElementById('campoEquipe').value,
-                obs: document.getElementById('campoObs').value
-            };
+            input, select, textarea {
+                border: none !important;
+                background: transparent !important;
+                appearance: none !important;
+                padding: 0 !important;
+                font-weight: 600 !important;
+            }
 
-            // Busca histórico antigo
-            var historico = JSON.parse(localStorage.getItem('rdo_dados_simples') || '[]');
-            
-            // Adiciona o novo no começo
-            historico.unshift(novoRDO);
+            input[type="file"] { display: none !important; }
+            .image-preview-card img { height: 160px !important; object-fit: contain !important; }
+            .row-remove-btn { display: none !important; }
+            .add-row-btn { display: none !important; }
+        }
+    </style>
+</head>
 
-            // Grava no LocalStorage
-            localStorage.setItem('rdo_dados_simples', JSON.stringify(historico));
+<body class="bg-slate-100 text-slate-800 min-h-screen">
 
-            alert('SALVO COM SUCESSO!');
-            
-            // Limpa o formulário
-            document.getElementById('campoObra').value = '';
-            document.getElementById('campoNumero').value = '';
-            document.getElementById('campoEquipe').value = '';
-            document.getElementById('campoObs').value = '';
-            
-            atualizarLista();
-            abrirAba('historicoAba');
+<!-- HEADER -->
+<header class="bg-gradient-to-r from-aco-900 via-aco-700 to-slate-900 text-white shadow-md sticky top-0 z-50 no-print">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap justify-between items-center gap-3">
+        <div class="flex items-center gap-3">
+            <div class="bg-aco-spark p-2.5 rounded-xl text-xl flex items-center justify-center">
+                <i class="fa-solid fa-fire"></i>
+            </div>
+            <div>
+                <h1 class="font-bold text-lg leading-tight">
+                    Relatório Diário de Obra - RDO
+                    <span class="bg-aco-spark text-[10px] px-2 py-0.5 rounded-full">AÇO</span>
+                </h1>
+                <p class="text-xs text-slate-300">Rede de Gás — Tubulação de Aço</p>
+            </div>
+        </div>
 
-        } catch (erro) {
-            alert('ERRO AO SALVAR: Seu navegador pode estar bloqueando o armazenamento local (ex: Modo Anônimo ou Cookies Bloqueados).\n\nDetalhe do erro: ' + erro.message);
+        <div class="flex gap-2">
+            <button type="button" id="btnTabForm" onclick="switchTab('formTab')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/30 hover:bg-white/40">
+                <i class="fa-solid fa-pen-to-square"></i> Formulário
+            </button>
+            <button type="button" id="btnTabHistory" onclick="switchTab('historyTab')" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20">
+                <i class="fa-solid fa-database"></i> Histórico
+                <span id="historyBadge" class="bg-aco-spark text-white text-[10px] px-1.5 py-0.5 rounded-full">0</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<main class="max-w-6xl mx-auto px-4 py-6">
+
+<!-- Aviso de carregamento -->
+<div id="storageStatus" class="hidden mb-4 px-4 py-2 rounded-lg text-xs font-semibold no-print"></div>
+
+<!-- FORMULÁRIO -->
+<div id="formTab">
+
+    <!-- INDICADOR DE TEMPO -->
+    <section class="flex items-center justify-between bg-aco-900 text-white px-5 py-3 rounded-xl shadow-sm mb-6 no-print">
+        <div class="flex items-center gap-2">
+            <i class="fa-solid fa-file-signature text-aco-spark text-lg"></i>
+            <span class="font-bold text-sm">Preenchimento do RDO</span>
+        </div>
+        <div class="text-xs text-slate-300 font-mono">
+            <i class="fa-regular fa-clock mr-1"></i>
+            <span id="autoDateTime">--/--/---- --:--</span>
+        </div>
+    </section>
+
+    <form id="rdoForm" onsubmit="handleFormSubmit(event)" class="space-y-6">
+        <input type="hidden" id="editingRecordId" value="">
+
+        <!-- 1. IDENTIFICAÇÃO -->
+        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 mb-4">
+                <i class="fa-solid fa-id-card text-aco-500 mr-1"></i> 1. Identificação
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="lg:col-span-2">
+                    <label class="block text-xs font-semibold mb-1">Obra / Empreendimento <span class="text-red-500">*</span></label>
+                    <input type="text" id="inputObra" required placeholder="Ex.: Rede de gás — Loteamento Aurora" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Nº do RDO <span class="text-red-500">*</span></label>
+                    <input type="text" id="inputNumeroRDO" required placeholder="Ex.: 001" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Data <span class="text-red-500">*</span></label>
+                    <input type="date" id="inputData" required class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                </div>
+                <div class="lg:col-span-2">
+                    <label class="block text-xs font-semibold mb-1">Endereço / Trecho</label>
+                    <input type="text" id="inputEndereco" placeholder="Endereço ou trecho da obra" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Cliente / Contratante</label>
+                    <input type="text" id="inputCliente" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Fiscalização (contratante)</label>
+                    <input type="text" id="inputFiscalizacao" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                </div>
+            </div>
+        </section>
+
+        <!-- 2. CONDIÇÕES CLIMÁTICAS -->
+        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 mb-4">
+                <i class="fa-solid fa-cloud-sun text-aco-500 mr-1"></i> 2. Condições Climáticas
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Manhã</label>
+                    <input type="text" id="inputClimaManha" placeholder="Ex.: Ensolarado, 22°C" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Tarde</label>
+                    <input type="text" id="inputClimaTarde" placeholder="Ex.: Nublado, 24°C" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                </div>
+            </div>
+            <div class="bg-slate-50 p-3.5 rounded-xl border">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-slate-700">Houve impacto no serviço por clima?</span>
+                    <div class="flex gap-3">
+                        <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="impactoClima" value="Não" checked onchange="toggleNC('descImpactoClima', false)"> Não</label>
+                        <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="impactoClima" value="Sim" onchange="toggleNC('descImpactoClima', true)"> Sim</label>
+                    </div>
+                </div>
+                <input type="text" id="descImpactoClima" placeholder="Descreva o impacto..." class="hidden w-full text-xs bg-red-50 border border-red-300 rounded-lg p-2 mt-2 mb-2">
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Paralisação por clima (horário / duração)</label>
+                    <input type="text" id="inputParalisacaoClima" placeholder="Ex.: 14h-15h30 (1h30)" class="w-full text-xs bg-white border border-slate-300 rounded-lg p-2">
+                </div>
+            </div>
+        </section>
+
+        <!-- 3. EQUIPE PRESENTE -->
+        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 mb-4">
+                <i class="fa-solid fa-users text-aco-500 mr-1"></i> 3. Equipe Presente
+            </h2>
+            <textarea id="textEquipePresente" rows="5" placeholder="Digite as funções e quantidade de colaboradores..." class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-3 font-mono"></textarea>
+        </section>
+
+        <!-- 5. ATIVIDADES EXECUTADAS / TRECHOS DE TUBULAÇÃO -->
+        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+            <div class="flex items-center justify-between border-b pb-2 mb-4">
+                <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide">
+                    <i class="fa-solid fa-route text-aco-500 mr-1"></i> 5. Atividades Executadas / Trechos de Tubulação
+                </h2>
+                <button type="button" onclick="addAtividadeRow()" class="add-row-btn px-2.5 py-1 bg-aco-50 hover:bg-aco-100 text-aco-700 rounded-lg text-[11px] font-bold border border-aco-200">
+                    <i class="fa-solid fa-plus mr-1"></i> Adicionar linha
+                </button>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-left">
+                            <th class="p-2 border font-semibold">Trecho / Estaca</th>
+                            <th class="p-2 border font-semibold">Atividade executada</th>
+                            <th class="p-2 border font-semibold">Diâm. / Material (aço)</th>
+                            <th class="p-2 border font-semibold w-28">Extensão (m)</th>
+                            <th class="p-2 border font-semibold">Observações técnicas</th>
+                            <th class="p-2 border font-semibold w-10 no-print"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="atividadesTableBody"></tbody>
+                </table>
+            </div>
+            <p id="atividadesEmptyMsg" class="text-[11px] text-slate-400 text-center py-3 hidden">Nenhum trecho adicionado ainda.</p>
+        </section>
+
+        <!-- 7. TESTES DE PRESSÃO E ESTANQUEIDADE -->
+        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+            <h2 class="text-xs font-bold text-slate-700 uppercase tracking-wide border-b pb-2 mb-4">
+                <i class="fa-solid fa-gauge-high text-aco-500 mr-1"></i> 7. Testes de Pressão e Estanqueidade
+            </h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-xs border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 text-left">
+                            <th class="p-2 border font-semibold">Tipo de teste</th>
+                            <th class="p-2 border font-semibold">Pressão / Parâmetro</th>
+                            <th class="p-2 border font-semibold w-28">Duração</th>
+                            <th class="p-2 border font-semibold w-32">Resultado</th>
+                            <th class="p-2 border font-semibold">Observações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="testesTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- 8. SEGURANÇA DO TRABALHO -->
+        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+            <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
+                <i class="fa-solid fa-shield-halved text-emerald-600 mr-1"></i> 8. Segurança do Trabalho
+            </h2>
+            <div id="segurancaContainer" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </section>
+
+        <!-- 9. OCORRÊNCIAS / DESVIOS / ATRASOS -->
+        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+            <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
+                <i class="fa-solid fa-triangle-exclamation text-amber-500 mr-1"></i> 9. Ocorrências / Desvios / Atrasos
+            </h2>
+            <textarea id="textOcorrencias" rows="4" placeholder="Descreva ocorrências, desvios ou atrasos do dia..." class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-3"></textarea>
+        </section>
+
+        <!-- 10. OBSERVAÇÕES GERAIS -->
+        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+            <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
+                <i class="fa-solid fa-note-sticky text-aco-500 mr-1"></i> 10. Observações Gerais
+            </h2>
+            <textarea id="textObservacoesGerais" rows="4" placeholder="Observações adicionais sobre o dia de obra..." class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-3"></textarea>
+        </section>
+
+        <!-- 11. REGISTRO FOTOGRÁFICO -->
+        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+            <div class="flex items-center justify-between border-b pb-2 mb-4">
+                <h2 class="text-xs font-bold uppercase">
+                    <i class="fa-solid fa-camera text-aco-500 mr-1"></i> 11. Registro Fotográfico
+                </h2>
+                <button type="button" onclick="addFotoRow()" class="add-row-btn px-2.5 py-1 bg-aco-50 hover:bg-aco-100 text-aco-700 rounded-lg text-[11px] font-bold border border-aco-200">
+                    <i class="fa-solid fa-plus mr-1"></i> Adicionar foto
+                </button>
+            </div>
+            <div id="fotosContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+            <p id="fotosEmptyMsg" class="text-[11px] text-slate-400 text-center py-3 hidden">Nenhuma foto adicionada ainda.</p>
+        </section>
+
+        <!-- 12. ASSINATURAS -->
+        <section class="bg-white rounded-2xl p-5 shadow-sm border border-slate-200 print-card">
+            <h2 class="text-xs font-bold uppercase border-b pb-2 mb-4">
+                <i class="fa-solid fa-signature text-aco-500 mr-1"></i> 12. Assinaturas
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Responsável Técnico (Contratada)</label>
+                    <input type="text" id="inputAssinaturaResponsavel" placeholder="Nome completo" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold mb-1">Fiscalização (Contratante)</label>
+                    <input type="text" id="inputAssinaturaFiscalizacao" placeholder="Nome completo" class="w-full text-xs bg-slate-50 border border-slate-300 rounded-lg p-2.5">
+                </div>
+            </div>
+        </section>
+
+        <!-- BOTÃO SALVAR -->
+        <div class="flex justify-end gap-3 pt-4 border-t no-print">
+            <button type="submit" id="btnSalvar" class="px-6 py-2.5 bg-aco-spark hover:bg-amber-600 text-white rounded-xl font-bold text-xs shadow-md disabled:opacity-60">
+                <i class="fa-solid fa-floppy-disk mr-2"></i> Salvar Relatório
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- ABA HISTÓRICO -->
+<div id="historyTab" class="hidden space-y-4">
+    <section class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200">
+        <div class="flex flex-wrap justify-between items-center gap-3 border-b pb-3 mb-3">
+            <div class="flex items-center gap-3">
+                <h2 class="text-xs font-bold uppercase text-slate-700">
+                    <i class="fa-solid fa-filter text-aco-500 mr-1"></i> Filtrar Histórico
+                </h2>
+                <label class="text-xs text-slate-500 flex items-center gap-1 cursor-pointer">
+                    <input type="checkbox" id="selectAllHistory" onchange="toggleSelectAll(this)" class="rounded"> Selecionar Todos
+                </label>
+            </div>
+            <div class="flex gap-2">
+                <button type="button" onclick="exportToCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold shadow-sm transition">
+                    <i class="fa-solid fa-file-excel mr-1"></i> Exportar Selecionados (CSV)
+                </button>
+                <button type="button" onclick="exportToPDF()" class="px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white rounded-lg text-xs font-bold shadow-sm transition">
+                    <i class="fa-solid fa-file-pdf mr-1"></i> Imprimir / PDF
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div>
+                <label class="block text-[11px] font-medium text-slate-500 mb-1">Buscar por texto</label>
+                <input type="text" id="filterSearch" oninput="applyHistoryFilter()" placeholder="Obra, Nº RDO..." class="w-full text-xs p-2 border border-slate-300 rounded-lg">
+            </div>
+            <div>
+                <label class="block text-[11px] font-medium text-slate-500 mb-1">Data</label>
+                <input type="date" id="filterDate" onchange="applyHistoryFilter()" class="w-full text-xs p-2 border border-slate-300 rounded-lg">
+            </div>
+            <div class="flex items-end">
+                <button type="button" onclick="clearHistoryFilters()" class="w-full py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 text-xs font-bold rounded-lg">
+                    <i class="fa-solid fa-rotate-left mr-1"></i> Limpar Filtros
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <div id="historyContainer" class="space-y-3"></div>
+</div>
+
+</main>
+
+<script>
+    /* ==================== DADOS BASE / LISTAS FIXAS ==================== */
+    const TESTES_PRESSAO_TIPOS = [
+        'Teste de estanqueidade',
+        'Teste de resistência (pressão)',
+        'Teste de continuidade elétrica (proteção catódica)'
+    ];
+
+    const SEGURANCA_ITENS = [
+        { id: 'epi', label: 'Uso de EPI/EPC pela equipe' },
+        { id: 'sinalizacao', label: 'Sinalização e isolamento da área' },
+        { id: 'pt', label: 'Permissão de trabalho (PT) emitida' },
+        { id: 'deteccaoGas', label: 'Detecção de gás antes do início dos serviços' },
+        { id: 'ventilacao', label: 'Ventilação em área confinada (se aplicável)' },
+        { id: 'incidente', label: 'Ocorrência de incidente/acidente' }
+    ];
+
+    const STORAGE_KEY = 'rdo_aco_history_data';
+
+    /* ==================== ESTADO ==================== */
+    let rdoHistory = [];
+    let rowIdCounter = 0;
+    const fotoBase64Map = {};
+
+    function getVal(id) {
+        const el = document.getElementById(id);
+        return el ? el.value : '';
+    }
+    function setVal(id, val) {
+        const el = document.getElementById(id);
+        if (el) el.value = val !== undefined && val !== null ? val : '';
+    }
+    function radioVal(name) {
+        const el = document.querySelector(`input[name="${name}"]:checked`);
+        return el ? el.value : '';
+    }
+    function setRadio(name, value) {
+        const el = document.querySelector(`input[name="${name}"][value="${value}"]`);
+        if (el) el.checked = true;
+    }
+    function escapeHtml(str) {
+        return String(str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+
+    /* ==================== ARMAZENAMENTO PERSISTENTE (CORRIGIDO) ==================== */
+    function showStorageStatus(message, type) {
+        const el = document.getElementById('storageStatus');
+        if (!el) return;
+        el.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-emerald-100', 'text-emerald-700', 'bg-slate-200', 'text-slate-700');
+        if (type === 'error') {
+            el.classList.add('bg-red-100', 'text-red-700');
+        } else if (type === 'success') {
+            el.classList.add('bg-emerald-100', 'text-emerald-700');
+        } else {
+            el.classList.add('bg-slate-200', 'text-slate-700');
+        }
+        el.innerText = message;
+        if (type === 'success') {
+            setTimeout(() => el.classList.add('hidden'), 2000);
         }
     }
 
-    function atualizarLista() {
-        var historico = JSON.parse(localStorage.getItem('rdo_dados_simples') || '[]');
-        document.getElementById('countHist').innerText = historico.length;
-        
-        var container = document.getElementById('listaHistorico');
-        
-        if (historico.length === 0) {
-            container.innerHTML = '<p>Nenhum registro encontrado no navegador.</p>';
+    async function loadHistoryFromStorage() {
+        showStorageStatus('Carregando relatórios salvos...', 'info');
+        try {
+            const result = localStorage.getItem(STORAGE_KEY);
+            rdoHistory = result ? JSON.parse(result) : [];
+            document.getElementById('storageStatus').classList.add('hidden');
+        } catch (error) {
+            console.error('Erro ao carregar do localStorage:', error);
+            rdoHistory = [];
+            document.getElementById('storageStatus').classList.add('hidden');
+        }
+    }
+
+    async function saveHistoryToStorage() {
+        try {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(rdoHistory));
+            return true;
+        } catch (error) {
+            console.error('Erro ao salvar no armazenamento:', error);
+            showStorageStatus('Erro ao salvar o relatório. O armazenamento pode estar cheio.', 'error');
+            return false;
+        }
+    }
+
+    /* ==================== INICIALIZAÇÃO ==================== */
+    document.addEventListener('DOMContentLoaded', async () => {
+        renderTestesTable();
+        renderSegurancaCards();
+        await loadHistoryFromStorage();
+        setDefaultDateAndNumero();
+        addAtividadeRow();
+        updateAtividadesEmptyState();
+        updateFotosEmptyState();
+        updateHistoryBadge();
+        renderHistory(rdoHistory);
+    });
+
+    function switchTab(tabName) {
+        document.getElementById('formTab').classList.toggle('hidden', tabName !== 'formTab');
+        document.getElementById('historyTab').classList.toggle('hidden', tabName !== 'historyTab');
+
+        document.getElementById('btnTabForm').className = tabName === 'formTab' ?
+            "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/30 hover:bg-white/40" :
+            "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20";
+
+        document.getElementById('btnTabHistory').className = tabName === 'historyTab' ?
+            "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/30 hover:bg-white/40" :
+            "px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-white/10 hover:bg-white/20";
+    }
+
+    function toggleNC(id, show) {
+        const field = document.getElementById(id);
+        if (field) field.classList.toggle('hidden', !show);
+    }
+
+    function updateTime() {
+        const now = new Date();
+        document.getElementById('autoDateTime').innerText = now.toLocaleString('pt-BR');
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
+
+    function setDefaultDateAndNumero() {
+        setVal('inputData', new Date().toISOString().split('T')[0]);
+        const nextNumero = String(rdoHistory.length + 1).padStart(3, '0');
+        setVal('inputNumeroRDO', nextNumero);
+    }
+
+    /* ==================== 5. ATIVIDADES / TRECHOS (dinâmico) ==================== */
+    function addAtividadeRow(data) {
+        const tbody = document.getElementById('atividadesTableBody');
+        const rowId = 'ativ_' + (rowIdCounter++);
+        const tr = document.createElement('tr');
+        tr.dataset.rowId = rowId;
+        tr.innerHTML = `
+            <td class="p-2 border"><input type="text" class="f-trecho w-full text-xs p-1.5 border rounded" placeholder="Trecho / Estaca"></td>
+            <td class="p-2 border"><input type="text" class="f-atividade w-full text-xs p-1.5 border rounded" placeholder="Ex.: Lançamento / soldagem / revestimento"></td>
+            <td class="p-2 border"><input type="text" class="f-diametro w-full text-xs p-1.5 border rounded" placeholder="Ex.: Aço carbono Ø 4&quot;"></td>
+            <td class="p-2 border"><input type="number" min="0" step="0.01" class="f-extensao w-full text-xs p-1.5 border rounded" placeholder="m"></td>
+            <td class="p-2 border"><input type="text" class="f-observacoes w-full text-xs p-1.5 border rounded" placeholder="Observações técnicas"></td>
+            <td class="p-2 border text-center no-print"><button type="button" onclick="removeRow(this, 'atividadesTableBody', updateAtividadesEmptyState)" class="row-remove-btn text-red-500 hover:text-red-700"><i class="fa-solid fa-trash"></i></button></td>
+        `;
+        tbody.appendChild(tr);
+        if (data) {
+            tr.querySelector('.f-trecho').value = data.trecho || '';
+            tr.querySelector('.f-atividade').value = data.atividade || '';
+            tr.querySelector('.f-diametro').value = data.diametroMaterial || '';
+            tr.querySelector('.f-extensao').value = data.extensao || '';
+            tr.querySelector('.f-observacoes').value = data.observacoes || '';
+        }
+        updateAtividadesEmptyState();
+    }
+    function collectAtividades() {
+        return Array.from(document.querySelectorAll('#atividadesTableBody tr')).map(tr => ({
+            trecho: tr.querySelector('.f-trecho').value,
+            atividade: tr.querySelector('.f-atividade').value,
+            diametroMaterial: tr.querySelector('.f-diametro').value,
+            extensao: tr.querySelector('.f-extensao').value,
+            observacoes: tr.querySelector('.f-observacoes').value
+        }));
+    }
+    function updateAtividadesEmptyState() {
+        const hasRows = document.querySelectorAll('#atividadesTableBody tr').length > 0;
+        document.getElementById('atividadesEmptyMsg').classList.toggle('hidden', hasRows);
+    }
+
+    /* ==================== ROW GENÉRICO (remover) ==================== */
+    function removeRow(btn, tbodyId, updateEmptyStateFn) {
+        const tr = btn.closest('tr');
+        if (tr) tr.remove();
+        if (updateEmptyStateFn) updateEmptyStateFn();
+    }
+
+    /* ==================== 7. TESTES DE PRESSÃO (tabela fixa) ==================== */
+    function renderTestesTable() {
+        const tbody = document.getElementById('testesTableBody');
+        tbody.innerHTML = TESTES_PRESSAO_TIPOS.map((tipo, i) => `
+            <tr>
+                <td class="p-2 border font-medium text-slate-700">${escapeHtml(tipo)}</td>
+                <td class="p-2 border"><input type="text" id="testeParametro_${i}" placeholder="Ex.: 1,5 x PMOT (bar)" class="w-full text-xs p-1.5 border rounded"></td>
+                <td class="p-2 border"><input type="text" id="testeDuracao_${i}" placeholder="Ex.: 24h" class="w-full text-xs p-1.5 border rounded"></td>
+                <td class="p-2 border">
+                    <select id="testeResultado_${i}" class="w-full text-xs p-1.5 border rounded">
+                        <option value="">Selecione...</option>
+                        <option value="Aprovado">Aprovado</option>
+                        <option value="Reprovado">Reprovado</option>
+                        <option value="Pendente">Pendente</option>
+                    </select>
+                </td>
+                <td class="p-2 border"><input type="text" id="testeObs_${i}" placeholder="Observações" class="w-full text-xs p-1.5 border rounded"></td>
+            </tr>
+        `).join('');
+    }
+    function collectTestesPressao() {
+        return TESTES_PRESSAO_TIPOS.map((tipo, i) => ({
+            tipo,
+            parametro: getVal(`testeParametro_${i}`),
+            duracao: getVal(`testeDuracao_${i}`),
+            resultado: getVal(`testeResultado_${i}`),
+            observacoes: getVal(`testeObs_${i}`)
+        }));
+    }
+    function restoreTestesPressao(list) {
+        if (!Array.isArray(list)) return;
+        list.forEach((item, i) => {
+            setVal(`testeParametro_${i}`, item.parametro);
+            setVal(`testeDuracao_${i}`, item.duracao);
+            setVal(`testeResultado_${i}`, item.resultado);
+            setVal(`testeObs_${i}`, item.observacoes);
+        });
+    }
+
+    /* ==================== 8. SEGURANÇA DO TRABALHO ==================== */
+    function renderSegurancaCards() {
+        const container = document.getElementById('segurancaContainer');
+        container.innerHTML = SEGURANCA_ITENS.map(item => `
+            <div class="bg-slate-50 p-3 rounded-xl border">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-slate-700">${escapeHtml(item.label)}</span>
+                    <div class="flex gap-3">
+                        <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="seg_${item.id}" value="Conforme" checked onchange="toggleNC('descSeg_${item.id}', false)"> Conforme</label>
+                        <label class="text-xs font-semibold cursor-pointer"><input type="radio" name="seg_${item.id}" value="Não conforme" onchange="toggleNC('descSeg_${item.id}', true)"> Não conf.</label>
+                    </div>
+                </div>
+                <input type="text" id="descSeg_${item.id}" placeholder="Descreva a não conformidade..." class="hidden w-full text-xs bg-red-50 border border-red-300 rounded-lg p-2">
+            </div>
+        `).join('');
+    }
+    function collectSeguranca() {
+        const obj = {};
+        SEGURANCA_ITENS.forEach(item => {
+            obj[item.id] = {
+                status: radioVal(`seg_${item.id}`),
+                observacao: getVal(`descSeg_${item.id}`)
+            };
+        });
+        return obj;
+    }
+    function restoreSeguranca(data) {
+        if (!data) return;
+        SEGURANCA_ITENS.forEach(item => {
+            if (data[item.id]) {
+                setRadio(`seg_${item.id}`, data[item.id].status);
+                if (data[item.id].status === 'Não conforme') {
+                    toggleNC(`descSeg_${item.id}`, true);
+                    setVal(`descSeg_${item.id}`, data[item.id].observacao);
+                } else {
+                    toggleNC(`descSeg_${item.id}`, false);
+                    setVal(`descSeg_${item.id}`, '');
+                }
+            }
+        });
+    }
+
+    /* ==================== 11. FOTOS ==================== */
+    function addFotoRow(data) {
+        const container = document.getElementById('fotosContainer');
+        const rowId = 'foto_' + (rowIdCounter++);
+        const div = document.createElement('div');
+        div.className = 'bg-slate-50 p-3 rounded-xl border space-y-2 image-preview-card';
+        div.dataset.rowId = rowId;
+        div.innerHTML = `
+            <div class="flex justify-between items-center no-print">
+                <span class="text-xs font-bold text-slate-700">Foto</span>
+                <button type="button" onclick="removeFotoCard('${rowId}')" class="text-red-500 hover:text-red-700 text-xs"><i class="fa-solid fa-trash"></i></button>
+            </div>
+            <input type="file" accept="image/*" onchange="handleFotoChange(event, '${rowId}')" class="w-full text-xs border rounded p-1 bg-white">
+            <div id="preview_${rowId}" class="hidden"><img src="" alt="Preview"></div>
+            <input type="text" id="legenda_${rowId}" placeholder="Legenda da foto" class="w-full text-xs p-1.5 border rounded bg-white">
+        `;
+        container.appendChild(div);
+        if (data) {
+            setVal(`legenda_${rowId}`, data.legenda);
+            if (data.base64) {
+                fotoBase64Map[rowId] = data.base64;
+                const prev = document.getElementById(`preview_${rowId}`);
+                prev.querySelector('img').src = data.base64;
+                prev.classList.remove('hidden');
+            }
+        }
+        updateFotosEmptyState();
+    }
+    function handleFotoChange(event, rowId) {
+        const file = event.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            fotoBase64Map[rowId] = e.target.result;
+            const prev = document.getElementById(`preview_${rowId}`);
+            prev.querySelector('img').src = e.target.result;
+            prev.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+    }
+    function removeFotoCard(rowId) {
+        const card = document.querySelector(`[data-row-id="${rowId}"]`);
+        if (card) card.remove();
+        delete fotoBase64Map[rowId];
+        updateFotosEmptyState();
+    }
+    function collectFotos() {
+        return Array.from(document.querySelectorAll('#fotosContainer > div')).map(div => {
+            const rowId = div.dataset.rowId;
+            return {
+                rowId,
+                base64: fotoBase64Map[rowId] || '',
+                legenda: getVal(`legenda_${rowId}`)
+            };
+        });
+    }
+    function restoreFotos(list) {
+        document.getElementById('fotosContainer').innerHTML = '';
+        for (const rowId in fotoBase64Map) delete fotoBase64Map[rowId];
+        if (Array.isArray(list)) {
+            list.forEach(item => addFotoRow(item));
+        }
+        updateFotosEmptyState();
+    }
+    function updateFotosEmptyState() {
+        const hasRows = document.querySelectorAll('#fotosContainer > div').length > 0;
+        document.getElementById('fotosEmptyMsg').classList.toggle('hidden', hasRows);
+    }
+
+    /* ==================== SALVAR / HISTÓRICO ==================== */
+    async function handleFormSubmit(e) {
+        e.preventDefault();
+        const btn = document.getElementById('btnSalvar');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Salvando...';
+
+        const editingId = getVal('editingRecordId');
+        const record = {
+            id: editingId ? editingId : 'rdo_' + Date.now(),
+            createdAt: editingId ? (rdoHistory.find(r => r.id === editingId)?.createdAt || new Date().toISOString()) : new Date().toISOString(),
+            identificacao: {
+                obra: getVal('inputObra'),
+                numeroRDO: getVal('inputNumeroRDO'),
+                data: getVal('inputData'),
+                endereco: getVal('inputEndereco'),
+                cliente: getVal('inputCliente'),
+                fiscalizacao: getVal('inputFiscalizacao')
+            },
+            clima: {
+                manha: getVal('inputClimaManha'),
+                tarde: getVal('inputClimaTarde'),
+                impacto: radioVal('impactoClima'),
+                descImpacto: getVal('descImpactoClima'),
+                paralisacao: getVal('inputParalisacaoClima')
+            },
+            equipe: getVal('textEquipePresente'),
+            atividades: collectAtividades(),
+            testesPressao: collectTestesPressao(),
+            seguranca: collectSeguranca(),
+            ocorrencias: getVal('textOcorrencias'),
+            observacoesGerais: getVal('textObservacoesGerais'),
+            fotos: collectFotos(),
+            assinaturas: {
+                responsavel: getVal('inputAssinaturaResponsavel'),
+                fiscalizacao: getVal('inputAssinaturaFiscalizacao')
+            }
+        };
+
+        const previousHistory = rdoHistory.slice();
+
+        if (editingId) {
+            const idx = rdoHistory.findIndex(r => r.id === editingId);
+            if (idx >= 0) rdoHistory[idx] = record;
+        } else {
+            rdoHistory.unshift(record);
+        }
+
+        const ok = await saveHistoryToStorage();
+
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa-solid fa-floppy-disk mr-2"></i> Salvar Relatório';
+
+        if (!ok) {
+            // reverte em memória se não salvou de fato
+            rdoHistory = previousHistory;
             return;
         }
 
-        var html = '';
-        for (var i = 0; i < historico.length; i++) {
-            var item = historico[i];
-            html += '<div class="card">' +
-                '<strong>RDO Nº ' + item.numero + '</strong> - ' + item.data + '<br>' +
-                '<span>Obra: ' + item.obra + '</span><br>' +
-                '<small>' + (item.obs || 'Sem observações') + '</small>' +
-                '</div>';
+        showStorageStatus('Relatório salvo com sucesso!', 'success');
+        resetForm();
+        updateHistoryBadge();
+        renderHistory(rdoHistory);
+        switchTab('historyTab');
+    }
+
+    function resetForm() {
+        document.getElementById('rdoForm').reset();
+        setVal('editingRecordId', '');
+        toggleNC('descImpactoClima', false);
+        document.getElementById('atividadesTableBody').innerHTML = '';
+        addAtividadeRow();
+        document.getElementById('fotosContainer').innerHTML = '';
+        for (const k in fotoBase64Map) delete fotoBase64Map[k];
+        renderTestesTable();
+        renderSegurancaCards();
+        setDefaultDateAndNumero();
+        updateAtividadesEmptyState();
+        updateFotosEmptyState();
+    }
+
+    function renderHistory(list) {
+        const container = document.getElementById('historyContainer');
+        if (!list.length) {
+            container.innerHTML = '<p class="text-xs text-slate-400 text-center py-6 bg-white rounded-2xl border">Nenhum RDO salvo no histórico.</p>';
+            return;
         }
-        container.innerHTML = html;
+        container.innerHTML = list.map(r => `
+            <div class="bg-white rounded-2xl p-4 shadow-sm border border-slate-200 flex flex-wrap justify-between items-center gap-3">
+                <div class="flex items-center gap-3">
+                    <input type="checkbox" value="${r.id}" class="history-checkbox rounded">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span class="font-bold text-xs text-aco-900">RDO Nº ${escapeHtml(r.identificacao.numeroRDO)}</span>
+                            <span class="text-[10px] bg-slate-100 px-2 py-0.5 rounded-full text-slate-600">${escapeHtml(r.identificacao.data)}</span>
+                        </div>
+                        <p class="text-xs text-slate-600">${escapeHtml(r.identificacao.obra)}</p>
+                    </div>
+                </div>
+                <div class="flex gap-2">
+                    <button type="button" onclick="viewRecord('${r.id}')" class="px-3 py-1.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-eye mr-1"></i> Ver</button>
+                    <button type="button" onclick="editRecord('${r.id}')" class="px-3 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-700 rounded-lg text-xs font-bold"><i class="fa-solid fa-pen mr-1"></i> Editar</button>
+                    <button type="button" onclick="deleteRecord('${r.id}')" class="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-600 rounded-lg text-xs font-bold"><i class="fa-solid fa-trash mr-1"></i> Excluir</button>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    function editRecord(id) {
+        const r = rdoHistory.find(item => item.id === id);
+        if (!r) return;
+        switchTab('formTab');
+        setVal('editingRecordId', r.id);
+        setVal('inputObra', r.identificacao.obra);
+        setVal('inputNumeroRDO', r.identificacao.numeroRDO);
+        setVal('inputData', r.identificacao.data);
+        setVal('inputEndereco', r.identificacao.endereco);
+        setVal('inputCliente', r.identificacao.cliente);
+        setVal('inputFiscalizacao', r.identificacao.fiscalizacao);
+
+        setVal('inputClimaManha', r.clima.manha);
+        setVal('inputClimaTarde', r.clima.tarde);
+        setRadio('impactoClima', r.clima.impacto);
+        if (r.clima.impacto === 'Sim') {
+            toggleNC('descImpactoClima', true);
+            setVal('descImpactoClima', r.clima.descImpacto);
+        } else {
+            toggleNC('descImpactoClima', false);
+            setVal('descImpactoClima', '');
+        }
+        setVal('inputParalisacaoClima', r.clima.paralisacao);
+
+        setVal('textEquipePresente', r.equipe || '');
+
+        document.getElementById('atividadesTableBody').innerHTML = '';
+        if (Array.isArray(r.atividades)) {
+            r.atividades.forEach(item => addAtividadeRow(item));
+        }
+        updateAtividadesEmptyState();
+
+        restoreTestesPressao(r.testesPressao);
+        restoreSeguranca(r.seguranca);
+
+        setVal('textOcorrencias', r.ocorrencias);
+        setVal('textObservacoesGerais', r.observacoesGerais);
+
+        restoreFotos(r.fotos);
+
+        setVal('inputAssinaturaResponsavel', r.assinaturas?.responsavel);
+        setVal('inputAssinaturaFiscalizacao', r.assinaturas?.fiscalizacao);
+    }
+
+    async function deleteRecord(id) {
+        if (!confirm('Deseja realmente excluir este RDO?')) return;
+        const previousHistory = rdoHistory.slice();
+        rdoHistory = rdoHistory.filter(r => r.id !== id);
+        const ok = await saveHistoryToStorage();
+        if (!ok) {
+            rdoHistory = previousHistory;
+            return;
+        }
+        updateHistoryBadge();
+        renderHistory(rdoHistory);
+    }
+
+    function viewRecord(id) {
+        editRecord(id);
+        setTimeout(() => window.print(), 300);
+    }
+
+    function toggleSelectAll(checkbox) {
+        document.querySelectorAll('.history-checkbox').forEach(cb => cb.checked = checkbox.checked);
+    }
+
+    function applyHistoryFilter() {
+        const text = document.getElementById('filterSearch').value.toLowerCase();
+        const date = document.getElementById('filterDate').value;
+        const filtered = rdoHistory.filter(r => {
+            const matchText = !text || (r.identificacao.obra + ' ' + r.identificacao.numeroRDO).toLowerCase().includes(text);
+            const matchDate = !date || r.identificacao.data === date;
+            return matchText && matchDate;
+        });
+        renderHistory(filtered);
+    }
+
+    function clearHistoryFilters() {
+        document.getElementById('filterSearch').value = '';
+        document.getElementById('filterDate').value = '';
+        renderHistory(rdoHistory);
+    }
+
+    function updateHistoryBadge() {
+        document.getElementById('historyBadge').innerText = rdoHistory.length;
+    }
+
+    function exportToCSV() {
+        const selectedIds = Array.from(document.querySelectorAll('.history-checkbox:checked')).map(cb => cb.value);
+        const listToExport = selectedIds.length ? rdoHistory.filter(r => selectedIds.includes(r.id)) : rdoHistory;
+        if (!listToExport.length) {
+            alert('Nenhum RDO selecionado para exportar.');
+            return;
+        }
+        let csv = 'ID,RDO,Data,Obra,Cliente\n';
+        listToExport.forEach(r => {
+            csv += `"${r.id}","${r.identificacao.numeroRDO}","${r.identificacao.data}","${r.identificacao.obra}","${r.identificacao.cliente}"\n`;
+        });
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'rdo_export.csv';
+        a.click();
+    }
+
+    function exportToPDF() {
+        const selectedIds = Array.from(document.querySelectorAll('.history-checkbox:checked')).map(cb => cb.value);
+        if (!selectedIds.length) {
+            alert('Selecione pelo menos um RDO no histórico para imprimir / gerar PDF.');
+            return;
+        }
+        editRecord(selectedIds[0]);
+        setTimeout(() => window.print(), 300);
     }
 </script>
 
