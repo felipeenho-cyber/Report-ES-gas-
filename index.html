@@ -144,7 +144,7 @@
             box-shadow: 0 14px 28px rgba(19,94,171,.28) !important;
         }
 
-        /* Previews de Foto maiores conforme solicitado */
+        /* Previews de Foto */
         .image-preview-large {
             width: 100%;
             max-height: 280px;
@@ -219,45 +219,10 @@
                 </h2>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Nome do Projeto -->
+                    <!-- Cliente -->
                     <div>
-                        <label class="block text-xs font-semibold mb-1">Nome do Projeto <span class="text-red-500">*</span></label>
-                        <select id="selectProjeto" required class="w-full text-xs bg-slate-50 border rounded-lg p-2.5 font-semibold text-slate-700">
-                            <option value="">Selecione o Projeto...</option>
-                            <option>ALUGREEN</option>
-                            <option>ALVORADA</option>
-                            <option>ATACADO VEM</option>
-                            <option>BARCELONA</option>
-                            <option>BARCELONA COMPLEMENTO</option>
-                            <option>BENTO FERREIRA</option>
-                            <option>CENTRO</option>
-                            <option>CMEI - MARLENE ORLENDE SIMONETTI</option>
-                            <option>EXTRABOM CAMPO GRANDE</option>
-                            <option>G2</option>
-                            <option>G3</option>
-                            <option>GIARDINO DI BALI</option>
-                            <option>HOSPITAL SÃO MATEUS</option>
-                            <option>JACARAIPE</option>
-                            <option>JACARAIPE - JARDIM ATLANTICO</option>
-                            <option>JACARAIPE RECANTO</option>
-                            <option>MANGUINHOS</option>
-                            <option>PARKLOG ARACRUZ - FASE 1 SPINASSE</option>
-                            <option>PORTO CANOA</option>
-                            <option>PORTO CANOA COMPLEMENTO</option>
-                            <option>PRAIA DE ITAPARICA</option>
-                            <option>QUINTA DO JATOBÁ</option>
-                            <option>REMANEJAMENTO ALTO LAJE</option>
-                            <option>REMANEJAMENTO ERS CANTO DO SOL</option>
-                            <option>SAN ANDRES</option>
-                            <option>SOTECO - ETAPA I</option>
-                            <option>SOTECO - ETAPA II</option>
-                        </select>
-                    </div>
-
-                    <!-- Número da Fase -->
-                    <div>
-                        <label class="block text-xs font-semibold mb-1">Fase <span class="text-red-500">*</span></label>
-                        <input type="text" id="inputFase" required placeholder="Ex: Fase 01, Etapa A" class="w-full text-xs bg-slate-50 border rounded-lg p-2.5">
+                        <label class="block text-xs font-semibold mb-1">Cliente <span class="text-red-500">*</span></label>
+                        <input type="text" id="inputCliente" required placeholder="Nome do Cliente" class="w-full text-xs bg-slate-50 border rounded-lg p-2.5 font-semibold text-slate-700">
                     </div>
 
                     <!-- Técnico Responsável -->
@@ -292,9 +257,21 @@
                         </select>
                     </div>
 
-                    <!-- Município (Ordem Alfabética) -->
+                    <!-- Endereço Completo: Rua -->
                     <div>
-                        <label class="block text-xs font-semibold mb-1">Município <span class="text-red-500">*</span></label>
+                        <label class="block text-xs font-semibold mb-1">Rua / Logradouro <span class="text-red-500">*</span></label>
+                        <input type="text" id="inputRua" required placeholder="Ex: Av. Jerônimo Monteiro, nº 100" class="w-full text-xs bg-slate-50 border rounded-lg p-2.5">
+                    </div>
+
+                    <!-- Endereço Completo: Bairro -->
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Bairro <span class="text-red-500">*</span></label>
+                        <input type="text" id="inputBairro" required placeholder="Ex: Praia do Canto" class="w-full text-xs bg-slate-50 border rounded-lg p-2.5">
+                    </div>
+
+                    <!-- Endereço Completo: Município/Cidade -->
+                    <div>
+                        <label class="block text-xs font-semibold mb-1">Cidade / Município <span class="text-red-500">*</span></label>
                         <select id="selectMunicipio" required class="w-full text-xs bg-slate-50 border rounded-lg p-2.5">
                             <option value="">Selecione o Município...</option>
                             <option>Anchieta</option>
@@ -306,12 +283,6 @@
                             <option>Vila Velha</option>
                             <option>Vitória</option>
                         </select>
-                    </div>
-
-                    <!-- Estaca -->
-                    <div>
-                        <label class="block text-xs font-semibold mb-1">Estaca <span class="text-red-500">*</span></label>
-                        <input type="text" id="inputEstaca" required placeholder="Ex: EST-120+5m ou 120" class="w-full text-xs bg-slate-50 border rounded-lg p-2.5 font-bold text-sky-800">
                     </div>
 
                     <!-- Tipo de Vala -->
@@ -388,7 +359,7 @@
                     <h2 class="text-xs font-bold uppercase text-slate-700 flex items-center gap-2">
                         <i class="fa-solid fa-map text-sky-600"></i> Mapeamento de Valas por Prioridade
                     </h2>
-                    <p class="text-[11px] text-slate-500">Exibe o estado mais recente/prioritário de cada estaca. Clique nos marcadores para abrir a foto e detalhes.</p>
+                    <p class="text-[11px] text-slate-500">Exibe o estado mais recente/prioritário de cada endereço. Clique nos marcadores para abrir a foto e detalhes.</p>
                 </div>
                 <div class="flex items-center gap-2 text-xs">
                     <span class="inline-block w-3 h-3 rounded-full bg-emerald-500"></span> Definitiva
@@ -423,9 +394,9 @@
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Filtrar por Projeto</label>
-                    <select id="filterProjeto" onchange="applyValaFilter()" class="w-full text-xs p-2.5 border rounded-lg bg-slate-50">
-                        <option value="">Todos os Projetos</option>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Filtrar por Cliente</label>
+                    <select id="filterCliente" onchange="applyValaFilter()" class="w-full text-xs p-2.5 border rounded-lg bg-slate-50">
+                        <option value="">Todos os Clientes</option>
                     </select>
                 </div>
                 <div>
@@ -435,7 +406,7 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Filtrar por Município</label>
+                    <label class="block text-[11px] font-semibold text-slate-600 mb-1">Filtrar por Cidade / Município</label>
                     <select id="filterMunicipio" onchange="applyValaFilter()" class="w-full text-xs p-2.5 border rounded-lg bg-slate-50">
                         <option value="">Todos os Municípios</option>
                     </select>
@@ -670,12 +641,12 @@
 
         const recordData = {
             id: recordId,
-            projeto: document.getElementById('selectProjeto').value,
-            fase: document.getElementById('inputFase').value,
+            cliente: document.getElementById('inputCliente').value,
+            rua: document.getElementById('inputRua').value,
+            bairro: document.getElementById('inputBairro').value,
+            municipio: document.getElementById('selectMunicipio').value,
             tecnico: document.getElementById('selectTecnico').value,
             engenheiro: document.getElementById('selectEngenheiro').value,
-            municipio: document.getElementById('selectMunicipio').value,
-            estaca: document.getElementById('inputEstaca').value,
             tipoVala: tipoValaSelecionado,
             prioridade: PRIORIDADE_TIPO_VALA[tipoValaSelecionado] || 1,
             foto: currentFotoBase64,
@@ -725,32 +696,31 @@
 
         mapMarkersGroup.clearLayers();
 
-        // REGRA DO MAPA: Agrupa por ESTACA e exibe apenas o dado mais ATUAL em relação à prioridade (1 a 5)
-        const estacasMap = {};
+        // AGRUPAMENTO DO MAPA: Por Endereço (Rua + Bairro + Município)
+        const enderecoMap = {};
 
         valaHistory.forEach(item => {
-            const key = item.projeto + '_' + item.estaca;
-            if (!estacasMap[key]) {
-                estacasMap[key] = item;
+            const key = `${item.cliente}_${item.rua}_${item.bairro}_${item.municipio}`;
+            if (!enderecoMap[key]) {
+                enderecoMap[key] = item;
             } else {
-                // Se tiver prioridade maior (ex: 4 - Recomposição Definitiva > 2 - Vala Aberta), substitui no mapa
-                if (item.prioridade > estacasMap[key].prioridade) {
-                    estacasMap[key] = item;
+                if (item.prioridade > enderecoMap[key].prioridade) {
+                    enderecoMap[key] = item;
                 }
             }
         });
 
         const bounds = [];
 
-        Object.values(estacasMap).forEach(item => {
+        Object.values(enderecoMap).forEach(item => {
             if (item.coords && item.coords.lat && item.coords.lng) {
                 const latLng = [item.coords.lat, item.coords.lng];
                 bounds.push(latLng);
 
                 const popupContent = `
                     <div style="width: 220px; font-family: sans-serif;">
-                        <h4 style="font-weight: bold; font-size: 13px; margin-bottom: 4px; color: #135eab;">${item.projeto}</h4>
-                        <p style="font-size: 11px; margin: 2px 0;"><b>Estaca:</b> ${item.estaca}</p>
+                        <h4 style="font-weight: bold; font-size: 13px; margin-bottom: 4px; color: #135eab;">${item.cliente}</h4>
+                        <p style="font-size: 11px; margin: 2px 0;"><b>Endereço:</b> ${item.rua}, ${item.bairro} - ${item.municipio}</p>
                         <p style="font-size: 11px; margin: 2px 0;"><b>Status:</b> ${item.tipoVala}</p>
                         <p style="font-size: 11px; margin: 2px 0;"><b>Técnico:</b> ${item.tecnico}</p>
                         <img src="${item.foto}" style="width: 100%; height: 120px; object-fit: cover; border-radius: 8px; margin-top: 6px;">
@@ -768,11 +738,11 @@
 
     // ==================== LISTAGEM & FILTROS ====================
     function populateFilterDropdowns() {
-        const projetos = [...new Set(valaHistory.map(i => i.projeto))].sort();
-        const tecnicos = [...new Set(valaHistory.map(i => i.tecnico))].sort();
-        const municipios = [...new Set(valaHistory.map(i => i.municipio))].sort();
+        const clientes = [...new Set(valaHistory.map(i => i.cliente).filter(Boolean))].sort();
+        const tecnicos = [...new Set(valaHistory.map(i => i.tecnico).filter(Boolean))].sort();
+        const municipios = [...new Set(valaHistory.map(i => i.municipio).filter(Boolean))].sort();
 
-        fillSelect('filterProjeto', projetos, 'Todos os Projetos');
+        fillSelect('filterCliente', clientes, 'Todos os Clientes');
         fillSelect('filterTecnico', tecnicos, 'Todos os Técnicos');
         fillSelect('filterMunicipio', municipios, 'Todos os Municípios');
     }
@@ -785,12 +755,12 @@
     }
 
     function applyValaFilter() {
-        const proj = document.getElementById('filterProjeto').value;
+        const cli = document.getElementById('filterCliente').value;
         const tec = document.getElementById('filterTecnico').value;
         const mun = document.getElementById('filterMunicipio').value;
 
         const filtered = valaHistory.filter(item => {
-            return (!proj || item.projeto === proj) &&
+            return (!cli || item.cliente === cli) &&
                    (!tec || item.tecnico === tec) &&
                    (!mun || item.municipio === mun);
         });
@@ -811,11 +781,11 @@
                     <img src="${item.foto}" class="w-24 h-24 object-cover rounded-xl border border-slate-200 shadow-sm flex-shrink-0">
                     <div>
                         <div class="flex items-center gap-2 mb-1">
-                            <span class="bg-sky-100 text-sky-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">${item.projeto}</span>
+                            <span class="bg-sky-100 text-sky-800 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">${item.cliente || 'Cliente'}</span>
                             <span class="bg-slate-100 text-slate-700 text-[10px] font-semibold px-2 py-0.5 rounded-full">${item.municipio}</span>
                         </div>
-                        <h3 class="text-sm font-bold text-slate-800">Estaca: ${item.estaca} — <span class="text-sky-700">${item.tipoVala}</span></h3>
-                        <p class="text-xs text-slate-500 mt-1">Fase: <b>${item.fase}</b> | Eng: <b>${item.engenheiro}</b> | Tec: <b>${item.tecnico}</b></p>
+                        <h3 class="text-sm font-bold text-slate-800">${item.rua}, ${item.bairro} — <span class="text-sky-700">${item.tipoVala}</span></h3>
+                        <p class="text-xs text-slate-500 mt-1">Eng: <b>${item.engenheiro}</b> | Tec: <b>${item.tecnico}</b></p>
                         <p class="text-[10px] text-slate-400 mt-1"><i class="fa-regular fa-clock mr-1"></i>${item.dataHoraFormatada}</p>
                     </div>
                 </div>
@@ -845,12 +815,12 @@
             return;
         }
 
-        let csv = "ID;Projeto;Fase;Engenheiro;Tecnico;Municipio;Estaca;TipoVala;Latitude;Longitude;DataHora\n";
+        let csv = "ID;Cliente;Rua;Bairro;Cidade_Municipio;Engenheiro;Tecnico;TipoVala;Latitude;Longitude;DataHora\n";
 
         valaHistory.forEach(i => {
             const lat = i.coords?.lat || '';
             const lng = i.coords?.lng || '';
-            csv += `"${i.id}";"${i.projeto}";"${i.fase}";"${i.engenheiro}";"${i.tecnico}";"${i.municipio}";"${i.estaca}";"${i.tipoVala}";"${lat}";"${lng}";"${i.dataHoraFormatada}"\n`;
+            csv += `"${i.id}";"${i.cliente || ''}";"${i.rua || ''}";"${i.bairro || ''}";"${i.municipio || ''}";"${i.engenheiro}";"${i.tecnico}";"${i.tipoVala}";"${lat}";"${lng}";"${i.dataHoraFormatada}"\n`;
         });
 
         const blob = new Blob(["\ufeff" + csv], { type: 'text/csv;charset=utf-8;' });
@@ -864,12 +834,12 @@
 
     // ==================== GERAR RELATÓRIO PDF AGRUPADO ====================
     function generatePDFReport() {
-        const projFilter = document.getElementById('filterProjeto').value;
+        const cliFilter = document.getElementById('filterCliente').value;
         const tecFilter = document.getElementById('filterTecnico').value;
         const munFilter = document.getElementById('filterMunicipio').value;
 
         let filteredList = valaHistory.filter(item => {
-            return (!projFilter || item.projeto === projFilter) &&
+            return (!cliFilter || item.cliente === cliFilter) &&
                    (!tecFilter || item.tecnico === tecFilter) &&
                    (!munFilter || item.municipio === munFilter);
         });
@@ -879,27 +849,30 @@
             return;
         }
 
-        // AGRUPAMENTO 1: POR PROJETO
-        const projetosAgrupados = {};
+        // AGRUPAMENTO 1: POR CLIENTE
+        const clientesAgrupados = {};
         filteredList.forEach(item => {
-            if (!projetosAgrupados[item.projeto]) projetosAgrupados[item.projeto] = [];
-            projetosAgrupados[item.projeto].push(item);
+            const clienteNome = item.cliente || 'Sem Cliente';
+            if (!clientesAgrupados[clienteNome]) clientesAgrupados[clienteNome] = [];
+            clientesAgrupados[clienteNome].push(item);
         });
 
         const pdfContainer = document.getElementById('pdfPrintArea');
         pdfContainer.innerHTML = '';
 
-        Object.keys(projetosAgrupados).forEach((nomeProjeto, idx) => {
-            const listaProjeto = projetosAgrupados[nomeProjeto];
+        Object.keys(clientesAgrupados).forEach((nomeCliente, idx) => {
+            const listaCliente = clientesAgrupados[nomeCliente];
 
-            // Calcula total de recomposições definitivas no projeto
-            const totalDefinitivas = listaProjeto.filter(i => i.tipoVala.includes('4 – Recomposição Definitiva')).length;
-            const engenheiroNome = listaProjeto[0]?.engenheiro || 'Não informado';
-            const tecnicoNome = listaProjeto[0]?.tecnico || 'Não informado';
+            // Calcula total de recomposições definitivas
+            const totalDefinitivas = listaCliente.filter(i => i.tipoVala.includes('4 – Recomposição Definitiva')).length;
+            const engenheiroNome = listaCliente[0]?.engenheiro || 'Não informado';
+            const tecnicoNome = listaCliente[0]?.tecnico || 'Não informado';
 
-            // AGRUPAMENTO 2: POR ESTACA E ORDEM (1 a 5)
-            listaProjeto.sort((a, b) => {
-                if (a.estaca !== b.estaca) return a.estaca.localeCompare(b.estaca, undefined, { numeric: true });
+            // AGRUPAMENTO 2: ORDENAÇÃO POR ENDEREÇO E PRIORIDADE (1 a 5)
+            listaCliente.sort((a, b) => {
+                const addrA = `${a.rua} ${a.bairro}`;
+                const addrB = `${b.rua} ${b.bairro}`;
+                if (addrA !== addrB) return addrA.localeCompare(addrB);
                 return a.prioridade - b.prioridade;
             });
 
@@ -908,7 +881,7 @@
                     <!-- CABEÇALHO DO RELATÓRIO PDF -->
                     <div style="border-bottom: 2px solid #135eab; padding-bottom: 12px; margin-bottom: 20px;">
                         <h1 style="font-size: 18px; font-weight: bold; color: #135eab; text-transform: uppercase;">
-                            Relatório de Controle de Vala - PEAD | ${nomeProjeto}
+                            Relatório de Controle de Vala - PEAD | Cliente: ${nomeCliente}
                         </h1>
                         <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 8px; color: #475569;">
                             <span><b>Técnico Responsável:</b> ${tecnicoNome}</span>
@@ -917,18 +890,17 @@
                         </div>
                     </div>
 
-                    <!-- TABELA / CARDS DE VALAS POR ESTACA -->
+                    <!-- TABELA / CARDS DE VALAS POR ENDEREÇO -->
                     <div style="display: flex; flex-direction: column; gap: 16px;">
-                        ${listaProjeto.map(v => `
+                        ${listaCliente.map(v => `
                             <div style="border: 1px solid #cbd5e1; border-radius: 10px; padding: 12px; page-break-inside: avoid;">
-                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; border-b: 1px solid #f1f5f9; padding-bottom: 4px;">
-                                    <span><b>Estaca:</b> ${v.estaca} \vert{} <b>Município:</b> ${v.municipio}</span>
+                                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; border-bottom: 1px solid #f1f5f9; padding-bottom: 4px;">
+                                    <span><b>Endereço:</b> ${v.rua}, ${v.bairro} -${v.municipio}</span>
                                     <span style="color: #0369a1; font-weight: bold;">${v.tipoVala}</span>
                                 </div>
                                 <div style="display: flex; gap: 12px; align-items: center;">
                                     <img src="${v.foto}" class="pdf-photo" style="width: 200px; height: 130px; object-fit: cover; border-radius: 8px;">
                                     <div style="font-size: 11px; color: #334155;">
-                                        <p><b>Fase:</b> ${v.fase}</p>
                                         <p><b>Data do Registro:</b> ${v.dataHoraFormatada}</p>
                                         <p><b>Coordenadas GPS:</b> ${v.coords?.lat ? `${v.coords.lat.toFixed(5)}, ${v.coords.lng.toFixed(5)}` : 'N/A'}</p>
                                     </div>
@@ -942,7 +914,6 @@
             pdfContainer.innerHTML += pageHTML;
         });
 
-        // Dispara a janela de impressão do navegador (permitindo Salvar como PDF)
         window.print();
     }
 </script>
